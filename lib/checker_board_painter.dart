@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/game/checkers_board.dart';
-import 'package:untitled/game_view_model.dart';
 
 class CheckerBoardPainter extends CustomPainter {
+  final bool isAnimating;
   final bool drawOptionalPaths;
+  final double animationValue;
   final int selectedRow;
   final int selectedCol;
+  final int destinationRow;
+  final int destinationCol;
   final List<List<CellType>> board;
   final List<Path> paths;
   final Paint paintPiece = Paint();
@@ -14,7 +17,15 @@ class CheckerBoardPainter extends CustomPainter {
     ..color = Colors.yellowAccent.withOpacity(0.7);
 
   CheckerBoardPainter(
-      this.selectedRow, this.selectedCol, this.board, this.paths, this.drawOptionalPaths);
+      this.selectedRow,
+      this.selectedCol,
+      this.destinationRow,
+      this.destinationCol,
+      this.board,
+      this.paths,
+      this.drawOptionalPaths,
+      this.animationValue,
+      this.isAnimating);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -33,22 +44,35 @@ class CheckerBoardPainter extends CustomPainter {
     _drawPieces(cellWidth: cellWidth, cellHeight: cellHeight, canvas: canvas);
   }
 
-  @override
-  bool shouldRepaint(covariant CheckerBoardPainter oldDelegate) {
-    return oldDelegate.selectedRow != selectedRow ||
-        oldDelegate.selectedCol != selectedCol;
-  }
-
   void _drawPieces(
       {required double cellWidth,
       required double cellHeight,
       required Canvas canvas}) {
     final pieceRadius = cellWidth * 0.35;
     final pieceKingRadius = cellWidth * 0.25;
+    Paint paintPieceAnimation = Paint();
+    double pieceRadiusAnimation = pieceRadius;
 
     for (final (rowIndex, row) in board.indexed) {
       for (final (colIndex, col) in row.indexed) {
         if (col == CellType.UNVALID || col == CellType.EMPTY) {
+          continue;
+        }
+
+        if (rowIndex == selectedRow &&
+            colIndex == selectedCol &&
+            animationValue != 0 &&
+            animationValue != 1) {
+
+          paintPieceAnimation.color =
+              col == CellType.BLACK || col == CellType.BLACK_KING
+                  ? Colors.blue
+                  : Colors.red;
+
+          pieceRadiusAnimation =
+              col == CellType.BLACK_KING || col == CellType.WHITE_KING
+                  ? pieceKingRadius
+                  : pieceRadius;
           continue;
         }
 
@@ -68,13 +92,31 @@ class CheckerBoardPainter extends CustomPainter {
         );
 
         if (col == CellType.BLACK_KING || col == CellType.WHITE_KING) {
+          pieceRadiusAnimation = pieceKingRadius;
           canvas.drawCircle(
             offset,
-            pieceKingRadius,
+            pieceRadiusAnimation,
             paintKingPiece,
           );
         }
       }
+    }
+
+    int diffCol = destinationCol > selectedCol ? 1 : -1;
+    int diffYRow = destinationRow > selectedRow ? 1 : -1;
+
+    //Start to Animate
+    if (isAnimating) {
+      double dy =
+          (selectedRow + (diffYRow * animationValue) + 0.5) * cellHeight;
+      double dx = (selectedCol + (diffCol * animationValue) + 0.5) * cellWidth;
+      Offset offset = Offset(dx, dy);
+
+      canvas.drawCircle(
+        offset,
+        pieceRadius,
+        paintPieceAnimation,
+      );
     }
   }
 
@@ -104,7 +146,7 @@ class CheckerBoardPainter extends CustomPainter {
         Paint paint = Paint()
           ..color = col == CellType.UNVALID ? Colors.white : Colors.black;
 
-        if(drawOptionalPaths){
+        if (drawOptionalPaths) {
           for (Path path in paths) {
             for (PositionDetails positionDetails in path.positionDetails) {
               if (positionDetails.position.row == rowIndex &&
@@ -113,7 +155,6 @@ class CheckerBoardPainter extends CustomPainter {
               }
             }
           }
-
         }
 
         canvas.drawRect(
@@ -127,5 +168,23 @@ class CheckerBoardPainter extends CustomPainter {
         );
       }
     }
+  }
+
+  @override
+  bool shouldRepaint(covariant CheckerBoardPainter oldDelegate) {
+    for (final (cellTypeListIndex, cellTypeList) in oldDelegate.board.indexed) {
+      for (final (index, cellType) in cellTypeList.indexed) {
+        if (cellType == board[cellTypeListIndex][index]) {
+          return true;
+        }
+      }
+    }
+
+    bool isSelectedChange = oldDelegate.selectedRow != selectedRow ||
+        oldDelegate.selectedCol != selectedCol;
+
+    bool isAnimationValueChange = oldDelegate.animationValue == animationValue;
+
+    return isAnimationValueChange || isSelectedChange;
   }
 }

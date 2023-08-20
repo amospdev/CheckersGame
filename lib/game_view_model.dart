@@ -35,51 +35,46 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  set selectedRow(int row) {
-    _selectedRow = row;
-    notifyListeners();
+  TapOnBoard onTapBoardGame(int row, int col) {
+    List<Path> paths = _game.getPossiblePaths(row, col);
+    _paths.clear();
+    _paths.addAll(paths);
+    if (paths.isNotEmpty) {
+      _selectPiece(row, col);
+      return TapOnBoard.START;
+    } else {
+      Path? path = _game.getPathByEndPosition(
+          _selectedRow, _selectedCol, row, col);
+      if (path != null) {
+        _selectTargetCell(row, col);
+        return TapOnBoard.END;
+      }
+    }
+    return TapOnBoard.UNVALID;
   }
 
-  set selectedCol(int col) {
+  void onTapEndPosition() {
+    Path? path = _game.getPathByEndPosition(
+        _selectedRow, _selectedCol, _destinationRow, _destinationCol);
+    if (path == null) return;
+    _game.performMove(
+        _selectedRow, _selectedCol, _destinationRow, _destinationCol, path);
+    notifyListeners();
+    _nextTurn();
+  }
+
+  void _selectPiece(int row, int col) {
+    _selectedRow = row;
     _selectedCol = col;
     notifyListeners();
   }
 
-  set destinationRow(int row) {
+  void _selectTargetCell(int row, int col) {
     _destinationRow = row;
-    notifyListeners();
-  }
-
-  set destinationCol(int col) {
     _destinationCol = col;
     notifyListeners();
   }
 
-  void onTapBoardGame(int row, int col) {
-    List<Path> paths = _game.getPossiblePaths(row, col);
-    _paths.clear();
-    _paths.addAll(paths);
-    notifyListeners();
-    if (paths.isNotEmpty) {
-      _selectPiece(row, col);
-      return;
-    } else {
-      Path? path =
-          _game.getPathByEndPosition(_selectedRow, _selectedCol, row, col);
-      if (path != null) {
-        _game.performMove(_selectedRow, _selectedCol, row, col, path);
-        notifyListeners();
-        _nextTurn();
-      }
-    }
-  }
-
-  void _selectPiece(int row, int col) {
-
-    _selectedRow = row;
-    _selectedCol = col;
-    notifyListeners();
-  }
 
   void _nextTurn() {
     _clearPrevSelected();
@@ -90,5 +85,28 @@ class GameViewModel extends ChangeNotifier {
   void _clearPrevSelected() {
     _selectedRow = -1;
     _selectedCol = -1;
+    _destinationRow = -1;
+    _destinationCol = -1;
   }
+
+  List<PositionDetails> onStartAnimation()  {
+    Path? path = _game.getPathByEndPosition(
+        _selectedRow, _selectedCol, _destinationRow, _destinationCol);
+    if(path == null) return [];
+
+    return path.positionDetails;
+  }
+
+  void onPoint(Position currPosition, Position nextPosition) {
+    _selectedRow = currPosition.row;
+    _selectedCol = currPosition.column;
+    _destinationRow = nextPosition.row;
+    _destinationCol = nextPosition.column;
+  }
+}
+
+enum TapOnBoard {
+  START,
+  END,
+  UNVALID,
 }

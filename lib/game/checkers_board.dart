@@ -1,4 +1,3 @@
-import 'dart:collection';
 
 class CheckersBoard {
   List<List<CellType>> _board = [];
@@ -200,7 +199,7 @@ class CheckersBoard {
     } else if (_isInBoundsByPosition(currPosition) &&
         _isEmptyCellByPosition(currPosition)) {
       //Simple move
-      positionDetailsList.add(_getPositionDetailsByNonCapture(startPos));
+      // positionDetailsList.add(_getPositionDetailsByNonCapture(startPos));
       positionDetailsList.add(_getPositionDetailsByNonCapture(currPosition));
 
       _addPath(positionDetailsList, paths);
@@ -341,6 +340,8 @@ class Path {
   String toString() {
     return 'Path{positionDetails: $positionDetails}';
   }
+
+  static Path createEmpty() => Path([]);
 }
 
 enum CellType {

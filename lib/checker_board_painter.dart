@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/game/checkers_board.dart';
-import 'package:untitled/game_view_model.dart';
 
 class CheckerBoardPainter extends CustomPainter {
   final bool drawOptionalPaths;
   final int selectedRow;
   final int selectedCol;
+  final int destinationRow;
+  final int destinationCol;
   final List<List<CellType>> board;
   final List<Path> paths;
   final Paint paintPiece = Paint();
@@ -13,8 +14,8 @@ class CheckerBoardPainter extends CustomPainter {
   final Paint paintHighlight = Paint()
     ..color = Colors.yellowAccent.withOpacity(0.7);
 
-  CheckerBoardPainter(
-      this.selectedRow, this.selectedCol, this.board, this.paths, this.drawOptionalPaths);
+  CheckerBoardPainter(this.selectedRow, this.selectedCol, this.destinationRow,
+      this.destinationCol, this.board, this.paths, this.drawOptionalPaths);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -35,8 +36,23 @@ class CheckerBoardPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CheckerBoardPainter oldDelegate) {
-    return oldDelegate.selectedRow != selectedRow ||
+    bool isChangeCellType = false;
+    for (final (cellTypeListIndex, cellTypeList) in oldDelegate.board.indexed) {
+      for (final (index, cellType) in cellTypeList.indexed) {
+        if (cellType != board[cellTypeListIndex][index]) {
+          isChangeCellType = true;
+          break;
+        }
+      }
+    }
+
+    bool isChangeSelected = oldDelegate.selectedRow != selectedRow &&
         oldDelegate.selectedCol != selectedCol;
+
+    bool isChangeTarget = oldDelegate.destinationRow != destinationRow &&
+        oldDelegate.destinationCol != destinationCol;
+
+    return isChangeSelected || isChangeTarget || isChangeCellType;
   }
 
   void _drawPieces(
@@ -48,6 +64,15 @@ class CheckerBoardPainter extends CustomPainter {
 
     for (final (rowIndex, row) in board.indexed) {
       for (final (colIndex, col) in row.indexed) {
+        // print("Painter for loop: $rowIndex, $colIndex");
+        //
+        // print(
+        //     "Painter SR: $selectedRow, SC: $selectedCol, DR: $destinationRow, DC: $destinationCol");
+        if (rowIndex == destinationRow && colIndex == destinationCol) {
+          print("SKIP TARGET CELL");
+          continue;
+        }
+
         if (col == CellType.UNVALID || col == CellType.EMPTY) {
           continue;
         }
@@ -75,6 +100,35 @@ class CheckerBoardPainter extends CustomPainter {
           );
         }
       }
+    }
+
+    // int diffCol = destinationCol > selectedCol
+    //     ? destinationCol - selectedCol
+    //     : selectedCol - destinationCol;
+    // int diffYRow = destinationRow > selectedRow
+    //     ? destinationRow - selectedRow
+    //     : selectedRow - destinationRow;
+
+    int diffCol = destinationCol > selectedCol
+        ? 1
+        : -1;
+    int diffYRow = destinationRow > selectedRow
+        ? 1
+        : -1;
+
+
+    //Start to Animate
+    double dy = (selectedRow + diffYRow + 0.5) * cellHeight;
+    double dx = (selectedCol + diffCol + 0.5) * cellWidth;
+    Offset offset = Offset(dx, dy);
+
+    if (destinationRow != -1 && destinationCol != -1) {
+      print("TARGET CELL");
+      canvas.drawCircle(
+        offset,
+        pieceRadius,
+        paintKingPiece..color = Colors.green,
+      );
     }
   }
 
@@ -104,7 +158,7 @@ class CheckerBoardPainter extends CustomPainter {
         Paint paint = Paint()
           ..color = col == CellType.UNVALID ? Colors.white : Colors.black;
 
-        if(drawOptionalPaths){
+        if (drawOptionalPaths) {
           for (Path path in paths) {
             for (PositionDetails positionDetails in path.positionDetails) {
               if (positionDetails.position.row == rowIndex &&
@@ -113,7 +167,6 @@ class CheckerBoardPainter extends CustomPainter {
               }
             }
           }
-
         }
 
         canvas.drawRect(

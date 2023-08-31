@@ -10,6 +10,7 @@ class GameViewModel extends ChangeNotifier {
   int _destinationRow = -1;
   int _destinationCol = -1;
   List<Path> _paths = [];
+  Path _currPath = Path.createEmpty();
 
   List<List<CellType>> get board => _game.board;
 
@@ -35,60 +36,84 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  set selectedRow(int row) {
-    _selectedRow = row;
-    notifyListeners();
-  }
-
-  set selectedCol(int col) {
-    _selectedCol = col;
-    notifyListeners();
-  }
-
-  set destinationRow(int row) {
-    _destinationRow = row;
-    notifyListeners();
-  }
-
-  set destinationCol(int col) {
-    _destinationCol = col;
-    notifyListeners();
-  }
-
   void onTapBoardGame(int row, int col) {
     List<Path> paths = _game.getPossiblePaths(row, col);
     _paths.clear();
     _paths.addAll(paths);
     notifyListeners();
+    print("VM onTapBoardGame paths size: ${paths.length}");
     if (paths.isNotEmpty) {
       _selectPiece(row, col);
       return;
     } else {
-      Path? path =
+      _currPath =
           _game.getPathByEndPosition(_selectedRow, _selectedCol, row, col);
-      if (path != null) {
-        _game.performMove(_selectedRow, _selectedCol, row, col, path);
-        notifyListeners();
-        _nextTurn();
+      if (_isCurrPathExist()) {
+        _selectTargetCell(row, col, _currPath);
+        // _nextTurn();
       }
     }
   }
 
-  void _selectPiece(int row, int col) {
+  bool _isCurrPathExist() => _currPath.positionDetails.isNotEmpty;
 
+  void _selectPiece(int row, int col) {
     _selectedRow = row;
     _selectedCol = col;
     notifyListeners();
   }
 
+  void _selectTargetCell(int row, int col, Path currPath) async {
+    print("VM _selectTargetCell: $row, $col");
+
+    for (final (index, positionDetails) in currPath.positionDetails.indexed) {
+      // if (index == 0) continue;
+      if (index + 1 >= currPath.positionDetails.length) break;
+      _selectedRow = currPath.positionDetails[index].position.row;
+      _selectedCol = currPath.positionDetails[index].position.column;
+      _destinationRow = currPath.positionDetails[index + 1].position.row;
+      _destinationCol = currPath.positionDetails[index + 1].position.column;
+      print(
+          "1 VM VM SR: $_selectedRow, SC: $_selectedCol, DR: $_destinationRow, DC: $_destinationCol index: ${index}, index + 1: ${(index + 1)}");
+
+      notifyListeners();
+      await Future.delayed(Duration(milliseconds: 1000));
+      print(
+          "2 VM VM SR: $_selectedRow, SC: $_selectedCol, DR: $_destinationRow, DC: $_destinationCol");
+    }
+
+    endTurn();
+  }
+
+  void endTurn() {
+    if (_selectedRow != -1 &&
+        _selectedCol != -1 &&
+        _destinationRow != -1 &&
+        _destinationCol != -1) {
+      print(
+          "VM endTurn $_selectedRow, $_selectedCol, $_destinationRow, $_destinationCol, $_currPath");
+      _game.performMove(_selectedRow, _selectedCol, _destinationRow,
+          _destinationCol, _currPath);
+      _nextTurn();
+      notifyListeners();
+    }
+  }
+
   void _nextTurn() {
     _clearPrevSelected();
-    _paths.clear();
+    _clearPrevPaths();
     _game.nextTurn();
   }
 
   void _clearPrevSelected() {
     _selectedRow = -1;
     _selectedCol = -1;
+    _destinationRow = -1;
+    _destinationCol = -1;
+  }
+
+  void _clearPrevPaths() {
+    _paths.clear();
+    _currPath = Path.createEmpty();
   }
 }

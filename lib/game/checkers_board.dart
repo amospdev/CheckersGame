@@ -1,4 +1,3 @@
-import 'dart:collection';
 
 class CheckersBoard {
   List<List<CellType>> _board = [];
@@ -200,7 +199,7 @@ class CheckersBoard {
     } else if (_isInBoundsByPosition(currPosition) &&
         _isEmptyCellByPosition(currPosition)) {
       //Simple move
-      positionDetailsList.add(_getPositionDetailsByNonCapture(startPos));
+      // positionDetailsList.add(_getPositionDetailsByNonCapture(startPos));
       positionDetailsList.add(_getPositionDetailsByNonCapture(currPosition));
 
       _addPath(positionDetailsList, paths);
@@ -223,8 +222,12 @@ class CheckersBoard {
       int startRow, int startCol, int endRow, int endCol, Path path) {
     if (path.positionDetails.isEmpty) return;
 
-    Position startPosition = _createPosition(startRow, startCol);
-    Position endPosition = _createPosition(endRow, endCol);
+    Position startPosition = _createPosition(
+        path.positionDetails.first.position.row,
+        path.positionDetails.first.position.column);
+    Position endPosition = _createPosition(
+        path.positionDetails.last.position.row,
+        path.positionDetails.last.position.column);
 
     // Update the end position based on the type of the piece and its final position on the board
     if (_isBlackByPosition(startPosition)) {
@@ -263,17 +266,17 @@ class CheckersBoard {
     paths.clear();
   }
 
-  Path? getPathByEndPosition(
+  Path getPathByEndPosition(
       int startRow, int startCol, int endRow, int endCol) {
-    Position from = _createPosition(startRow, startCol);
     Position to = _createPosition(endRow, endCol);
     for (Path path in paths) {
       Position pathEnd = path.positionDetails.last.position;
       if (pathEnd.row == to.row && pathEnd.column == to.column) {
+        print("RESULT: ${path}");
         return path;
       }
     }
-    return null;
+    return Path([]);
   }
 }
 
@@ -341,6 +344,8 @@ class Path {
   String toString() {
     return 'Path{positionDetails: $positionDetails}';
   }
+
+  static Path createEmpty() => Path([]);
 }
 
 enum CellType {

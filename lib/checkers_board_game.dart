@@ -9,8 +9,15 @@ class CheckerBoard extends StatefulWidget {
 }
 
 class _CheckerBoardState extends State<CheckerBoard> {
-  int selectedRow = -1;
-  int selectedCol = -1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("DO ACTION");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +27,13 @@ class _CheckerBoardState extends State<CheckerBoard> {
 
     return Consumer<GameViewModel>(builder: (context, gameViewModel, child) {
       return GestureDetector(
-        onTapUp: (details) {
-          onTapUpCell(details, gameViewModel);
-        },
+        onTapUp: (details) => _onTapUpCell(details, gameViewModel),
         child: CustomPaint(
           painter: CheckerBoardPainter(
               gameViewModel.selectedRow,
               gameViewModel.selectedCol,
+              gameViewModel.destinationRow,
+              gameViewModel.destinationCol,
               gameViewModel.board,
               gameViewModel.paths,
               true),
@@ -36,7 +43,8 @@ class _CheckerBoardState extends State<CheckerBoard> {
     });
   }
 
-  void onTapUpCell(TapUpDetails tapUpDetails, GameViewModel gameViewModel) {
+  void _onTapUpCell(
+      TapUpDetails tapUpDetails, GameViewModel gameViewModel) /*async*/ {
     final RenderObject? renderObject = context.findRenderObject();
     if (renderObject == null) return;
 
@@ -50,5 +58,22 @@ class _CheckerBoardState extends State<CheckerBoard> {
     int selectedCol = (localPosition.dx / cellWidth).floor();
 
     gameViewModel.onTapBoardGame(selectedRow, selectedCol);
+
+
+    print(
+        "WIDGET SR: ${gameViewModel.selectedRow}, SC: ${gameViewModel.selectedCol}, DR: ${gameViewModel.destinationRow}, DC: ${gameViewModel.destinationCol}");
+
+    // setState(() {
+    //
+    // });
+
+    // await Future.delayed(const Duration(milliseconds: 1));
+
+    // if (gameViewModel.selectedRow != -1 &&
+    //     gameViewModel.selectedCol != -1 &&
+    //     gameViewModel.destinationRow != -1 &&
+    //     gameViewModel.destinationCol != -1) {
+    //   gameViewModel.endTurn();
+    // }
   }
 }

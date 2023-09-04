@@ -1,8 +1,8 @@
-
 class CheckersBoard {
   List<List<CellType>> _board = [];
   CellType _player = CellType.BLACK;
-  List<Path> paths = [];
+
+  // List<Path> paths = [];
 
   CheckersBoard() {
     resetBoard();
@@ -55,7 +55,7 @@ class CheckersBoard {
 
   bool _isKing(int row, int column) =>
       _getCellType(row, column) == CellType.BLACK_KING ||
-      _getCellType(row, column) == CellType.WHITE_KING;
+          _getCellType(row, column) == CellType.WHITE_KING;
 
   bool _isEmptyCellByPosition(Position position) =>
       _isEmptyCell(position.row, position.column);
@@ -68,14 +68,14 @@ class CheckersBoard {
 
   bool _isBlack(int row, int column) =>
       _getCellType(row, column) == CellType.BLACK ||
-      _getCellType(row, column) == CellType.BLACK_KING;
+          _getCellType(row, column) == CellType.BLACK_KING;
 
   bool _isWhiteByPosition(Position position) =>
       _isWhite(position.row, position.column);
 
   bool _isWhite(int row, int column) =>
       _getCellType(row, column) == CellType.WHITE ||
-      _getCellType(row, column) == CellType.WHITE_KING;
+          _getCellType(row, column) == CellType.WHITE_KING;
 
   bool _isUnValidCellByPosition(int row, int col) => _isUnValidCell(row, col);
 
@@ -105,7 +105,7 @@ class CheckersBoard {
     if (_isUnValidCellByPosition(row, col)) return [];
     if (_getCellType(row, col) != player) return [];
 
-    paths.clear();
+    List<Path> paths = [];
     _fetchAllPaths(paths, _createPosition(row, col));
     print("TOTAL Paths size: ${paths.length}");
 
@@ -117,10 +117,50 @@ class CheckersBoard {
   int _getColDirection(Position prevPosition, Position currPosition) =>
       prevPosition.column > currPosition.column ? -1 : 1;
 
-  Position _getNextPosition(Position position, int colDir) => _createPosition(
-      position.row + _getRowDirection(), position.column + colDir);
+  Position _getNextPosition(Position position, int colDir) =>
+      _createPosition(
+          position.row + _getRowDirection(), position.column + colDir);
 
   Position _createPosition(int row, int column) => Position(row, column);
+
+  bool isContinuePaths(int row, int col, Path path) =>
+      getPossibleContinuePaths(row, col).isNotEmpty &&
+          path.positionDetails.map((e) => e.isCapture).contains(true)
+          ? true
+          : false;
+
+  List<Path> getPossibleContinuePaths(int row, int col) {
+    List<Path> paths = [];
+
+    Position startPos = Position(row, col);
+
+    PositionDetails positionDetailsStartPos =
+    PositionDetails(startPos, _getCellTypeByPosition(startPos), false);
+
+    Position nextPositionPlus = _getNextPosition(startPos, 1);
+    Position afterNextPositionPlus = _getNextPosition(nextPositionPlus, 1);
+
+    Position nextPositionMinus = _getNextPosition(startPos, -1);
+    Position afterNextPositionMinus = _getNextPosition(nextPositionMinus, -1);
+
+    if (_isCaptureMove(nextPositionPlus, afterNextPositionPlus)) {
+      _addPath([
+        positionDetailsStartPos,
+        _getPositionDetailsByCapture(nextPositionPlus),
+        _getPositionDetailsByNonCapture(afterNextPositionPlus),
+      ], paths);
+    }
+
+    if (_isCaptureMove(nextPositionMinus, afterNextPositionMinus)) {
+      _addPath([
+        positionDetailsStartPos,
+        _getPositionDetailsByCapture(nextPositionMinus),
+        _getPositionDetailsByNonCapture(afterNextPositionMinus),
+      ], paths);
+    }
+
+    return paths;
+  }
 
   void _fetchAllPaths(List<Path> paths, Position startPos) {
     Position colPlus = _getNextPosition(startPos, 1);
@@ -132,6 +172,23 @@ class CheckersBoard {
 
     _fetchPaths(
         [_getPositionDetailsByNonCapture(startPos)], paths, colMinus, startPos);
+
+    Set<Position> duplicatePosition = {};
+
+    for (var element in paths) {
+      Position currPosition = element.positionDetails.last.position;
+      if (duplicatePosition.contains(currPosition)) {
+        for (var element in paths) {
+          if (element.positionDetails.last.position == currPosition) {
+            element.positionDetails
+                .removeAt(element.positionDetails.length - 1);
+            element.positionDetails
+                .removeAt(element.positionDetails.length - 1);
+          }
+        }
+      }
+      duplicatePosition.add(currPosition);
+    }
   }
 
   PositionDetails _getPositionDetailsByNonCapture(Position position) =>
@@ -140,8 +197,8 @@ class CheckersBoard {
   PositionDetails _getPositionDetailsByCapture(Position position) =>
       _createPositionDetails(position, _getCellTypeByPosition(position), true);
 
-  PositionDetails _createPositionDetails(
-          Position position, CellType cellType, bool isCapture) =>
+  PositionDetails _createPositionDetails(Position position, CellType cellType,
+      bool isCapture) =>
       PositionDetails(position, _getCellTypeByPosition(position), isCapture);
 
   void _fetchPaths(List<PositionDetails> positionDetailsList, List<Path> paths,
@@ -160,7 +217,7 @@ class CheckersBoard {
       positionDetailsList.add(_getPositionDetailsByNonCapture(nextPosition));
 
       Position nextIterationPositionChangeDirection =
-          _getNextPosition(nextPosition, (colDirection * -1));
+      _getNextPosition(nextPosition, (colDirection * -1));
 
       Position nextNextIterationPositionChangeDirection = _getNextPosition(
           nextIterationPositionChangeDirection, (colDirection * -1));
@@ -177,49 +234,54 @@ class CheckersBoard {
       }
 
       Position nextIterationPosition =
-          _getNextPosition(nextPosition, colDirection);
+      _getNextPosition(nextPosition, colDirection);
 
       Position nextNextIterationPosition =
-          _getNextPosition(nextIterationPosition, colDirection);
+      _getNextPosition(nextIterationPosition, colDirection);
 
       bool isNextCaptureMove =
-          _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
+      _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
       if (isNextCaptureMove) {
         _fetchPaths(
             positionDetailsList, paths, nextIterationPosition, startPos);
       }
 
-      // Ent of path
+      // End of path
       if (!isChangeDirCaptureMove && !isNextCaptureMove) {
         //Determine if the list has captures
-        if (positionDetailsList.length >= 3) {
+        if (_hasCapture(positionDetailsList)) {
           _addPath(positionDetailsList, paths);
         }
       }
-    } else if (_isInBoundsByPosition(currPosition) &&
-        _isEmptyCellByPosition(currPosition)) {
+    } else if (_isSimpleMove(startPos, currPosition)) {
       //Simple move
-      // positionDetailsList.add(_getPositionDetailsByNonCapture(startPos));
       positionDetailsList.add(_getPositionDetailsByNonCapture(currPosition));
 
       _addPath(positionDetailsList, paths);
     }
   }
 
+  bool _hasCapture(List<PositionDetails> positionDetailsList) =>
+      positionDetailsList.length >= 3;
+
   void _addPath(List<PositionDetails> positionDetailsList, List<Path> paths) {
     Path path = Path(positionDetailsList);
     paths.add(path);
   }
 
-  bool _isCaptureMove(Position currPosition, Position nextPosition) {
-    return _isInBoundsByPosition(currPosition) &&
-        _isInBoundsByPosition(nextPosition) &&
-        _isOpponentCell(currPosition) &&
-        _isEmptyCellByPosition(nextPosition);
-  }
+  bool _isCaptureMove(Position currPosition, Position nextPosition) =>
+      _isInBoundsByPosition(currPosition) &&
+          _isInBoundsByPosition(nextPosition) &&
+          _isOpponentCell(currPosition) &&
+          _isEmptyCellByPosition(nextPosition);
 
-  void performMove(
-      int startRow, int startCol, int endRow, int endCol, Path path) {
+  bool _isSimpleMove(Position currPosition, Position nextPosition) =>
+      _isInBoundsByPosition(currPosition) &&
+          _isInBoundsByPosition(nextPosition) &&
+          _isEmptyCellByPosition(nextPosition);
+
+  void performMove(int startRow, int startCol, int endRow, int endCol,
+      Path path) {
     if (path.positionDetails.isEmpty) return;
 
     Position startPosition = _createPosition(startRow, startCol);
@@ -259,12 +321,13 @@ class CheckersBoard {
   }
 
   void _clearPrevData() {
-    paths.clear();
+    // paths.clear();
   }
 
-  Path? getPathByEndPosition(
-      int startRow, int startCol, int endRow, int endCol) {
-    Position from = _createPosition(startRow, startCol);
+  Path? getPathByEndPosition(int startRow, int startCol, int endRow,
+      int endCol) {
+    List<Path> paths = getPossiblePaths(startRow, startCol);
+
     Position to = _createPosition(endRow, endCol);
     for (Path path in paths) {
       Position pathEnd = path.positionDetails.last.position;
@@ -305,11 +368,11 @@ class PositionDetails {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PositionDetails &&
-          runtimeType == other.runtimeType &&
-          position == other.position &&
-          cellType == other.cellType &&
-          isCapture == other.isCapture;
+          other is PositionDetails &&
+              runtimeType == other.runtimeType &&
+              position == other.position &&
+              cellType == other.cellType &&
+              isCapture == other.isCapture;
 
   @override
   int get hashCode =>
@@ -329,9 +392,9 @@ class Path {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Path &&
-          runtimeType == other.runtimeType &&
-          positionDetails == other.positionDetails;
+          other is Path &&
+              runtimeType == other.runtimeType &&
+              positionDetails == other.positionDetails;
 
   @override
   int get hashCode => positionDetails.hashCode;

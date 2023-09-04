@@ -55,13 +55,17 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isContinuePath = false;
+
   void onTapBoardGame(int row, int col) {
-    List<Path> paths = _game.getPossiblePaths(row, col);
+    List<Path> paths = _isContinuePath
+        ? _game.getPossibleContinuePaths(row, col)
+        : _game.getPossiblePaths(row, col);
     _paths.clear();
     _paths.addAll(paths);
     notifyListeners();
     if (paths.isNotEmpty) {
-      _selectPiece(row, col);
+      _setSelectPiece(row, col);
       return;
     } else {
       Path? path =
@@ -69,13 +73,20 @@ class GameViewModel extends ChangeNotifier {
       if (path != null) {
         _game.performMove(_selectedRow, _selectedCol, row, col, path);
         notifyListeners();
-        _nextTurn();
+        _isContinuePath = _game.isContinuePaths(row, col, path);
+
+        if (_isContinuePath) {
+          print("CONTINUE CAPTURE");
+          onTapBoardGame(row, col);
+        } else {
+          print("NOT CONTINUE CAPTURE");
+          _nextTurn();
+        }
       }
     }
   }
 
-  void _selectPiece(int row, int col) {
-
+  void _setSelectPiece(int row, int col) {
     _selectedRow = row;
     _selectedCol = col;
     notifyListeners();
@@ -90,5 +101,6 @@ class GameViewModel extends ChangeNotifier {
   void _clearPrevSelected() {
     _selectedRow = -1;
     _selectedCol = -1;
+    _isContinuePath = false;
   }
 }

@@ -126,7 +126,7 @@ class CheckersBoard {
 
   bool isContinuePaths(int row, int col, Path path) =>
       getPossibleContinuePaths(row, col).isNotEmpty &&
-              path.positionDetails.map((e) => e.isCapture).contains(true)
+              _hasCapturePositionDetails(path.positionDetails)
           ? true
           : false;
 
@@ -147,16 +147,16 @@ class CheckersBoard {
     if (_isCaptureMove(nextPositionPlus, afterNextPositionPlus)) {
       _addPath([
         positionDetailsStartPos,
-        _getPositionDetailsByCapture(nextPositionPlus),
-        _getPositionDetailsByNonCapture(afterNextPositionPlus),
+        _getPositionDetailsCapture(nextPositionPlus),
+        _getPositionDetailsNonCapture(afterNextPositionPlus),
       ], paths);
     }
 
     if (_isCaptureMove(nextPositionMinus, afterNextPositionMinus)) {
       _addPath([
         positionDetailsStartPos,
-        _getPositionDetailsByCapture(nextPositionMinus),
-        _getPositionDetailsByNonCapture(afterNextPositionMinus),
+        _getPositionDetailsCapture(nextPositionMinus),
+        _getPositionDetailsNonCapture(afterNextPositionMinus),
       ], paths);
     }
 
@@ -169,10 +169,10 @@ class CheckersBoard {
     Position colMinus = _getNextPosition(startPos, -1);
 
     _fetchPaths(
-        [_getPositionDetailsByNonCapture(startPos)], paths, colPlus, startPos);
+        [_getPositionDetailsNonCapture(startPos)], paths, colPlus, startPos);
 
     _fetchPaths(
-        [_getPositionDetailsByNonCapture(startPos)], paths, colMinus, startPos);
+        [_getPositionDetailsNonCapture(startPos)], paths, colMinus, startPos);
 
     Set<Position> duplicatePosition = {};
 
@@ -192,10 +192,10 @@ class CheckersBoard {
     }
   }
 
-  PositionDetails _getPositionDetailsByNonCapture(Position position) =>
+  PositionDetails _getPositionDetailsNonCapture(Position position) =>
       _createPositionDetails(position, _getCellTypeByPosition(position), false);
 
-  PositionDetails _getPositionDetailsByCapture(Position position) =>
+  PositionDetails _getPositionDetailsCapture(Position position) =>
       _createPositionDetails(position, _getCellTypeByPosition(position), true);
 
   PositionDetails _createPositionDetails(
@@ -214,8 +214,8 @@ class CheckersBoard {
 
     // Capture move
     if (isCaptureMove) {
-      positionDetailsList.add(_getPositionDetailsByCapture(currPosition));
-      positionDetailsList.add(_getPositionDetailsByNonCapture(nextPosition));
+      positionDetailsList.add(_getPositionDetailsCapture(currPosition));
+      positionDetailsList.add(_getPositionDetailsNonCapture(nextPosition));
 
       Position nextIterationPositionChangeDirection =
           _getNextPosition(nextPosition, (colDirection * -1));
@@ -250,20 +250,20 @@ class CheckersBoard {
       // End of path
       if (!isChangeDirCaptureMove && !isNextCaptureMove) {
         //Determine if the list has captures
-        if (_hasCapture(positionDetailsList)) {
+        if (_hasCapturePositionDetails(positionDetailsList)) {
           _addPath(positionDetailsList, paths);
         }
       }
     } else if (_isSimpleMove(startPos, currPosition)) {
       //Simple move
-      positionDetailsList.add(_getPositionDetailsByNonCapture(currPosition));
+      positionDetailsList.add(_getPositionDetailsNonCapture(currPosition));
 
       _addPath(positionDetailsList, paths);
     }
   }
 
-  bool _hasCapture(List<PositionDetails> positionDetailsList) =>
-      positionDetailsList.length >= 3;
+  bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
+      positionDetails.map((e) => e.isCapture).contains(true);
 
   void _addPath(List<PositionDetails> positionDetailsList, List<Path> paths) {
     Path path = Path(positionDetailsList);

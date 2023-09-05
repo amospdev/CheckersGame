@@ -116,8 +116,18 @@ class CheckersBoard {
 
   int _getRowDirection() => _player == CellType.BLACK ? 1 : -1;
 
-  int _getColDirection(Position prevPosition, Position currPosition) =>
+  int _getColDirection(
+          {required Position prevPosition, required Position currPosition}) =>
       prevPosition.column > currPosition.column ? -1 : 1;
+
+  int _getColDirectionPositionDetails(
+          List<PositionDetails> positionDetails, Position currPosition) =>
+      _getColDirection(
+          prevPosition: _getLastPosition(positionDetails),
+          currPosition: currPosition);
+
+  Position _getLastPosition(List<PositionDetails> positionDetails) =>
+      positionDetails.last.position;
 
   Position _getNextPosition(Position position, int colDir) => _createPosition(
       position.row + _getRowDirection(), position.column + colDir);
@@ -133,7 +143,7 @@ class CheckersBoard {
   List<Path> getPossibleContinuePaths(int row, int col) {
     List<Path> paths = [];
 
-    Position startPos = Position(row, col);
+    Position startPos = _createPosition(row, col);
 
     PositionDetails positionDetailsStartPos =
         PositionDetails(startPos, _getCellTypeByPosition(startPos), false);
@@ -202,11 +212,10 @@ class CheckersBoard {
           Position position, CellType cellType, bool isCapture) =>
       PositionDetails(position, _getCellTypeByPosition(position), isCapture);
 
-  void _fetchPaths(List<PositionDetails> positionDetailsList, List<Path> paths,
+  void _fetchPaths(List<PositionDetails> positionDetails, List<Path> paths,
       Position currPosition, Position startPos) {
-    Position prevPosition = positionDetailsList.last.position;
-
-    int colDirection = _getColDirection(prevPosition, currPosition);
+    int colDirection =
+        _getColDirectionPositionDetails(positionDetails, currPosition);
 
     Position nextPosition = _getNextPosition(currPosition, colDirection);
 
@@ -214,8 +223,8 @@ class CheckersBoard {
 
     // Capture move
     if (isCaptureMove) {
-      positionDetailsList.add(_getPositionDetailsCapture(currPosition));
-      positionDetailsList.add(_getPositionDetailsNonCapture(nextPosition));
+      positionDetails.add(_getPositionDetailsCapture(currPosition));
+      positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
 
       Position nextIterationPositionChangeDirection =
           _getNextPosition(nextPosition, (colDirection * -1));
@@ -228,7 +237,7 @@ class CheckersBoard {
           nextNextIterationPositionChangeDirection);
 
       if (isChangeDirCaptureMove) {
-        List<PositionDetails> positionDetailsListTmp = [...positionDetailsList];
+        List<PositionDetails> positionDetailsListTmp = [...positionDetails];
 
         _fetchPaths(positionDetailsListTmp, paths,
             nextIterationPositionChangeDirection, startPos);
@@ -244,21 +253,21 @@ class CheckersBoard {
           _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
       if (isNextCaptureMove) {
         _fetchPaths(
-            positionDetailsList, paths, nextIterationPosition, startPos);
+            positionDetails, paths, nextIterationPosition, startPos);
       }
 
       // End of path
       if (!isChangeDirCaptureMove && !isNextCaptureMove) {
         //Determine if the list has captures
-        if (_hasCapturePositionDetails(positionDetailsList)) {
-          _addPath(positionDetailsList, paths);
+        if (_hasCapturePositionDetails(positionDetails)) {
+          _addPath(positionDetails, paths);
         }
       }
     } else if (_isSimpleMove(startPos, currPosition)) {
       //Simple move
-      positionDetailsList.add(_getPositionDetailsNonCapture(currPosition));
+      positionDetails.add(_getPositionDetailsNonCapture(currPosition));
 
-      _addPath(positionDetailsList, paths);
+      _addPath(positionDetails, paths);
     }
   }
 

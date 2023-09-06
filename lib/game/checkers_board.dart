@@ -151,32 +151,96 @@ class CheckersBoard {
       !_isSamePlayerByPosition(position);
 
   List<Path> getPossiblePaths(int row, int column) {
-    Position position = _createPosition(row, column);
-    if (_isEmptyCellByPosition(position)) return [];
-    if (_isUnValidCellByPosition(position)) return [];
-    if (_isNotSamePlayerByPosition(position)) return [];
+    Position startPosition = _createPosition(row, column);
+    if (_isEmptyCellByPosition(startPosition)) return [];
+    if (_isUnValidCellByPosition(startPosition)) return [];
+    if (_isNotSamePlayerByPosition(startPosition)) return [];
 
     List<Path> paths = [];
-    _fetchAllPaths(paths, position);
+    // _fetchAllPaths(paths, startPosition);
+    _fetchAllCapturePaths(
+        paths, startPosition, [_getPositionDetailsNonCapture(startPosition)]);
+
+    _fetchAllSimplePaths(
+        paths, startPosition, [_getPositionDetailsNonCapture(startPosition)]);
+
+    _cleanDuplicateEndPath(paths);
+
     print("TOTAL Paths size: ${paths.length}");
 
     return paths;
   }
 
+  void _cleanDuplicateEndPath(List<Path> paths) {
+    Set<Position> duplicatePosition = {};
+
+    for (var element in paths) {
+      Position currPosition = element.positionDetails.last.position;
+      if (duplicatePosition.contains(currPosition)) {
+        for (var element in paths) {
+          if (element.positionDetails.last.position == currPosition) {
+            element.positionDetails
+                .removeAt(element.positionDetails.length - 1);
+            element.positionDetails
+                .removeAt(element.positionDetails.length - 1);
+          }
+        }
+      }
+      duplicatePosition.add(currPosition);
+    }
+  }
+
+  void _fetchAllCapturePaths(List<Path> paths, Position startPosition,
+      List<PositionDetails> positionDetails) {
+    List<int> columnDirections = [1, -1];
+    for (int colDir in columnDirections) {
+      Position nextPosition = _getNextPosition(startPosition, colDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, colDir);
+      List<PositionDetails> positionDetailsTmp = [...positionDetails];
+      bool isCaptureMove = _isCaptureMove(nextPosition, afterNextPosition);
+      if (isCaptureMove) {
+        positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
+        positionDetailsTmp
+            .add(_getPositionDetailsNonCapture(afterNextPosition));
+        print("nextPosition:: $nextPosition");
+        print("afterNextPosition:: $afterNextPosition");
+        _fetchAllCapturePaths(paths, afterNextPosition, positionDetailsTmp);
+        if (!_isCanCellStart(afterNextPosition)) {
+          paths.add(Path(positionDetailsTmp));
+          print("PATH:: ${paths.last.positionDetails.map((e) => e.position)}");
+        }
+      }
+    }
+  }
+
+  void _fetchAllSimplePaths(List<Path> paths, Position startPosition,
+      List<PositionDetails> positionDetails) {
+    List<int> columnDirections = [1, -1];
+    for (int colDir in columnDirections) {
+      Position nextPosition = _getNextPosition(startPosition, colDir);
+
+      if (_isSimpleMove(startPosition, nextPosition)) {
+        Path path = Path(
+            [...positionDetails, _getPositionDetailsNonCapture(nextPosition)]);
+        paths.add(path);
+      }
+    }
+  }
+
   int _getRowDirection() => _player == CellType.BLACK ? 1 : -1;
 
-  int _getColDirection(
-          {required Position prevPosition, required Position currPosition}) =>
-      prevPosition.column > currPosition.column ? -1 : 1;
+  // int _getColDirection(
+  //         {required Position prevPosition, required Position currPosition}) =>
+  //     prevPosition.column > currPosition.column ? -1 : 1;
 
-  int _getColDirectionPositionDetails(
-          List<PositionDetails> positionDetails, Position currPosition) =>
-      _getColDirection(
-          prevPosition: _getLastPosition(positionDetails),
-          currPosition: currPosition);
+  // int _getColDirectionPositionDetails(
+  //         List<PositionDetails> positionDetails, Position currPosition) =>
+  //     _getColDirection(
+  //         prevPosition: _getLastPosition(positionDetails),
+  //         currPosition: currPosition);
 
-  Position _getLastPosition(List<PositionDetails> positionDetails) =>
-      positionDetails.last.position;
+  // Position _getLastPosition(List<PositionDetails> positionDetails) =>
+  //     positionDetails.last.position;
 
   Position _getNextPosition(Position position, int colDir) => _createPosition(
       position.row + _getRowDirection(), position.column + colDir);
@@ -222,34 +286,34 @@ class CheckersBoard {
     return paths;
   }
 
-  void _fetchAllPaths(List<Path> paths, Position startPos) {
-    Position colPlus = _getNextPosition(startPos, 1);
-
-    Position colMinus = _getNextPosition(startPos, -1);
-
-    _fetchPaths(
-        [_getPositionDetailsNonCapture(startPos)], paths, colPlus, startPos);
-
-    _fetchPaths(
-        [_getPositionDetailsNonCapture(startPos)], paths, colMinus, startPos);
-
-    Set<Position> duplicatePosition = {};
-
-    for (var element in paths) {
-      Position currPosition = element.positionDetails.last.position;
-      if (duplicatePosition.contains(currPosition)) {
-        for (var element in paths) {
-          if (element.positionDetails.last.position == currPosition) {
-            element.positionDetails
-                .removeAt(element.positionDetails.length - 1);
-            element.positionDetails
-                .removeAt(element.positionDetails.length - 1);
-          }
-        }
-      }
-      duplicatePosition.add(currPosition);
-    }
-  }
+  // void _fetchAllPaths(List<Path> paths, Position startPos) {
+  //   Position colPlus = _getNextPosition(startPos, 1);
+  //
+  //   Position colMinus = _getNextPosition(startPos, -1);
+  //
+  //   _fetchPaths(
+  //       [_getPositionDetailsNonCapture(startPos)], paths, colPlus, startPos);
+  //
+  //   _fetchPaths(
+  //       [_getPositionDetailsNonCapture(startPos)], paths, colMinus, startPos);
+  //
+  //   Set<Position> duplicatePosition = {};
+  //
+  //   for (var element in paths) {
+  //     Position currPosition = element.positionDetails.last.position;
+  //     if (duplicatePosition.contains(currPosition)) {
+  //       for (var element in paths) {
+  //         if (element.positionDetails.last.position == currPosition) {
+  //           element.positionDetails
+  //               .removeAt(element.positionDetails.length - 1);
+  //           element.positionDetails
+  //               .removeAt(element.positionDetails.length - 1);
+  //         }
+  //       }
+  //     }
+  //     duplicatePosition.add(currPosition);
+  //   }
+  // }
 
   PositionDetails _getPositionDetailsNonCapture(Position position) =>
       _createPositionDetails(position, _getCellTypeByPosition(position), false);
@@ -261,63 +325,63 @@ class CheckersBoard {
           Position position, CellType cellType, bool isCapture) =>
       PositionDetails(position, _getCellTypeByPosition(position), isCapture);
 
-  void _fetchPaths(List<PositionDetails> positionDetails, List<Path> paths,
-      Position currPosition, Position startPos) {
-    int colDirection =
-        _getColDirectionPositionDetails(positionDetails, currPosition);
-
-    Position nextPosition = _getNextPosition(currPosition, colDirection);
-
-    bool isCaptureMove = _isCaptureMove(currPosition, nextPosition);
-
-    // Capture move
-    if (isCaptureMove) {
-      positionDetails.add(_getPositionDetailsCapture(currPosition));
-      positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
-
-      Position nextIterationPositionChangeDirection =
-          _getNextPosition(nextPosition, (colDirection * -1));
-
-      Position nextNextIterationPositionChangeDirection = _getNextPosition(
-          nextIterationPositionChangeDirection, (colDirection * -1));
-
-      bool isChangeDirCaptureMove = _isCaptureMove(
-          nextIterationPositionChangeDirection,
-          nextNextIterationPositionChangeDirection);
-
-      if (isChangeDirCaptureMove) {
-        List<PositionDetails> positionDetailsListTmp = [...positionDetails];
-
-        _fetchPaths(positionDetailsListTmp, paths,
-            nextIterationPositionChangeDirection, startPos);
-      }
-
-      Position nextIterationPosition =
-          _getNextPosition(nextPosition, colDirection);
-
-      Position nextNextIterationPosition =
-          _getNextPosition(nextIterationPosition, colDirection);
-
-      bool isNextCaptureMove =
-          _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
-      if (isNextCaptureMove) {
-        _fetchPaths(positionDetails, paths, nextIterationPosition, startPos);
-      }
-
-      // End of path
-      if (!isChangeDirCaptureMove && !isNextCaptureMove) {
-        //Determine if the list has captures
-        if (_hasCapturePositionDetails(positionDetails)) {
-          _addPath(positionDetails, paths);
-        }
-      }
-    } else if (_isSimpleMove(startPos, currPosition)) {
-      //Simple move
-      positionDetails.add(_getPositionDetailsNonCapture(currPosition));
-
-      _addPath(positionDetails, paths);
-    }
-  }
+  // void _fetchPaths(List<PositionDetails> positionDetails, List<Path> paths,
+  //     Position currPosition, Position startPos) {
+  //   int colDirection =
+  //       _getColDirectionPositionDetails(positionDetails, currPosition);
+  //
+  //   Position nextPosition = _getNextPosition(currPosition, colDirection);
+  //
+  //   bool isCaptureMove = _isCaptureMove(currPosition, nextPosition);
+  //
+  //   // Capture move
+  //   if (isCaptureMove) {
+  //     positionDetails.add(_getPositionDetailsCapture(currPosition));
+  //     positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
+  //
+  //     Position nextIterationPositionChangeDirection =
+  //         _getNextPosition(nextPosition, (colDirection * -1));
+  //
+  //     Position nextNextIterationPositionChangeDirection = _getNextPosition(
+  //         nextIterationPositionChangeDirection, (colDirection * -1));
+  //
+  //     bool isChangeDirCaptureMove = _isCaptureMove(
+  //         nextIterationPositionChangeDirection,
+  //         nextNextIterationPositionChangeDirection);
+  //
+  //     if (isChangeDirCaptureMove) {
+  //       List<PositionDetails> positionDetailsListTmp = [...positionDetails];
+  //
+  //       _fetchPaths(positionDetailsListTmp, paths,
+  //           nextIterationPositionChangeDirection, startPos);
+  //     }
+  //
+  //     Position nextIterationPosition =
+  //         _getNextPosition(nextPosition, colDirection);
+  //
+  //     Position nextNextIterationPosition =
+  //         _getNextPosition(nextIterationPosition, colDirection);
+  //
+  //     bool isNextCaptureMove =
+  //         _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
+  //     if (isNextCaptureMove) {
+  //       _fetchPaths(positionDetails, paths, nextIterationPosition, startPos);
+  //     }
+  //
+  //     // End of path
+  //     if (!isChangeDirCaptureMove && !isNextCaptureMove) {
+  //       //Determine if the list has captures
+  //       if (_hasCapturePositionDetails(positionDetails)) {
+  //         _addPath(positionDetails, paths);
+  //       }
+  //     }
+  //   } else if (_isSimpleMove(startPos, currPosition)) {
+  //     //Simple move
+  //     positionDetails.add(_getPositionDetailsNonCapture(currPosition));
+  //
+  //     _addPath(positionDetails, paths);
+  //   }
+  // }
 
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.map((e) => e.isCapture).contains(true);

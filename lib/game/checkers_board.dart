@@ -113,9 +113,10 @@ class CheckersBoard {
   bool _isBlackPlayerTurn() =>
       _player == CellType.BLACK || _player == CellType.BLACK_KING;
 
-  bool _isValidCellPlayerByPosition(Position position) => _isValidCellPlayer(position.row, position.column);
+  bool _isSamePlayerByPosition(Position position) =>
+      _isSamePlayer(position.row, position.column);
 
-  bool _isValidCellPlayer(int row, int column) {
+  bool _isSamePlayer(int row, int column) {
     if (_isWhiteByPosition(_createPosition(row, column)) &&
         _isWhitePlayerTurn()) {
       return true;
@@ -129,14 +130,31 @@ class CheckersBoard {
     return false;
   }
 
-  bool _isNotValidCellPlayerByPosition(Position position) =>
-      !_isValidCellPlayerByPosition(position);
+  bool isValidStartCellSelected(int row, int column) =>
+      _isSamePlayerByPosition(_createPosition(row, column)) &&
+      _isCanCellStart(_createPosition(row, column));
+
+  bool _isCanCellStart(Position startPosition) {
+    List<int> columnDirections = [1, -1];
+    for (int colDir in columnDirections) {
+      Position nextPosition = _getNextPosition(startPosition, colDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, colDir);
+      if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
+
+      if (_isSimpleMove(startPosition, nextPosition)) return true;
+    }
+
+    return false;
+  }
+
+  bool _isNotSamePlayerByPosition(Position position) =>
+      !_isSamePlayerByPosition(position);
 
   List<Path> getPossiblePaths(int row, int column) {
     Position position = _createPosition(row, column);
     if (_isEmptyCellByPosition(position)) return [];
     if (_isUnValidCellByPosition(position)) return [];
-    if (_isNotValidCellPlayerByPosition(position)) return [];
+    if (_isNotSamePlayerByPosition(position)) return [];
 
     List<Path> paths = [];
     _fetchAllPaths(paths, position);
@@ -318,6 +336,7 @@ class CheckersBoard {
   bool _isSimpleMove(Position currPosition, Position nextPosition) =>
       _isInBoundsByPosition(currPosition) &&
       _isInBoundsByPosition(nextPosition) &&
+      _isSamePlayerByPosition(currPosition) &&
       _isEmptyCellByPosition(nextPosition);
 
   void performMove(
@@ -400,19 +419,19 @@ class CheckersBoard {
 
   void _clearPrevData() {}
 
-  Path? getPathByEndPosition(
-      int startRow, int startCol, int endRow, int endCol) {
-    List<Path> paths = getPossiblePaths(startRow, startCol);
-
-    Position to = _createPosition(endRow, endCol);
+  Path? getPathByEndPosition(int endRow, int endColumn, List<Path> paths) {
     for (Path path in paths) {
       Position pathEnd = path.positionDetails.last.position;
-      if (pathEnd.row == to.row && pathEnd.column == to.column) {
+      if (pathEnd.row == endRow && pathEnd.column == endColumn) {
         return path;
       }
     }
     return null;
   }
+
+  bool isValidDestinationCellSelected(
+          int endRow, int endColumn, List<Path> paths) =>
+      getPathByEndPosition(endRow, endColumn, paths) != null;
 }
 
 class Position {

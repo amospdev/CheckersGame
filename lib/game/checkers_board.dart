@@ -83,7 +83,8 @@ class CheckersBoard {
       _getCellType(row, column) == CellType.WHITE ||
       _getCellType(row, column) == CellType.WHITE_KING;
 
-  bool _isUnValidCellByPosition(int row, int col) => _isUnValidCell(row, col);
+  bool _isUnValidCellByPosition(Position position) =>
+      _isUnValidCell(position.row, position.column);
 
   bool _isUnValidCell(int row, int column) =>
       _getCellType(row, column) == CellType.UNVALID;
@@ -106,13 +107,39 @@ class CheckersBoard {
   CellType _getCellType(int row, int col) =>
       _isInBounds(row, col) ? _board[row][col] : CellType.UNDEFINED;
 
-  List<Path> getPossiblePaths(int row, int col) {
-    if (_isEmptyCell(row, col)) return [];
-    if (_isUnValidCellByPosition(row, col)) return [];
-    if (_getCellType(row, col) != player) return [];
+  bool _isWhitePlayerTurn() =>
+      _player == CellType.WHITE || _player == CellType.WHITE_KING;
+
+  bool _isBlackPlayerTurn() =>
+      _player == CellType.BLACK || _player == CellType.BLACK_KING;
+
+  bool _isValidCellPlayerByPosition(Position position) => _isValidCellPlayer(position.row, position.column);
+
+  bool _isValidCellPlayer(int row, int column) {
+    if (_isWhiteByPosition(_createPosition(row, column)) &&
+        _isWhitePlayerTurn()) {
+      return true;
+    }
+
+    if (_isBlackByPosition(_createPosition(row, column)) &&
+        _isBlackPlayerTurn()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _isNotValidCellPlayerByPosition(Position position) =>
+      !_isValidCellPlayerByPosition(position);
+
+  List<Path> getPossiblePaths(int row, int column) {
+    Position position = _createPosition(row, column);
+    if (_isEmptyCellByPosition(position)) return [];
+    if (_isUnValidCellByPosition(position)) return [];
+    if (_isNotValidCellPlayerByPosition(position)) return [];
 
     List<Path> paths = [];
-    _fetchAllPaths(paths, _createPosition(row, col));
+    _fetchAllPaths(paths, position);
     print("TOTAL Paths size: ${paths.length}");
 
     return paths;

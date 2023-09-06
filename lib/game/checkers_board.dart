@@ -50,7 +50,11 @@ class CheckersBoard {
       _isInBounds(position.row, position.column);
 
   bool _isInBounds(int row, int col) =>
-      row >= 0 && row < 8 && col >= 0 && col < 8;
+      _isRowInBounds(row) && _isColumnInBounds(col);
+
+  bool _isRowInBounds(int row) => row >= 0 && row < 8;
+
+  bool _isColumnInBounds(int col) => col >= 0 && col < 8;
 
   bool _isKingByPosition(Position position) =>
       _isKing(position.row, position.row);
@@ -252,8 +256,7 @@ class CheckersBoard {
       bool isNextCaptureMove =
           _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
       if (isNextCaptureMove) {
-        _fetchPaths(
-            positionDetails, paths, nextIterationPosition, startPos);
+        _fetchPaths(positionDetails, paths, nextIterationPosition, startPos);
       }
 
       // End of path

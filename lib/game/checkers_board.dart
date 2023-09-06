@@ -134,13 +134,25 @@ class CheckersBoard {
       _isSamePlayerByPosition(_createPosition(row, column)) &&
       _isCanCellStart(_createPosition(row, column));
 
-  bool _isCanCellStart(Position startPosition) {
+  bool _isCanCellStart(Position startPosition) =>
+      _isCanCellStartCaptureMove(startPosition) ||
+      _isCanCellStartSimpleMove(startPosition);
+
+  bool _isCanCellStartCaptureMove(Position startPosition) {
     List<int> columnDirections = [1, -1];
     for (int colDir in columnDirections) {
       Position nextPosition = _getNextPosition(startPosition, colDir);
       Position afterNextPosition = _getNextPosition(nextPosition, colDir);
       if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
+    }
 
+    return false;
+  }
+
+  bool _isCanCellStartSimpleMove(Position startPosition) {
+    List<int> columnDirections = [1, -1];
+    for (int colDir in columnDirections) {
+      Position nextPosition = _getNextPosition(startPosition, colDir);
       if (_isSimpleMove(startPosition, nextPosition)) return true;
     }
 
@@ -197,19 +209,18 @@ class CheckersBoard {
       Position nextPosition = _getNextPosition(startPosition, colDir);
       Position afterNextPosition = _getNextPosition(nextPosition, colDir);
       List<PositionDetails> positionDetailsTmp = [...positionDetails];
-      bool isCaptureMove = _isCaptureMove(nextPosition, afterNextPosition);
-      if (isCaptureMove) {
-        positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
-        positionDetailsTmp
-            .add(_getPositionDetailsNonCapture(afterNextPosition));
-        print("nextPosition:: $nextPosition");
-        print("afterNextPosition:: $afterNextPosition");
-        _fetchAllCapturePaths(paths, afterNextPosition, positionDetailsTmp);
-        if (!_isCanCellStart(afterNextPosition)) {
-          paths.add(Path(positionDetailsTmp));
-          print("PATH:: ${paths.last.positionDetails.map((e) => e.position)}");
-        }
-      }
+      bool isNotCaptureMove = !_isCaptureMove(nextPosition, afterNextPosition);
+      if (isNotCaptureMove) continue;
+
+      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
+      positionDetailsTmp.add(_getPositionDetailsNonCapture(afterNextPosition));
+      print("nextPosition:: $nextPosition");
+      print("afterNextPosition:: $afterNextPosition");
+      _fetchAllCapturePaths(paths, afterNextPosition, positionDetailsTmp);
+
+      if (_isCanCellStartCaptureMove(afterNextPosition)) continue;
+      paths.add(Path(positionDetailsTmp));
+      print("PATH:: ${paths.last.positionDetails.map((e) => e.position)}");
     }
   }
 

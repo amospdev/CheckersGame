@@ -77,10 +77,10 @@ class GameViewModel extends ChangeNotifier {
       _selectedDestinationCellActions(endRow, endColumn, path);
       notifyListeners();
       _continuePathOptional(endRow, endColumn, path);
-    } else {
+    }/* else {
       _clearPrevState();
       notifyListeners();
-    }
+    }*/
   }
 
   void _setSelectPiece(int row, int col) {

@@ -1,8 +1,8 @@
 class CheckersBoard {
   List<List<CellType>> _board = [];
   CellType _player = CellType.BLACK;
-  static const int _whiteRow = 0;
-  static const int _blackRow = 7;
+  static const int _whiteKingRow = 0;
+  static const int _blackKingRow = 7;
 
   // List<Path> paths = [];
 
@@ -330,7 +330,7 @@ class CheckersBoard {
           required Position endPosition,
           required bool isBlack}) =>
       _isKingByPosition(startPosition) ||
-      _isKingRow(endPosition, isBlack ? _blackRow : _whiteRow);
+      _isKingRow(endPosition, isBlack ? _blackKingRow : _whiteKingRow);
 
   bool _isKingRow(Position position, int kingRow) => position.row == kingRow;
 

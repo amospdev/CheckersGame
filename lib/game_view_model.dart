@@ -43,8 +43,7 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _selectedDestinationCellActions(int endRow, int endColumn, Path path) {
-    print("onTapBoardGame _selectedDestinationCellActions");
-    print("onTapBoardGame Path: $path");
+    print("onTapBoardGame _selectedDestinationCellActions Path: $path");
     _game.performMove(_selectedRow, _selectedCol, endRow, endColumn, path);
   }
 
@@ -53,10 +52,8 @@ class GameViewModel extends ChangeNotifier {
     print("onTapBoardGame _isContinuePath: $_isContinuePath");
 
     if (_isContinuePath) {
-      print("CONTINUE CAPTURE");
       onTapBoardGame(endRow, endColumn);
     } else {
-      print("NOT CONTINUE CAPTURE");
       _nextTurn();
     }
   }

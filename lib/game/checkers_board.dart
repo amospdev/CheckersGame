@@ -256,12 +256,11 @@ class CheckersBoard {
       Position positionDir,
       Position positionDirFactor) {
     Position nextPosition = _getNextPosition(startPosition, positionDirFactor);
-    bool isEmptyCell = _isEmptyCellByPosition(nextPosition);
-    if (!isEmptyCell) return;
+    bool isNotEmptyCell = !_isEmptyCellByPosition(nextPosition);
+    if (isNotEmptyCell) return;
     positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
-    Path path = Path(positionDetails);
 
-    paths.add(path);
+    paths.add(Path(positionDetails));
 
     Position nextPositionDirFactor = _createPosition(
         positionDirFactor.row + positionDir.row,
@@ -455,7 +454,8 @@ class CheckersBoard {
           required Position endPosition,
           required bool isBlackCellPlayer}) =>
       _isKingByPosition(startPosition) ||
-      _isKingRow(endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
+      _isKingRow(
+          endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
 
   bool _isKingRow(Position position, int kingRow) => position.row == kingRow;
 

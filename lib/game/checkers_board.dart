@@ -438,14 +438,14 @@ class CheckersBoard {
   }
 
   void _updateEndPosition(Position startPosition, Position endPosition) {
-    bool isBlackByPosition = _isBlackByPosition(startPosition);
+    bool isBlackCellPlayer = _isBlackByPosition(startPosition);
 
     bool isKing = _isKingPiece(
         startPosition: startPosition,
         endPosition: endPosition,
-        isBlack: isBlackByPosition);
+        isBlackCellPlayer: isBlackCellPlayer);
 
-    CellType cellType = _getPiece(isBlackByPosition, isKing);
+    CellType cellType = _computePieceEndPath(isBlackCellPlayer, isKing);
 
     _setCell(cellType, endPosition);
   }
@@ -453,9 +453,9 @@ class CheckersBoard {
   bool _isKingPiece(
           {required Position startPosition,
           required Position endPosition,
-          required bool isBlack}) =>
+          required bool isBlackCellPlayer}) =>
       _isKingByPosition(startPosition) ||
-      _isKingRow(endPosition, isBlack ? _blackKingRow : _whiteKingRow);
+      _isKingRow(endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
 
   bool _isKingRow(Position position, int kingRow) => position.row == kingRow;
 
@@ -475,7 +475,7 @@ class CheckersBoard {
 
   void _setCellToEmpty(Position position) => _setCell(CellType.EMPTY, position);
 
-  CellType _getPiece(bool isBlackByPosition, bool isKing) =>
+  CellType _computePieceEndPath(bool isBlackByPosition, bool isKing) =>
       isBlackByPosition ? _getBlackPiece(isKing) : _getWhitePiece(isKing);
 
   CellType _getBlackPiece(bool isKing) =>

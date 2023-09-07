@@ -4,8 +4,6 @@ class CheckersBoard {
   static const int _whiteKingRow = 0;
   static const int _blackKingRow = 7;
 
-  // List<Path> paths = [];
-
   CheckersBoard() {
     resetBoard();
     _printBoard();
@@ -57,7 +55,7 @@ class CheckersBoard {
   bool _isColumnInBounds(int col) => col >= 0 && col < 8;
 
   bool _isKingByPosition(Position position) =>
-      _isKing(position.row, position.row);
+      _isKing(position.row, position.column);
 
   bool _isKing(int row, int column) =>
       _getCellType(row, column) == CellType.BLACK_KING ||
@@ -169,7 +167,7 @@ class CheckersBoard {
     if (_isNotSamePlayerByPosition(startPosition)) return [];
 
     List<Path> paths = [];
-    // _fetchAllPaths(paths, startPosition);
+
     _fetchAllCapturePaths(
         paths, startPosition, [_getPositionDetailsNonCapture(startPosition)]);
 
@@ -240,19 +238,6 @@ class CheckersBoard {
 
   int _getRowDirection() => _player == CellType.BLACK ? 1 : -1;
 
-  // int _getColDirection(
-  //         {required Position prevPosition, required Position currPosition}) =>
-  //     prevPosition.column > currPosition.column ? -1 : 1;
-
-  // int _getColDirectionPositionDetails(
-  //         List<PositionDetails> positionDetails, Position currPosition) =>
-  //     _getColDirection(
-  //         prevPosition: _getLastPosition(positionDetails),
-  //         currPosition: currPosition);
-
-  // Position _getLastPosition(List<PositionDetails> positionDetails) =>
-  //     positionDetails.last.position;
-
   Position _getNextPosition(Position position, int colDir) => _createPosition(
       position.row + _getRowDirection(), position.column + colDir);
 
@@ -297,35 +282,6 @@ class CheckersBoard {
     return paths;
   }
 
-  // void _fetchAllPaths(List<Path> paths, Position startPos) {
-  //   Position colPlus = _getNextPosition(startPos, 1);
-  //
-  //   Position colMinus = _getNextPosition(startPos, -1);
-  //
-  //   _fetchPaths(
-  //       [_getPositionDetailsNonCapture(startPos)], paths, colPlus, startPos);
-  //
-  //   _fetchPaths(
-  //       [_getPositionDetailsNonCapture(startPos)], paths, colMinus, startPos);
-  //
-  //   Set<Position> duplicatePosition = {};
-  //
-  //   for (var element in paths) {
-  //     Position currPosition = element.positionDetails.last.position;
-  //     if (duplicatePosition.contains(currPosition)) {
-  //       for (var element in paths) {
-  //         if (element.positionDetails.last.position == currPosition) {
-  //           element.positionDetails
-  //               .removeAt(element.positionDetails.length - 1);
-  //           element.positionDetails
-  //               .removeAt(element.positionDetails.length - 1);
-  //         }
-  //       }
-  //     }
-  //     duplicatePosition.add(currPosition);
-  //   }
-  // }
-
   PositionDetails _getPositionDetailsNonCapture(Position position) =>
       _createPositionDetails(position, _getCellTypeByPosition(position), false);
 
@@ -335,64 +291,6 @@ class CheckersBoard {
   PositionDetails _createPositionDetails(
           Position position, CellType cellType, bool isCapture) =>
       PositionDetails(position, _getCellTypeByPosition(position), isCapture);
-
-  // void _fetchPaths(List<PositionDetails> positionDetails, List<Path> paths,
-  //     Position currPosition, Position startPos) {
-  //   int colDirection =
-  //       _getColDirectionPositionDetails(positionDetails, currPosition);
-  //
-  //   Position nextPosition = _getNextPosition(currPosition, colDirection);
-  //
-  //   bool isCaptureMove = _isCaptureMove(currPosition, nextPosition);
-  //
-  //   // Capture move
-  //   if (isCaptureMove) {
-  //     positionDetails.add(_getPositionDetailsCapture(currPosition));
-  //     positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
-  //
-  //     Position nextIterationPositionChangeDirection =
-  //         _getNextPosition(nextPosition, (colDirection * -1));
-  //
-  //     Position nextNextIterationPositionChangeDirection = _getNextPosition(
-  //         nextIterationPositionChangeDirection, (colDirection * -1));
-  //
-  //     bool isChangeDirCaptureMove = _isCaptureMove(
-  //         nextIterationPositionChangeDirection,
-  //         nextNextIterationPositionChangeDirection);
-  //
-  //     if (isChangeDirCaptureMove) {
-  //       List<PositionDetails> positionDetailsListTmp = [...positionDetails];
-  //
-  //       _fetchPaths(positionDetailsListTmp, paths,
-  //           nextIterationPositionChangeDirection, startPos);
-  //     }
-  //
-  //     Position nextIterationPosition =
-  //         _getNextPosition(nextPosition, colDirection);
-  //
-  //     Position nextNextIterationPosition =
-  //         _getNextPosition(nextIterationPosition, colDirection);
-  //
-  //     bool isNextCaptureMove =
-  //         _isCaptureMove(nextIterationPosition, nextNextIterationPosition);
-  //     if (isNextCaptureMove) {
-  //       _fetchPaths(positionDetails, paths, nextIterationPosition, startPos);
-  //     }
-  //
-  //     // End of path
-  //     if (!isChangeDirCaptureMove && !isNextCaptureMove) {
-  //       //Determine if the list has captures
-  //       if (_hasCapturePositionDetails(positionDetails)) {
-  //         _addPath(positionDetails, paths);
-  //       }
-  //     }
-  //   } else if (_isSimpleMove(startPos, currPosition)) {
-  //     //Simple move
-  //     positionDetails.add(_getPositionDetailsNonCapture(currPosition));
-  //
-  //     _addPath(positionDetails, paths);
-  //   }
-  // }
 
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.map((e) => e.isCapture).contains(true);

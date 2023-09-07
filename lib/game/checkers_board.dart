@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class CheckersBoard {
   List<List<CellType>> _board = [];
   CellType _player = CellType.BLACK;
@@ -30,6 +32,18 @@ class CheckersBoard {
     }
   }
 
+  List<Position> _getPieceDirections() => [
+        _createPosition(_getRowDirection(), 1),
+        _createPosition(_getRowDirection(), -1),
+      ];
+
+  List<Position> _getKingDirections() => [
+        _createPosition(1, 1),
+        _createPosition(-1, -1),
+        _createPosition(1, -1),
+        _createPosition(-1, 1)
+      ];
+
   void _switchPlayer() {
     _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
   }
@@ -40,7 +54,9 @@ class CheckersBoard {
       for (int j = 0; j < 8; j++) {
         row += "${_board[i][j].index} ";
       }
-      print(row);
+      if (kDebugMode) {
+        print(row);
+      }
     }
   }
 
@@ -128,29 +144,66 @@ class CheckersBoard {
     return false;
   }
 
+  bool _isValidStartCellSelectedByPosition(Position startPosition) =>
+      _isKingByPosition(startPosition)
+          ? _isValidStartCellSelectedKing(startPosition)
+          : _isValidStartCellSelectedPiece(startPosition);
+
+  bool _isValidStartCellSelectedKing(Position startPosition) =>
+      _isSamePlayerByPosition(startPosition) &&
+      _isCanCellStartKing(startPosition);
+
+  bool _isValidStartCellSelectedPiece(Position startPosition) =>
+      _isSamePlayerByPosition(startPosition) &&
+      _isCanCellStartPiece(startPosition);
+
   bool isValidStartCellSelected(int row, int column) =>
-      _isSamePlayerByPosition(_createPosition(row, column)) &&
-      _isCanCellStart(_createPosition(row, column));
+      _isValidStartCellSelectedByPosition(_createPosition(row, column));
 
-  bool _isCanCellStart(Position startPosition) =>
-      _isCanCellStartCaptureMove(startPosition) ||
-      _isCanCellStartSimpleMove(startPosition);
+  bool _isCanCellStartPiece(Position startPosition) =>
+      _isCanCellStartCaptureMovePiece(startPosition, _getPieceDirections()) ||
+      _isCanCellStartSimpleMovePiece(startPosition, _getPieceDirections());
 
-  bool _isCanCellStartCaptureMove(Position startPosition) {
-    List<int> columnDirections = [1, -1];
-    for (int colDir in columnDirections) {
-      Position nextPosition = _getNextPosition(startPosition, colDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, colDir);
+  bool _isCanCellStartKing(Position startPosition) =>
+      _isCanCellStartCaptureMoveKing(startPosition, _getKingDirections()) ||
+      _isCanCellStartSimpleMoveKing(startPosition, _getKingDirections());
+
+  bool _isCanCellStartCaptureMoveKing(
+      Position startPosition, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
       if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
     }
 
     return false;
   }
 
-  bool _isCanCellStartSimpleMove(Position startPosition) {
-    List<int> columnDirections = [1, -1];
-    for (int colDir in columnDirections) {
-      Position nextPosition = _getNextPosition(startPosition, colDir);
+  bool _isCanCellStartSimpleMoveKing(
+      Position startPosition, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      if (_isSimpleMove(startPosition, nextPosition)) return true;
+    }
+
+    return false;
+  }
+
+  bool _isCanCellStartCaptureMovePiece(
+      Position startPosition, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
+    }
+
+    return false;
+  }
+
+  bool _isCanCellStartSimpleMovePiece(
+      Position startPosition, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
       if (_isSimpleMove(startPosition, nextPosition)) return true;
     }
 
@@ -166,19 +219,87 @@ class CheckersBoard {
     if (_isUnValidCellByPosition(startPosition)) return [];
     if (_isNotSamePlayerByPosition(startPosition)) return [];
 
+    bool isKing = _isKingByPosition(startPosition);
+
     List<Path> paths = [];
 
-    _fetchAllCapturePaths(
-        paths, startPosition, [_getPositionDetailsNonCapture(startPosition)]);
-
-    _fetchAllSimplePaths(
-        paths, startPosition, [_getPositionDetailsNonCapture(startPosition)]);
-
-    _cleanDuplicateEndPath(paths);
-
-    print("TOTAL Paths size: ${paths.length}");
+    if (isKing) {
+      _fetchAllPathsKing(paths, startPosition);
+    } else {
+      _fetchAllPathsPiece(paths, startPosition);
+    }
 
     return paths;
+  }
+
+  void _fetchAllPathsKing(List<Path> paths, Position startPosition) {
+    _fetchAllSimplePathsKing(paths, startPosition,
+        [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+  }
+
+  void _fetchAllSimplePathsKing(List<Path> paths, Position startPosition,
+      List<PositionDetails> positionDetails, List<Position> directions) {
+    for (Position positionDir in directions) {
+      List<PositionDetails> positionDetailsTmp = [...positionDetails];
+
+      Position positionDirFactor =
+          _createPosition(positionDir.row, positionDir.column);
+      _fetchSimplePathKing(paths, startPosition, positionDetailsTmp,
+          positionDir, positionDirFactor);
+    }
+  }
+
+  void _fetchSimplePathKing(
+      List<Path> paths,
+      Position startPosition,
+      List<PositionDetails> positionDetails,
+      Position positionDir,
+      Position positionDirFactor) {
+    Position nextPosition = _getNextPosition(startPosition, positionDirFactor);
+    bool isEmptyCell = _isEmptyCellByPosition(nextPosition);
+    if (!isEmptyCell) return;
+    positionDetails.add(_getPositionDetailsNonCapture(nextPosition));
+    Path path = Path(positionDetails);
+
+    paths.add(path);
+
+    Position nextPositionDirFactor = _createPosition(
+        positionDirFactor.row + positionDir.row,
+        positionDirFactor.column + positionDir.column);
+
+    _fetchSimplePathKing(paths, startPosition, [...positionDetails],
+        positionDir, nextPositionDirFactor);
+  }
+
+  void _fetchAllCapturePathsPiece(List<Path> paths, Position startPosition,
+      List<PositionDetails> positionDetails, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      List<PositionDetails> positionDetailsTmp = [...positionDetails];
+      bool isNotCaptureMove = !_isCaptureMove(nextPosition, afterNextPosition);
+      if (isNotCaptureMove) continue;
+
+      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
+      positionDetailsTmp.add(_getPositionDetailsNonCapture(afterNextPosition));
+
+      _fetchAllCapturePathsPiece(
+          paths, afterNextPosition, positionDetailsTmp, directions);
+      bool isCanCellStartCaptureMovePiece =
+          _isCanCellStartCaptureMovePiece(afterNextPosition, directions);
+      if (isCanCellStartCaptureMovePiece) continue;
+      paths.add(Path(positionDetailsTmp));
+    }
+  }
+
+  void _fetchAllPathsPiece(List<Path> paths, Position startPosition) {
+    _fetchAllCapturePathsPiece(paths, startPosition,
+        [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
+
+    _fetchAllSimplePathsPiece(paths, startPosition,
+        [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
+
+    _cleanDuplicateEndPath(paths);
   }
 
   void _cleanDuplicateEndPath(List<Path> paths) {
@@ -200,33 +321,10 @@ class CheckersBoard {
     }
   }
 
-  void _fetchAllCapturePaths(List<Path> paths, Position startPosition,
-      List<PositionDetails> positionDetails) {
-    List<int> columnDirections = [1, -1];
-    for (int colDir in columnDirections) {
-      Position nextPosition = _getNextPosition(startPosition, colDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, colDir);
-      List<PositionDetails> positionDetailsTmp = [...positionDetails];
-      bool isNotCaptureMove = !_isCaptureMove(nextPosition, afterNextPosition);
-      if (isNotCaptureMove) continue;
-
-      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
-      positionDetailsTmp.add(_getPositionDetailsNonCapture(afterNextPosition));
-      print("nextPosition:: $nextPosition");
-      print("afterNextPosition:: $afterNextPosition");
-      _fetchAllCapturePaths(paths, afterNextPosition, positionDetailsTmp);
-
-      if (_isCanCellStartCaptureMove(afterNextPosition)) continue;
-      paths.add(Path(positionDetailsTmp));
-      print("PATH:: ${paths.last.positionDetails.map((e) => e.position)}");
-    }
-  }
-
-  void _fetchAllSimplePaths(List<Path> paths, Position startPosition,
-      List<PositionDetails> positionDetails) {
-    List<int> columnDirections = [1, -1];
-    for (int colDir in columnDirections) {
-      Position nextPosition = _getNextPosition(startPosition, colDir);
+  void _fetchAllSimplePathsPiece(List<Path> paths, Position startPosition,
+      List<PositionDetails> positionDetails, List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
 
       if (_isSimpleMove(startPosition, nextPosition)) {
         Path path = Path(
@@ -238,8 +336,9 @@ class CheckersBoard {
 
   int _getRowDirection() => _player == CellType.BLACK ? 1 : -1;
 
-  Position _getNextPosition(Position position, int colDir) => _createPosition(
-      position.row + _getRowDirection(), position.column + colDir);
+  Position _getNextPosition(Position position, Position positionDir) =>
+      _createPosition(
+          position.row + positionDir.row, position.column + positionDir.column);
 
   Position _createPosition(int row, int column) => Position(row, column);
 
@@ -257,11 +356,15 @@ class CheckersBoard {
     PositionDetails positionDetailsStartPos =
         PositionDetails(startPos, _getCellTypeByPosition(startPos), false);
 
-    Position nextPositionPlus = _getNextPosition(startPos, 1);
-    Position afterNextPositionPlus = _getNextPosition(nextPositionPlus, 1);
+    Position nextPositionPlus =
+        _getNextPosition(startPos, _createPosition(_getRowDirection(), 1));
+    Position afterNextPositionPlus = _getNextPosition(
+        nextPositionPlus, _createPosition(_getRowDirection(), 1));
 
-    Position nextPositionMinus = _getNextPosition(startPos, -1);
-    Position afterNextPositionMinus = _getNextPosition(nextPositionMinus, -1);
+    Position nextPositionMinus =
+        _getNextPosition(startPos, _createPosition(_getRowDirection(), -1));
+    Position afterNextPositionMinus = _getNextPosition(
+        nextPositionMinus, _createPosition(_getRowDirection(), -1));
 
     if (_isCaptureMove(nextPositionPlus, afterNextPositionPlus)) {
       _addPath([

@@ -11,9 +11,12 @@ class GameViewModel extends ChangeNotifier {
   int _destinationCol = -1;
   List<Path> _paths = [];
 
-  List<List<CellType>> get board => _game.board;
+  List<List<CellType>> get board => _board;
+  List<List<CellType>> _board = [];
 
-  CellType get currentPlayer => _game.player;
+  CellType get currentPlayer => _currentPlayer;
+
+  CellType _currentPlayer = CellType.UNDEFINED;
 
   int get selectedRow => _selectedRow;
 
@@ -24,6 +27,12 @@ class GameViewModel extends ChangeNotifier {
   int get destinationCol => _destinationCol;
 
   List<Path> get paths => _paths;
+
+  GameViewModel() {
+    _setCheckersBoard(_game.board);
+    _setCurrentPlayer(_game.player);
+    notifyListeners();
+  }
 
   _setPaths(List<Path> paths) {
     _paths = paths;
@@ -74,6 +83,7 @@ class GameViewModel extends ChangeNotifier {
 
     if (isValidDestinationCellSelected) {
       _selectedDestinationCellActions(endRow, endColumn, path);
+      _setCheckersBoard(_game.board);
       notifyListeners();
       _continuePathOptional(endRow, endColumn, path);
     } /* else {
@@ -87,9 +97,19 @@ class GameViewModel extends ChangeNotifier {
     _selectedCol = col;
   }
 
+  void _setCheckersBoard(List<List<CellType>> board) {
+    _board.clear();
+    _board.addAll(_game.board);
+  }
+
+  void _setCurrentPlayer(CellType currentPlayer) {
+    _currentPlayer = currentPlayer;
+  }
+
   void _nextTurn() {
     _clearPrevState();
     _game.nextTurn();
+    _setCurrentPlayer(_game.player);
   }
 
   void _clearPrevState() {

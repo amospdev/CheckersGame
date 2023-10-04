@@ -1,11 +1,17 @@
 import 'package:flutter/foundation.dart';
+import 'package:untitled/data/heuristic.dart';
 
 class CheckersBoard {
   static const int _whiteKingRow = 0;
   static const int _blackKingRow = 7;
   final GameRulesType gameRulesType;
 
-  CheckersBoard(this.gameRulesType) {
+  CheckersBoard(
+      this.gameRulesType, List<List<CellType>> board, CellType player) {
+    _board = [];
+    _board.clear();
+    _board.addAll(board);
+    _player = player;
     resetBoard();
     _printBoard();
   }
@@ -16,6 +22,206 @@ class CheckersBoard {
   List<List<CellType>> get board => _board;
 
   CellType get player => _player;
+
+  List<Path> getAllPossiblePathsForPlayer(CheckersBoard checkersBoard) {
+    List<Path> allPaths = [];
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 8; column++) {
+        print("PLAYER:::: ${checkersBoard.player}");
+        List<Path> paths = checkersBoard.getPossiblePaths(row, column, true);
+        allPaths.addAll(paths);
+      }
+    }
+    return allPaths;
+  }
+
+  int evaluate(bool max, CheckersBoard tmpCheckersBoard) {
+    int humanKing = 0;
+    int humanPiece = 0;
+    int humanCapture = 0;
+    int computerKing = 0;
+    int computerPiece = 0;
+    int computerCapture = 0;
+
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 8; column++) {
+        CellType currCellType = board[row][column];
+        Position currPosition = _createPosition(row, column);
+
+        List<Path> paths = [];
+
+        if (currCellType == CellType.WHITE ||
+            currCellType == CellType.WHITE_KING) {
+          if (currCellType == CellType.WHITE_KING) {
+            // Check for kings
+            computerKing += 6;
+
+            _fetchAllCapturePathsKingSimulate(
+                paths,
+                currPosition,
+                [_getPositionDetailsNonCapture(currPosition)],
+                _getKingDirections());
+
+            int max = -1;
+            for (Path path in paths) {
+              int tmpMax = path.positionDetails.map((e) => e.isCapture).length;
+              if (tmpMax > max) {
+                max = tmpMax;
+              }
+            }
+
+            computerCapture += (max * 3);
+          } else {
+            // Check for pawns
+            computerPiece += 2;
+
+            tmpCheckersBoard._fetchAllCapturePathsPieceSimulate(
+                paths,
+                currPosition,
+                [_getPositionDetailsNonCapture(currPosition)],
+                _getPieceDirections());
+            int max = -1;
+            for (Path path in paths) {
+              for (PositionDetails positionDetails in path.positionDetails) {
+                if (positionDetails.isCapture) {
+                  print("*^&*&^*^&*  if(positionDetails.isCapture ");
+                }
+              }
+              int tmpMax = path.positionDetails.map((e) => e.isCapture).length;
+              if (tmpMax > max) {
+                max = tmpMax;
+              }
+            }
+            print("MAX IS humanData.setVulnerable: $max");
+            // humanData.setVulnerable(computerData.getVulnerable() + max);
+            computerCapture += (max * 3);
+          }
+
+          if (row == 0) {
+            // Check for back rows
+            // computerData.setBackRowPiece(computerData.getBackRowPiece() + 1);
+            // computerData
+            //     .setProtectedPiece(computerData.getProtectedPiece() + 1);
+          } else {
+            // if (row == 3 || row == 4) {
+            //   // Check for middle rows
+            //   if (column >= 2 && column <= 5) {
+            //     computerData
+            //         .setMiddleBoxPiece(computerData.getMiddleBoxPiece() + 1);
+            //   } else {
+            //     // Non-box
+            //     computerData
+            //         .setMiddleRowPiece(computerData.getMiddleRowPiece() + 1);
+            //   }
+            // }
+
+            // Check if the piece can be taken
+            // if (piece.isLeftVulnerable(this)) {
+            //   computerData.setVulnerable(computerData.getVulnerable() + 1);
+            // }
+            // if (piece.isRightVulnerable(this)) {
+            //   computerData.setVulnerable(computerData.getVulnerable() + 1);
+            // }
+
+            // Check for protected checkers
+            // if (piece.isProtected(this)) {
+            //   computerData
+            //       .setProtectedPiece(computerData.getProtectedPiece() + 1);
+            // }
+          }
+        } else if (currCellType == CellType.BLACK ||
+            currCellType == CellType.BLACK_KING) {
+          if (currCellType == CellType.BLACK_KING) {
+            // Check for kings
+            // humanData.setKing(humanData.getKing() + 1);
+            humanKing += 6;
+
+            _fetchAllCapturePathsKingSimulate(
+                paths,
+                currPosition,
+                [_getPositionDetailsNonCapture(currPosition)],
+                _getKingDirections());
+
+            int max = -1;
+            for (Path path in paths) {
+              int tmpMax = path.positionDetails.map((e) => e.isCapture).length;
+              if (tmpMax > max) {
+                max = tmpMax;
+              }
+            }
+
+            // computerData.setVulnerable(computerData.getVulnerable() + max);
+            computerCapture += (max * 3);
+          } else {
+            // Check for pawns
+            // humanData.setPawn(humanData.getPawn() + 1);
+            humanPiece += 2;
+
+            tmpCheckersBoard._fetchAllCapturePathsPieceSimulate(
+                paths,
+                currPosition,
+                [_getPositionDetailsNonCapture(currPosition)],
+                _getPieceDirections());
+            int max = -1;
+            for (Path path in paths) {
+              for (PositionDetails positionDetails in path.positionDetails) {
+                if (positionDetails.isCapture) {
+                  print("*^&*&^*^&*  if(positionDetails.isCapture ");
+                }
+              }
+              int tmpMax = path.positionDetails.map((e) => e.isCapture).length;
+              if (tmpMax > max) {
+                max = tmpMax;
+              }
+            }
+            print("MAX IS computerData.setVulnerable: $max");
+            // computerData.setVulnerable(computerData.getVulnerable() + max);
+            computerCapture += (max * 3);
+          }
+
+          if (row == 7) {
+            // Check for back rows
+            // humanData.setBackRowPiece(humanData.getBackRowPiece() + 1);
+            // humanData.setProtectedPiece(humanData.getProtectedPiece() + 1);
+          } else {
+            // if (row == 3 || row == 4) {
+            //   Check for middle rows
+            // if (column >= 2 && column <= 5) {
+            //   humanData.setMiddleBoxPiece(humanData.getMiddleBoxPiece() + 1);
+            // } else {
+            //   Non-box
+            // humanData.setMiddleRowPiece(humanData.getMiddleRowPiece() + 1);
+            // }
+            // }
+            // Check if the piece can be taken
+            // if (piece.isLeftVulnerable(this)) {
+            //   humanData.setVulnerable(humanData.getVulnerable() + 1);
+            // }
+            // if (piece.isRightVulnerable(this)) {
+            //   humanData.setVulnerable(humanData.getVulnerable() + 1);
+            // }
+
+            // Check for protected checkers
+            // if (piece.isProtected(this)) {
+            //   humanData.setProtectedPiece(humanData.getProtectedPiece() + 1);
+            // }
+          }
+        }
+      }
+    }
+
+    // int sum = computerData.subtract(humanData).getSum().toInt();
+    // if (max) {
+    //   return sum;
+    // } else {
+    //   return -sum;
+    // }
+
+    int results = (computerPiece + computerKing + computerCapture) -
+        (humanPiece + humanKing + humanCapture);
+    if (!max) results = -results;
+    return results;
+  }
 
   void resetBoard() {
     _board = List.generate(8, (i) => List<CellType>.filled(8, CellType.EMPTY));
@@ -39,7 +245,9 @@ class CheckersBoard {
         _createPosition(_getRowDirection(), -1),
       ];
 
-  List<Position> _getKingDirections() => [
+  List<Position> _getKingDirections() => _getAllDirections();
+
+  List<Position> _getAllDirections() => [
         _createPosition(1, 1),
         _createPosition(-1, -1),
         _createPosition(1, -1),
@@ -51,6 +259,9 @@ class CheckersBoard {
   }
 
   void _printBoard() {
+    print("");
+    print("********************");
+    print("");
     for (int i = 0; i < 8; i++) {
       String row = "";
       for (int j = 0; j < 8; j++) {
@@ -60,6 +271,9 @@ class CheckersBoard {
         print(row);
       }
     }
+    print("");
+    print("********************");
+    print("");
   }
 
   bool _isInBoundsByPosition(Position position) =>
@@ -215,20 +429,82 @@ class CheckersBoard {
   bool _isNotSamePlayerByPosition(Position position) =>
       !_isSamePlayerByPosition(position);
 
-  List<Path> getPossiblePaths(int row, int column) {
+  bool _isVulnerable(int row, int column) {
+    if (row == 0 || column == 0 || row == 7 || column == 7) {
+      print("edge of the board");
+      // It is at edge of the board, it cannot be taken.
+      return false;
+    }
+    Position currPosition = _createPosition(row, column);
+    if (_isSamePlayerByPosition(currPosition)) {
+      for (Position positionDir in _getAllDirections()) {
+        Position nextPosition = _getNextPosition(currPosition, positionDir);
+        Position backPosition = _getNextPosition(currPosition,
+            _createPosition(-positionDir.row, -positionDir.column));
+        if(_isOpponentCell(nextPosition) && _isEmptyCellByPosition(backPosition)){
+          if(_isKingByPosition(nextPosition)){
+            print("_isVulnerable _isKingByPosition");
+            return true;
+          }
+
+          if(_isWhiteByPosition(currPosition) ){
+            if(_isOpponentCell(nextPosition) &&  nextPosition.row < currPosition.row){
+
+            }
+            print("_isVulnerable _isWhiteByPosition");
+            return true;
+          }
+
+          if(_isBlackByPosition(currPosition) || nextPosition.row > currPosition.row){
+            print("_isVulnerable _isBlackByPosition");
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // bool isProtected(int row, int column) {
+  //   if (row == 0 || column == 0 || row == 7 || column == 7) {
+  //     // It is at edge of the board, it cannot be taken.
+  //     return true;
+  //   }
+  //   Position currPosition = _createPosition(row, column);
+  //
+  //   if (_isSamePlayerByPosition(currPosition)) {
+  //     bool leftProtected = containsBuddy(row - 1, col - 1, checkersBoard) &&
+  //         !containsOpponentKing(row - 1, col - 1, checkersBoard);
+  //     bool rightProtected = containsBuddy(row - 1, col + 1, checkersBoard) &&
+  //         !containsOpponentKing(row - 1, col + 1, checkersBoard);
+  //     return leftProtected && rightProtected;
+  //   }
+  //   bool leftProtected = containsBuddy(row + 1, col - 1, checkersBoard) &&
+  //       !containsOpponentKing(row + 1, col - 1, checkersBoard);
+  //   bool rightProtected = containsBuddy(row + 1, col + 1, checkersBoard) &&
+  //       !containsOpponentKing(row + 1, col + 1, checkersBoard);
+  //   return leftProtected && rightProtected;
+  // }
+
+  List<Path> getPossiblePaths(int row, int column, bool isAI) {
+    bool isVulnerable = _isVulnerable(row, column);
+    print("getPossiblePaths isVulnerable: $isVulnerable");
+
     Position startPosition = _createPosition(row, column);
     if (_isEmptyCellByPosition(startPosition)) return [];
     if (_isUnValidCellByPosition(startPosition)) return [];
     if (_isNotSamePlayerByPosition(startPosition)) return [];
+
 
     bool isKing = _isKingByPosition(startPosition);
 
     List<Path> paths = [];
 
     if (isKing) {
-      _fetchAllPathsKing(paths, startPosition);
+      _fetchAllPathsKing(paths, startPosition, isAI);
     } else {
-      _fetchAllPathsPiece(paths, startPosition);
+      _fetchAllPathsPiece(paths, startPosition, isAI);
     }
     for (Path path in paths) {
       print("PATHS DETAILS:: ${path.positionDetails.map((e) => e.position)}");
@@ -237,9 +513,14 @@ class CheckersBoard {
     return paths;
   }
 
-  void _fetchAllPathsKing(List<Path> paths, Position startPosition) {
-    _fetchAllCapturePathsKing(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+  void _fetchAllPathsKing(List<Path> paths, Position startPosition, bool isAI) {
+    if (isAI) {
+      _fetchAllCapturePathsKingSimulate(paths, startPosition,
+          [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+    } else {
+      _fetchAllCapturePathsKing(paths, startPosition,
+          [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+    }
 
     if (_hasCapturePaths(paths)) {
       return;
@@ -251,6 +532,48 @@ class CheckersBoard {
     } else if (GameRulesType.KING_SINGLE == gameRulesType) {
       _fetchAllSimplePathsKingSingle(paths, startPosition,
           [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+    }
+  }
+
+  void _fetchAllCapturePathsKingSimulate(
+      List<Path> paths,
+      Position startPosition,
+      List<PositionDetails> positionDetails,
+      List<Position> directions,
+      {Position? lastDirection}) {
+    bool canCaptureFurther = false;
+
+    for (Position positionDir in directions) {
+      if (lastDirection != null &&
+          positionDir.row == -lastDirection.row &&
+          positionDir.column == -lastDirection.column) {
+        continue;
+      }
+
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+
+      //Check if the position already exists
+      if (positionDetails.any((details) => details.position == nextPosition)) {
+        continue;
+      }
+
+      if (_isCaptureMove(nextPosition, afterNextPosition)) {
+        canCaptureFurther = true;
+
+        List<PositionDetails> newPositionDetails = List.from(positionDetails);
+        newPositionDetails.add(_getPositionDetailsCapture(nextPosition));
+        newPositionDetails
+            .add(_getPositionDetailsNonCapture(afterNextPosition));
+
+        _fetchAllCapturePathsKingSimulate(
+            paths, afterNextPosition, newPositionDetails, directions,
+            lastDirection: positionDir);
+      }
+    }
+
+    if (!canCaptureFurther) {
+      paths.add(Path(positionDetails));
     }
   }
 
@@ -283,6 +606,30 @@ class CheckersBoard {
       _fetchAllSimplePathsPiece(paths, startPosition,
           [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
 
+  void _fetchAllCapturePathsPieceSimulate(
+      List<Path> paths,
+      Position startPosition,
+      List<PositionDetails> positionDetails,
+      List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      List<PositionDetails> positionDetailsTmp = [...positionDetails];
+      bool isNotCaptureMove = !_isCaptureMove(nextPosition, afterNextPosition);
+      if (isNotCaptureMove) continue;
+
+      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
+      positionDetailsTmp.add(_getPositionDetailsNonCapture(afterNextPosition));
+
+      _fetchAllCapturePathsPiece(
+          paths, afterNextPosition, positionDetailsTmp, directions);
+      bool isCanCellStartCaptureMovePiece =
+          _isCanCellStartCaptureMovePiece(afterNextPosition, directions);
+      if (isCanCellStartCaptureMovePiece) continue;
+      paths.add(Path(positionDetailsTmp));
+    }
+  }
+
   void _fetchAllCapturePathsPiece(List<Path> paths, Position startPosition,
       List<PositionDetails> positionDetails, List<Position> directions) {
     for (Position positionDir in directions) {
@@ -299,9 +646,21 @@ class CheckersBoard {
     }
   }
 
-  void _fetchAllPathsPiece(List<Path> paths, Position startPosition) {
-    _fetchAllCapturePathsPiece(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
+  void _fetchAllPathsPiece(
+      List<Path> paths, Position startPosition, bool isAI) {
+    if (isAI) {
+      _fetchAllCapturePathsPieceSimulate(
+          paths,
+          startPosition,
+          [_getPositionDetailsNonCapture(startPosition)],
+          _getPieceDirections());
+    } else {
+      _fetchAllCapturePathsPiece(
+          paths,
+          startPosition,
+          [_getPositionDetailsNonCapture(startPosition)],
+          _getPieceDirections());
+    }
 
     if (_hasCapturePaths(paths)) {
       return;
@@ -392,6 +751,19 @@ class CheckersBoard {
   }
 
   bool _isPathNotValid(Path path) => path.positionDetails.isEmpty;
+
+  CheckersBoard clone() {
+    CheckersBoard clonedBoard = CheckersBoard(gameRulesType, [], player);
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        clonedBoard._board[i][j] = _board[i][j];
+      }
+    }
+
+    clonedBoard._player = _player;
+
+    return clonedBoard;
+  }
 
   void _performMoveByPosition(Position startPosition, Position endPosition,
       List<PositionDetails> positionDetails) {

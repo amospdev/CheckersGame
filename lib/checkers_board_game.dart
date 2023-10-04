@@ -36,7 +36,7 @@ class _CheckerBoardState extends State<CheckerBoard> {
     });
   }
 
-  void onTapUpCell(TapUpDetails tapUpDetails, GameViewModel gameViewModel) {
+  void onTapUpCell(TapUpDetails tapUpDetails, GameViewModel gameViewModel) async{
     final RenderObject? renderObject = context.findRenderObject();
     if (renderObject == null) return;
 

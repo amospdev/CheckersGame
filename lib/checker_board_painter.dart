@@ -13,8 +13,8 @@ class CheckerBoardPainter extends CustomPainter {
   final Paint paintHighlight = Paint()
     ..color = Colors.yellowAccent.withOpacity(0.7);
 
-  CheckerBoardPainter(
-      this.selectedRow, this.selectedCol, this.board, this.paths, this.drawOptionalPaths);
+  CheckerBoardPainter(this.selectedRow, this.selectedCol, this.board,
+      this.paths, this.drawOptionalPaths);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -56,9 +56,9 @@ class CheckerBoardPainter extends CustomPainter {
             Offset((colIndex + 0.5) * cellWidth, (rowIndex + 0.5) * cellHeight);
 
         if (col == CellType.BLACK || col == CellType.BLACK_KING) {
-          paintPiece.color = Colors.blue;
+          paintPiece.color = Colors.black;
         } else if (col == CellType.WHITE || col == CellType.WHITE_KING) {
-          paintPiece.color = Colors.red;
+          paintPiece.color = Colors.white;
         }
 
         canvas.drawCircle(
@@ -102,9 +102,9 @@ class CheckerBoardPainter extends CustomPainter {
     for (final (rowIndex, row) in board.indexed) {
       for (final (colIndex, col) in row.indexed) {
         Paint paint = Paint()
-          ..color = col == CellType.UNVALID ? Colors.white : Colors.black;
+          ..color = col == CellType.UNVALID ? Colors.white : Colors.brown;
 
-        if(drawOptionalPaths){
+        if (drawOptionalPaths) {
           for (Path path in paths) {
             for (PositionDetails positionDetails in path.positionDetails) {
               if (positionDetails.position.row == rowIndex &&
@@ -113,7 +113,6 @@ class CheckerBoardPainter extends CustomPainter {
               }
             }
           }
-
         }
 
         canvas.drawRect(

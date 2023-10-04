@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:untitled/game/AIPlayer.dart';
 import 'game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
-  final CheckersBoard _game = CheckersBoard(GameRulesType.KING_SINGLE);
+  final CheckersBoard _game =
+      CheckersBoard(GameRulesType.KING_SINGLE, [], CellType.BLACK);
   bool _isContinuePath = false;
   int _selectedRow = -1;
   int _selectedCol = -1;
@@ -11,9 +13,12 @@ class GameViewModel extends ChangeNotifier {
   int _destinationCol = -1;
   List<Path> _paths = [];
 
-  List<List<CellType>> get board => _game.board;
+  List<List<CellType>> get board => _board;
+  List<List<CellType>> _board = [];
 
-  CellType get currentPlayer => _game.player;
+  CellType get currentPlayer => _currentPlayer;
+
+  CellType _currentPlayer = CellType.UNDEFINED;
 
   int get selectedRow => _selectedRow;
 
@@ -24,6 +29,12 @@ class GameViewModel extends ChangeNotifier {
   int get destinationCol => _destinationCol;
 
   List<Path> get paths => _paths;
+
+  GameViewModel() {
+    _setCheckersBoard(_game.board);
+    _setCurrentPlayer(_game.player);
+    notifyListeners();
+  }
 
   _setPaths(List<Path> paths) {
     _paths = paths;
@@ -40,7 +51,22 @@ class GameViewModel extends ChangeNotifier {
   List<Path> _getPathsByContinuePathState(int row, int column) =>
       _isContinuePath
           ? _game.getPossibleContinuePaths(row, column)
-          : _game.getPossiblePaths(row, column);
+          : _getPossiblePaths(row, column, true);
+
+  List<Path> _getPossiblePaths(int row, int column, bool isAI) {
+    List<Path> paths = _game.getPossiblePaths(row, column, true);
+    for (Path path in paths) {
+      if (path.positionDetails.any((element) => element.isCapture)) {
+        List<PositionDetails> positionDetailsTmp = [];
+        positionDetailsTmp.add(path.positionDetails[0]);
+        positionDetailsTmp.add(path.positionDetails[1]);
+        positionDetailsTmp.add(path.positionDetails[2]);
+        path.positionDetails.clear();
+        path.positionDetails.addAll(positionDetailsTmp);
+      }
+    }
+    return paths;
+  }
 
   void _selectedDestinationCellActions(int endRow, int endColumn, Path path) =>
       _game.performMove(_selectedRow, _selectedCol, endRow, endColumn, path);
@@ -74,6 +100,7 @@ class GameViewModel extends ChangeNotifier {
 
     if (isValidDestinationCellSelected) {
       _selectedDestinationCellActions(endRow, endColumn, path);
+      _setCheckersBoard(_game.board);
       notifyListeners();
       _continuePathOptional(endRow, endColumn, path);
     } /* else {
@@ -87,9 +114,45 @@ class GameViewModel extends ChangeNotifier {
     _selectedCol = col;
   }
 
+  void _setCheckersBoard(List<List<CellType>> board) {
+    _board.clear();
+    _board.addAll(_game.board);
+  }
+
+  void _setCurrentPlayer(CellType currentPlayer) {
+    _currentPlayer = currentPlayer;
+  }
+
   void _nextTurn() {
     _clearPrevState();
     _game.nextTurn();
+    _setCurrentPlayer(_game.player);
+    // _checkAITurn();
+  }
+
+  void _checkAITurn() {
+    // await Future.delayed(Duration(milliseconds: 1500));
+    AIPlayer aiPlayer = AIPlayer();
+    print("*****_checkAITurn*******");
+
+    if (currentPlayer == CellType.WHITE) {
+      print("*****AI AI AI*******");
+      print("*********************");
+
+      Path path = aiPlayer.makeMove(_game);
+
+      // if (path == null) {
+      //   print("NO ELEMENT path: $path");
+      //   return;
+      // }
+
+      print("RESULT path: $path");
+
+      Position start = path.positionDetails.first.position;
+      Position end = path.positionDetails.last.position;
+      onTapBoardGame(start.row, start.column);
+      onTapBoardGame(end.row, end.column);
+    }
   }
 
   void _clearPrevState() {

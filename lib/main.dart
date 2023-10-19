@@ -4,7 +4,7 @@ import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/cell.dart';
-import 'package:untitled/ui/crown_animation.dart';
+import 'package:untitled/ui/widgets/crown_animation.dart';
 import 'package:untitled/ui/pawn.dart';
 
 void main() => runApp(
@@ -242,14 +242,10 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 painter: PawnPainter(pawn.color),
               ),
             ),
-            pawn.isKing
-                // ? _getCrown()
-                ? CrownAnimation(pawn)
-                : const SizedBox(),
+            pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
           ],
         ),
       ),
     );
   }
-
 }

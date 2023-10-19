@@ -66,4 +66,9 @@ class Pawn {
       columnFloat.hashCode ^
       isKing.hashCode ^
       isAlreadyKing.hashCode;
+
+  @override
+  String toString() {
+    return 'Pawn{row: $row, column: $column, rowFloat: $rowFloat, columnFloat: $columnFloat, isKing: $isKing, isAlreadyKing: $isAlreadyKing}';
+  }
 }

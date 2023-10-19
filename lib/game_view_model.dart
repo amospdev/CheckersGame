@@ -190,6 +190,8 @@ class GameViewModel extends ChangeNotifier {
   void _clearPrevPaths() => _paths.clear();
 
   void onFinishAnimateCrown(Pawn? pawn) {
+    print("VM onFinishAnimateCrown");
+
     if (pawn == null || !pawn.isKing) return;
 
     _game.setIsAlreadyKing(pawn, true);

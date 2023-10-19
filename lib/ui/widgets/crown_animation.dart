@@ -20,7 +20,6 @@ class CrownAnimationState extends State<CrownAnimation>
     with SingleTickerProviderStateMixin {
   late final AnimationController _lottieController;
   late final Future<LottieComposition> _composition;
-  bool alreadyAnimate = false;
 
   @override
   void initState() {
@@ -33,8 +32,10 @@ class CrownAnimationState extends State<CrownAnimation>
 
     _composition = AssetLottie('assets/CrownAnimation.json').load();
     _composition.then((composition) {
-      _lottieController.forward(
-          from: widget.pawn.isAlreadyKing ? composition.endFrame : 0);
+      if (_lottieController.status != AnimationStatus.dismissed) {
+        _lottieController.forward(
+            from: widget.pawn.isAlreadyKing ? composition.endFrame : 0);
+      }
     });
   }
 
@@ -50,7 +51,6 @@ class CrownAnimationState extends State<CrownAnimation>
   Widget _getAnimatedCrown(AnimationController lottieController, Pawn pawn,
       GameViewModel gameViewModel) {
     print("CrownAnimation _getAnimatedCrown pawn: $pawn");
-    print("CrownAnimation alreadyAnimate: $alreadyAnimate");
 
     return FutureBuilder<LottieComposition>(
       future: _composition,

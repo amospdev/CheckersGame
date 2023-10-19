@@ -59,9 +59,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     )..addListener(() {
-        setState(() {
-          currPawn?.setOffset(_animation.value);
-        });
+        widget.gameViewModel.onMovePawn(_animation.value);
 
         if (_pawnMoveController.isCompleted) {
           currPawn = null;

@@ -174,7 +174,6 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _clearPrevState() {
-    // _clearCurrPath();
     _clearPrevSelected();
     _clearPrevPaths();
     _clearPathSize();
@@ -184,8 +183,6 @@ class GameViewModel extends ChangeNotifier {
     _selectedRow = -1;
     _selectedCol = -1;
   }
-
-  // void _clearCurrPath() => _currPath = Path.createEmpty();
 
   void _clearPrevPaths() => _paths.clear();
 
@@ -209,6 +206,11 @@ class GameViewModel extends ChangeNotifier {
   Pawn getCurrPawn() => _pawns.firstWhere(
       (pawn) => pawn.row == _selectedRow && pawn.column == _selectedCol,
       orElse: () => Pawn.createEmpty());
+
+  void onMovePawn(Offset value) {
+    getCurrPawn().setOffset(value);
+    notifyListeners();
+  }
 }
 
 enum TapOnBoard {

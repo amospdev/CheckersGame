@@ -49,8 +49,6 @@ class CheckersBoard {
                 row: i,
                 column: j,
                 color: Colors.grey,
-                rowFloat: i.toDouble(),
-                columnFloat: j.toDouble(),
                 isKing: false));
           } else if (i > 4) {
             tmpCellType = CellType.WHITE;
@@ -58,8 +56,6 @@ class CheckersBoard {
                 row: i,
                 column: j,
                 color: Colors.white,
-                rowFloat: i.toDouble(),
-                columnFloat: j.toDouble(),
                 isKing: false));
           } else if (i == 3 || i == 4) {
             tmpCellType = CellType.EMPTY;

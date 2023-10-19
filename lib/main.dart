@@ -60,8 +60,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       vsync: this,
     )..addListener(() {
         setState(() {
-          currPawn?.rowFloat = _animation.value.dy;
-          currPawn?.columnFloat = _animation.value.dx;
+          currPawn?.setOffset(_animation.value);
         });
 
         if (_pawnMoveController.isCompleted) {

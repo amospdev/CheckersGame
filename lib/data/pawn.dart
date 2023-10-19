@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class Pawn {
   Color color;
 
-  int row; // שורה
-  int column; // עמודה
+  int row;
+  int column;
 
-  double rowFloat = 0.0; // שורה
-  double columnFloat = 0.0; // עמודה
+  double rowFloat = 0.0;
+  double columnFloat = 0.0;
 
   bool isKing;
   bool isAlreadyKing = false;

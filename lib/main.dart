@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/cell.dart';
+import 'package:untitled/ui/crown_animation.dart';
 import 'package:untitled/ui/pawn.dart';
 
 void main() => runApp(
@@ -245,7 +244,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             ),
             pawn.isKing
                 // ? _getCrown()
-                ? _getAnimatedCrown(_lottieController, pawn)
+                ? CrownAnimation(pawn)
                 : const SizedBox(),
           ],
         ),
@@ -253,20 +252,4 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _getAnimatedCrown(AnimationController lottieController, Pawn pawn) {
-    return Lottie.asset('assets/CrownAnimation.json',
-        repeat: false,
-        controller: lottieController,
-        height: 40,
-        width: 40, onLoaded: (composition) {
-      lottieController.addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          widget.gameViewModel.onFinishAnimateCrown(pawn);
-        }
-      });
-
-      lottieController.forward(
-          from: pawn.isAlreadyKing ? composition.endFrame : 0);
-    });
-  }
 }

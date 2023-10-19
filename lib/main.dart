@@ -117,7 +117,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           body: Center(
             child: Stack(
               children: [
-                const MainGameBorder(),
+                MainGameBorder(cellSize),
                 Container(
                   margin: const EdgeInsets.only(left: 5, top: 5),
                   width: 8 * cellSize,
@@ -178,6 +178,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   List<Widget> _getPawns(double cellSize) {
+    print("MAIN WIDGET _getPawns");
     List<Widget> allPawns = [];
 
     for (var pawn in widget.gameViewModel.pawns) {

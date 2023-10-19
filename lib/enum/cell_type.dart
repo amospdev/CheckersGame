@@ -1,0 +1,9 @@
+enum CellType {
+  EMPTY,
+  BLACK,
+  WHITE,
+  BLACK_KING,
+  WHITE_KING,
+  UNVALID,
+  UNDEFINED,
+}

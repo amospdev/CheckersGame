@@ -12,7 +12,7 @@ class CheckersKingPainter extends CustomPainter {
     // Draw the main piece
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), size.width / 2, paint);
 
-    // Draw the crown using a Path
+    // Draw the crown.svg using a Path
     final crownPath = Path();
     crownPath.moveTo(size.width * 0.2, size.height * 0.4);
     crownPath.lineTo(size.width * 0.4, size.height * 0.4);

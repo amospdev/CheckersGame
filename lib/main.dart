@@ -4,8 +4,8 @@ import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/cell.dart';
-import 'package:untitled/ui/widgets/crown_animation.dart';
-import 'package:untitled/ui/pawn.dart';
+import 'package:untitled/ui/widgets/main_game_border.dart';
+import 'package:untitled/ui/widgets/pawn_piece.dart';
 
 void main() => runApp(
       ChangeNotifierProvider(
@@ -42,8 +42,8 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
   late Animation<Offset> _animation;
   Pawn? currPawn;
-  late Animation<double> _radiusFactorAnimation;
-  static const int _pawnMoveDuration = 150;
+
+  static const int _pawnMoveDuration = 165;
   late final AnimationController _lottieController;
 
   @override
@@ -69,13 +69,6 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           widget.gameViewModel.onPawnMoveAnimationFinish();
         }
       });
-
-    _radiusFactorAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    )
-        .chain(CurveTween(curve: Curves.easeInOutSine))
-        .animate(_pawnMoveController);
   }
 
   void _startPawnMoveAnimation() {
@@ -118,7 +111,6 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         double width = constraints.maxWidth - 10;
         double cellSize = width / 8; // For an 8x8 board
 
-        Widget mainGameBorder = _getMainGameBorder(cellSize);
         List<Widget> cells = _getCells(cellSize);
         List<Widget> pawns = _getPawns(cellSize);
 
@@ -126,7 +118,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           body: Center(
             child: Stack(
               children: [
-                mainGameBorder,
+                const MainGameBorder(),
                 Container(
                   margin: const EdgeInsets.only(left: 5, top: 5),
                   width: 8 * cellSize,
@@ -152,25 +144,6 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       movePlayerTo(cell.row, cell.column, gameViewModel);
 
   void handlePlayerTap(GameViewModel gameViewModel, Pawn pawn) {}
-
-  Widget _getMainGameBorder(double cellSize) => Container(
-      width: 8 * cellSize + 10,
-      // Increased size to account for the border and prevent cut-off
-      height: 8 * cellSize + 10,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.brown.shade200,
-          width: 10.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(5, 5),
-          ),
-        ],
-      ));
 
   List<Widget> _getCells(double cellSize) {
     List<Widget> cells = [];
@@ -222,30 +195,6 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     return allPawns;
   }
 
-  Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) {
-    return Positioned(
-      left: pawn.offset.dx * cellSize,
-      top: pawn.offset.dy * cellSize,
-      child: GestureDetector(
-        onTap: () {
-          widget.gameViewModel.onClickPawn(pawn.row, pawn.column);
-          handlePlayerTap(widget.gameViewModel, pawn);
-        },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Transform.scale(
-              scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              child: CustomPaint(
-                size: Size(cellSize, cellSize),
-                painter: PawnPainter(pawn.color),
-              ),
-            ),
-            pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
+      PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController);
 }

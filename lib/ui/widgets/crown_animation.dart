@@ -32,7 +32,7 @@ class CrownAnimationState extends State<CrownAnimation>
 
     _composition = AssetLottie('assets/CrownAnimation.json').load();
     _composition.then((composition) {
-      if (_lottieController.status != AnimationStatus.dismissed) {
+      if (mounted) {
         _lottieController.forward(
             from: widget.pawn.isAlreadyKing ? composition.endFrame : 0);
       }

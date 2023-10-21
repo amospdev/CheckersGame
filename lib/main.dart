@@ -44,16 +44,10 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Pawn? currPawn;
 
   static const int _pawnMoveDuration = 165;
-  late final AnimationController _lottieController;
 
   @override
   void initState() {
     super.initState();
-
-    _lottieController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
 
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
@@ -95,7 +89,6 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   @override
   void dispose() {
     _pawnMoveController.dispose();
-    _lottieController.dispose();
     super.dispose();
   }
 

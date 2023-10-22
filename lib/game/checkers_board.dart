@@ -570,30 +570,15 @@ class CheckersBoard {
 
   void _clearPrevData() {}
 
-  Path getPathByEndPosition(int endRow, int endColumn, List<Path> paths) {
-    return paths.firstWhere(
-        (element) =>
-            element.positionDetailsList.last.position ==
-            _createPosition(endRow, endColumn),
-        orElse: () => Path.createEmpty());
+  Path getPathByEndPosition(int endRow, int endColumn, List<Path> paths) =>
+      paths.firstWhere(
+          (element) =>
+              element.positionDetailsList.last.position ==
+              _createPosition(endRow, endColumn),
+          orElse: () => Path.createEmpty());
 
-    // for (Path path in paths) {
-    //   Position pathEnd = path.positionDetailsList.last.position;
-    //   if (pathEnd.row == endRow && pathEnd.column == endColumn) {
-    //     return path;
-    //   }
-    // }
-    // return null;
-  }
-
-  void setIsAlreadyKing(Pawn pawn, bool isAlreadyKing) {
-    _pawns.firstWhere((element) => element == pawn).isAlreadyKing =
-        isAlreadyKing;
-  }
-
-  Path _createPath(List<PositionDetails> positionDetailsList) {
-    return Path(positionDetailsList);
-  }
+  Path _createPath(List<PositionDetails> positionDetailsList) =>
+      Path(positionDetailsList);
 }
 
 class Position {

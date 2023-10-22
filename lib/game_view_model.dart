@@ -8,6 +8,7 @@ import 'game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _game = CheckersBoard(GameRulesType.KING_SINGLE);
+  final Set<int> _markedKings = {};
 
   bool _isContinuePath = false;
   int _selectedRow = -1;
@@ -178,11 +179,16 @@ class GameViewModel extends ChangeNotifier {
   void _clearPrevPaths() => _paths.clear();
 
   void onFinishAnimateCrown(Pawn? pawn) {
-    print("VM onFinishAnimateCrown");
+    print("VM onFinishAnimateCrown id: ${pawn?.id}");
 
     if (pawn == null || !pawn.isKing) return;
+    _markedKings.add(pawn.id);
+  }
 
-    _game.setIsAlreadyKing(pawn, true);
+  bool isAlreadyMarkedKing(int id) {
+    bool isContain = _markedKings.contains(id);
+    print("VM shouldAnimateCrown id: $id, isAlreadyMarkedKing: ${isContain}");
+    return isContain;
   }
 
   void onPawnMoveAnimationStart() {

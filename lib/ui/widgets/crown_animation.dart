@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/pawn.dart';
@@ -34,54 +32,42 @@ class CrownAnimationState extends State<CrownAnimation>
     _composition.then((composition) {
       if (mounted) {
         _lottieController.forward(
-            from: widget.pawn.isAlreadyKing ? composition.endFrame : 0);
+            from: Provider.of<GameViewModel>(context, listen: false)
+                    .isAlreadyMarkedKing(widget.pawn.id)
+                ? composition.endFrame
+                : 0);
+      }
+    });
+
+    _lottieController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Provider.of<GameViewModel>(context, listen: false)
+            .onFinishAnimateCrown(widget.pawn);
       }
     });
   }
 
   @override
-  Widget build(BuildContext context) =>
-      _mainCrown(_lottieController, widget.pawn);
+  Widget build(BuildContext context) => FutureBuilder<LottieComposition>(
+        future: _composition,
+        builder: (context, snapshot) => _getCrown(snapshot.data),
+      );
 
-  Widget _mainCrown(AnimationController lottieController, Pawn pawn) =>
-      Consumer<GameViewModel>(
-          builder: (ctx, gameViewModel, child) =>
-              _getAnimatedCrown(lottieController, widget.pawn, gameViewModel));
+  Widget _getCrown(LottieComposition? composition) =>
+      composition != null ? _getLottieCrown(composition) : _getSvgCrown();
 
-  Widget _getAnimatedCrown(AnimationController lottieController, Pawn pawn,
-      GameViewModel gameViewModel) {
-    print("CrownAnimation _getAnimatedCrown pawn: $pawn");
-
-    return FutureBuilder<LottieComposition>(
-      future: _composition,
-      builder: (context, snapshot) => _getCrown(snapshot.data, gameViewModel),
-    );
-  }
-
-  Widget _getCrown(
-          LottieComposition? composition, GameViewModel gameViewModel) =>
-      composition != null
-          ? _getLottieCrown(composition, gameViewModel)
-          : _getSvgCrown();
-
-  Widget _getSvgCrown() => SvgPicture.asset('assets/crown.svg',
+  SvgPicture _getSvgCrown() => SvgPicture.asset('assets/crown.svg',
       colorFilter:
-          const ColorFilter.mode(Colors.yellowAccent, BlendMode.srcATop),
+          const ColorFilter.mode(Colors.amberAccent, BlendMode.srcATop),
       width: 20,
       height: 20);
 
-  Widget _getLottieCrown(
-          LottieComposition composition, GameViewModel gameViewModel) =>
-      Lottie(
-          composition: composition,
-          width: 40,
-          height: 40,
-          controller: _lottieController
-            ..addStatusListener((status) {
-              if (status == AnimationStatus.completed) {
-                gameViewModel.onFinishAnimateCrown(widget.pawn);
-              }
-            }));
+  Lottie _getLottieCrown(LottieComposition composition) => Lottie(
+        composition: composition,
+        width: 40,
+        height: 40,
+        controller: _lottieController,
+      );
 
   @override
   void dispose() {

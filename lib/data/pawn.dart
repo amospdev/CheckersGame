@@ -11,7 +11,6 @@ class Pawn {
       ValueNotifier<Offset>(Offset.zero);
 
   bool isKing;
-  bool isAlreadyKing = false;
 
   Pawn(
       {required this.id,
@@ -42,10 +41,6 @@ class Pawn {
     this.isKing = isKing;
   }
 
-  void setIsAlreadyKing(bool isAlreadyKing) {
-    this.isAlreadyKing = isAlreadyKing;
-  }
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -58,14 +53,10 @@ class Pawn {
 
   @override
   int get hashCode =>
-      color.hashCode ^
-      row.hashCode ^
-      column.hashCode ^
-      isKing.hashCode ^
-      isAlreadyKing.hashCode;
+      color.hashCode ^ row.hashCode ^ column.hashCode ^ isKing.hashCode;
 
   @override
   String toString() {
-    return 'Pawn{row: $row, column: $column, offset: $offset, isKing: $isKing, isAlreadyKing: $isAlreadyKing}';
+    return 'Pawn{row: $row, column: $column, offset: $offset, isKing: $isKing}';
   }
 }

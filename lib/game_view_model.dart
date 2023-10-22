@@ -25,19 +25,12 @@ class GameViewModel extends ChangeNotifier {
 
   List<PositionDetails> get positionDetailsList => _positionDetailsList;
 
-  // List<CellDetails> get board => _board;
-
   ValueNotifier<List<CellDetails>> boardValueNotifier =
       ValueNotifier<List<CellDetails>>([]);
 
-  // List<CellDetails> _board = [];
-
-  // ValueNotifier<List<Pawn>> pawnsValueNotifier = ValueNotifier<List<Pawn>>([]);
   List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;
-  ValueNotifier<Offset> pawnMoveOffsetValueNotifier =
-      ValueNotifier<Offset>(Offset.zero);
 
   CellType get currentPlayer => _currentPlayer;
 
@@ -206,9 +199,7 @@ class GameViewModel extends ChangeNotifier {
 
   void onMovePawn(Offset value) {
     print("VM onMovePawn value: $value");
-    pawnMoveOffsetValueNotifier.value = value;
-    // getCurrPawn().setOffset(value);
-    // notifyListeners();
+    getCurrPawn().setOffset(value);
   }
 }
 

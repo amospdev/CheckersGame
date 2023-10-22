@@ -32,7 +32,10 @@ class GameViewModel extends ChangeNotifier {
 
   // List<CellDetails> _board = [];
 
-  ValueNotifier<List<Pawn>> pawnsValueNotifier = ValueNotifier<List<Pawn>>([]);
+  // ValueNotifier<List<Pawn>> pawnsValueNotifier = ValueNotifier<List<Pawn>>([]);
+  List<Pawn> _pawns = [];
+
+  List<Pawn> get pawns => _pawns;
   ValueNotifier<Offset> pawnMoveOffsetValueNotifier =
       ValueNotifier<Offset>(Offset.zero);
 
@@ -155,7 +158,7 @@ class GameViewModel extends ChangeNotifier {
 
   void _setPawns(List<Pawn> pawns) {
     // pawnsValueNotifier.value.clear();
-    pawnsValueNotifier.value = pawns;
+    _pawns = pawns;
   }
 
   void _setCurrentPlayer(CellType currentPlayer) {
@@ -197,7 +200,7 @@ class GameViewModel extends ChangeNotifier {
     _pathSize = -1;
   }
 
-  Pawn getCurrPawn() => pawnsValueNotifier.value.firstWhere(
+  Pawn getCurrPawn() => _pawns.firstWhere(
       (pawn) => pawn.row == _selectedRow && pawn.column == _selectedCol,
       orElse: () => Pawn.createEmpty());
 

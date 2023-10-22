@@ -58,8 +58,8 @@ class PawnPieceState extends State<PawnPiece>
   Widget _getPawn(Pawn pawn, bool isAnimatingPawn, double cellSize,
       GameViewModel gameViewModel) {
     return Positioned(
-      left: pawn.offset.dx * cellSize,
-      top: pawn.offset.dy * cellSize,
+      left: pawn.offset.value.dx * cellSize,
+      top: pawn.offset.value.dy * cellSize,
       child: GestureDetector(
         onTap: () => gameViewModel.onClickPawn(pawn.row, pawn.column),
         child: Stack(
@@ -74,12 +74,7 @@ class PawnPieceState extends State<PawnPiece>
                 painter: PawnPainter(pawn.color),
               )),
             ),
-            pawn.isKing
-                ? CrownAnimation(
-                    pawn,
-                    key: ValueKey(("${pawn.id} PawnPiece")),
-                  )
-                : const SizedBox(),
+            pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
           ],
         ),
       ),

@@ -7,7 +7,8 @@ class Pawn {
   int row;
   int column;
 
-  Offset _offset = Offset.zero;
+  final ValueNotifier<Offset> _offsetValueNotifier =
+      ValueNotifier<Offset>(Offset.zero);
 
   bool isKing;
   bool isAlreadyKing = false;
@@ -17,16 +18,17 @@ class Pawn {
       required this.row,
       required this.column,
       required this.color,
-      required this.isKing})
-      : _offset = Offset(column.toDouble(), row.toDouble());
+      required this.isKing}) {
+    _offsetValueNotifier.value = Offset(column.toDouble(), row.toDouble());
+  }
 
   static Pawn createEmpty() => Pawn(
       id: -1, row: -1, column: -1, color: Colors.tealAccent, isKing: false);
 
-  Offset get offset => _offset;
+  ValueNotifier<Offset> get offset => _offsetValueNotifier;
 
   void setOffset(Offset offset) {
-    _offset = offset;
+    _offsetValueNotifier.value = offset;
   }
 
   Pawn setPosition(int row, int column) {

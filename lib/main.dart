@@ -29,10 +29,10 @@ class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
 
   @override
-  _GameBoardState createState() => _GameBoardState();
+  GameBoardState createState() => GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
+class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
   late Animation<Offset> _animation;
   Pawn? currPawn;
@@ -47,9 +47,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     )..addListener(() {
-        setState(() {
-          currPawn?.setOffset(_animation.value);
-        });
+        currPawn?.setOffset(_animation.value);
 
         if (_pawnMoveController.isCompleted) {
           currPawn = null;
@@ -79,7 +77,7 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
 
     _animation = Tween<Offset>(
-      begin: currPawn?.offset,
+      begin: currPawn?.offset.value,
       end: endPosition,
     ).animate(_pawnMoveController);
 
@@ -169,28 +167,22 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   List<Widget> _getPawns(double cellSize) {
     print("1 MAIN WIDGET _getPawns");
 
-    Widget pawns = ValueListenableBuilder<List<Pawn>>(
-      valueListenable: Provider.of<GameViewModel>(context).pawnsValueNotifier,
-      builder: (ctx, pawns, _) {
-        List<Pawn> currPawns = pawns;
-        Pawn? nowCurrPawn = currPawn;
-        if(nowCurrPawn != null){
-          Pawn currPawn =
-          currPawns[currPawns.indexOf(nowCurrPawn)];
-          currPawns.remove(currPawn);
-          currPawns.add(currPawn);
+    List<Pawn> currPawns = Provider.of<GameViewModel>(context).pawns;
+    Pawn? nowCurrPawn = currPawn;
+    if (nowCurrPawn != null) {
+      Pawn currPawn = currPawns[currPawns.indexOf(nowCurrPawn)];
+      currPawns.remove(currPawn);
+      currPawns.add(currPawn);
+    }
 
-        }
-
-        return Stack(
-          children: currPawns
-              .map((pawn) => _buildPawnWidget(pawn, cellSize, false))
-              .toList(),
-        );
-      },
-    );
-
-    return [pawns];
+    return currPawns
+        .map((pawn) => ValueListenableBuilder<Offset>(
+              valueListenable: pawn.offset,
+              builder: (ctx, offset, _) {
+                return _buildPawnWidget(pawn, cellSize, false);
+              },
+            ))
+        .toList();
   }
 
   Widget _getPawnAnimate(double cellSize) {

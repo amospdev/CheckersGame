@@ -73,7 +73,6 @@ class CrownAnimationState extends State<CrownAnimation>
   Widget _getLottieCrown(
           LottieComposition composition, GameViewModel gameViewModel) =>
       Lottie(
-          key: ValueKey(("${widget.pawn.id} CrownAnimation")),
           composition: composition,
           width: 40,
           height: 40,

@@ -68,12 +68,18 @@ class PawnPieceState extends State<PawnPiece>
             Transform.scale(
               scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
               scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              child: CustomPaint(
+              child: RepaintBoundary(
+                  child: CustomPaint(
                 size: Size(cellSize, cellSize),
                 painter: PawnPainter(pawn.color),
-              ),
+              )),
             ),
-            pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
+            pawn.isKing
+                ? CrownAnimation(
+                    pawn,
+                    key: ValueKey(("${pawn.id} PawnPiece")),
+                  )
+                : const SizedBox(),
           ],
         ),
       ),

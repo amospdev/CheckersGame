@@ -17,22 +17,16 @@ void main() => runApp(
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<GameViewModel>(
-      builder: (ctx, gameViewModel, child) {
-        return MaterialApp(
-          title: 'דמקה',
-          theme: ThemeData(primarySwatch: Colors.blue),
-          home: GameBoard(gameViewModel),
-        );
-      },
+    return MaterialApp(
+      title: 'דמקה',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const GameBoard(),
     );
   }
 }
 
 class GameBoard extends StatefulWidget {
-  final GameViewModel gameViewModel;
-
-  GameBoard(this.gameViewModel);
+  const GameBoard({super.key});
 
   @override
   _GameBoardState createState() => _GameBoardState();
@@ -53,18 +47,26 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     )..addListener(() {
-        widget.gameViewModel.onMovePawn(_animation.value);
+        setState(() {
+          currPawn?.setOffset(_animation.value);
+        });
 
         if (_pawnMoveController.isCompleted) {
           currPawn = null;
-          widget.gameViewModel.onPawnMoveAnimationFinish();
+          Provider.of<GameViewModel>(context, listen: false)
+              .onPawnMoveAnimationFinish();
         }
       });
+
+    _animation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(_pawnMoveController);
   }
 
-  void _startPawnMoveAnimation() {
+  void _startPawnMoveAnimation(GameViewModel gameViewModel) {
     print("_startPawnMoveAnimation start");
-    widget.gameViewModel.onPawnMoveAnimationStart();
+    gameViewModel.onPawnMoveAnimationStart();
     _pawnMoveController.forward(from: 0.0);
   }
 
@@ -73,17 +75,15 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     currPawn = gameViewModel.getCurrPawn();
 
-    setState(() {
-      _pawnMoveController.duration =
-          Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
+    _pawnMoveController.duration =
+        Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
 
-      _animation = Tween<Offset>(
-        begin: currPawn?.offset,
-        end: endPosition,
-      ).animate(_pawnMoveController);
-    });
+    _animation = Tween<Offset>(
+      begin: currPawn?.offset,
+      end: endPosition,
+    ).animate(_pawnMoveController);
 
-    _startPawnMoveAnimation();
+    _startPawnMoveAnimation(gameViewModel);
   }
 
   @override
@@ -100,30 +100,24 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       builder: (BuildContext context, BoxConstraints constraints) {
         double width = constraints.maxWidth - 10;
         double cellSize = width / 8; // For an 8x8 board
-
-        List<Widget> cells = _getCells(cellSize);
-        List<Widget> pawns = _getPawns(cellSize);
+        print("1 _mainBoard LayoutBuilder");
 
         return Scaffold(
           body: Center(
             child: Stack(
               children: [
-                MainGameBorder(cellSize),
+                RepaintBoundary(child: MainGameBorder(cellSize)),
                 Container(
                   margin: const EdgeInsets.only(left: 5, top: 5),
                   width: 8 * cellSize,
                   // Increased size to account for the border and prevent cut-off
                   height: 8 * cellSize,
                   child: Stack(
-                    children: [...cells, ...pawns],
+                    children: [_getCells(cellSize), ..._getPawns(cellSize)],
                   ),
                 )
               ],
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            child: const Icon(Icons.play_arrow),
           ),
         );
       },
@@ -135,55 +129,83 @@ class _GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   void handlePlayerTap(GameViewModel gameViewModel, Pawn pawn) {}
 
-  List<Widget> _getCells(double cellSize) {
-    List<Widget> cells = [];
-    for (var element in widget.gameViewModel.board) {
-      for (var cell in element) {
-        cells.add(Positioned(
-          // Positioned is now the outermost widget in this hierarchy
-          left: cell.offset.dx * cellSize,
-          top: cell.offset.dy * cellSize,
-          child: GestureDetector(
-            // GestureDetector is now inside Positioned
-            onTap: () {
-              // Handle cell tap here.
-              TapOnBoard tapOnBoard =
-                  widget.gameViewModel.onClickCell(cell.row, cell.column);
-              if (tapOnBoard == TapOnBoard.END) {
-                handleCellTap(widget.gameViewModel, cell);
-              }
-            },
-            child: CustomPaint(
-              painter: CellPainter(cell.tmpColor, cell.offset),
-              child: SizedBox(
-                width: cellSize,
-                height: cellSize,
-              ),
-            ),
-          ),
-        ));
-      }
-    }
+  Widget _getCells(double cellSize) {
+    print("1 MAIN WIDGET _getCells");
 
-    return cells;
+    final gameViewModel = Provider.of<GameViewModel>(context, listen: false);
+
+    return ValueListenableBuilder<List<CellDetails>>(
+      valueListenable: gameViewModel.boardValueNotifier,
+      builder: (context, boardValue, _) {
+        return Stack(
+          children: boardValue
+              .map((cell) => Positioned(
+                    left: cell.offset.dx * cellSize,
+                    top: cell.offset.dy * cellSize,
+                    child: GestureDetector(
+                      onTap: () {
+                        TapOnBoard tapOnBoard =
+                            gameViewModel.onClickCell(cell.row, cell.column);
+                        if (tapOnBoard == TapOnBoard.END) {
+                          handleCellTap(gameViewModel, cell);
+                        }
+                      },
+                      child: RepaintBoundary(
+                          child: CustomPaint(
+                        painter: CellPainter(cell.tmpColor, cell.offset),
+                        child: SizedBox(
+                          width: cellSize,
+                          height: cellSize,
+                        ),
+                      )),
+                    ),
+                  ))
+              .toList(),
+        );
+      },
+    );
   }
 
   List<Widget> _getPawns(double cellSize) {
-    print("MAIN WIDGET _getPawns");
-    List<Widget> allPawns = [];
+    print("1 MAIN WIDGET _getPawns");
 
-    for (var pawn in widget.gameViewModel.pawns) {
-      if (currPawn != pawn) {
-        allPawns.add(_buildPawnWidget(pawn, cellSize, false));
-      }
-    }
+    Widget pawns = ValueListenableBuilder<List<Pawn>>(
+      valueListenable: Provider.of<GameViewModel>(context).pawnsValueNotifier,
+      builder: (ctx, pawns, _) {
+        List<Pawn> currPawns = pawns;
+        Pawn? nowCurrPawn = currPawn;
+        if(nowCurrPawn != null){
+          Pawn currPawn =
+          currPawns[currPawns.indexOf(nowCurrPawn)];
+          currPawns.remove(currPawn);
+          currPawns.add(currPawn);
 
-    if (currPawn != null) {
-      allPawns.add(
-          _buildPawnWidget(currPawn ?? Pawn.createEmpty(), cellSize, true));
-    }
+        }
 
-    return allPawns;
+        return Stack(
+          children: currPawns
+              .map((pawn) => _buildPawnWidget(pawn, cellSize, false))
+              .toList(),
+        );
+      },
+    );
+
+    return [pawns];
+  }
+
+  Widget _getPawnAnimate(double cellSize) {
+    return AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(
+              _animation.value.dx * cellSize,
+              _animation.value.dy * cellSize,
+            ),
+            child: _buildPawnWidget(
+                currPawn ?? Pawn.createEmpty(), cellSize, true),
+          );
+        });
   }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>

@@ -36,7 +36,7 @@ class CheckersBoard {
     for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 8; j++) {
         CellType tmpCellType = CellType.UNDEFINED;
-        int id = -1;
+        int id = (_sizeBoard * i) + j;
 
         Color cellColor = (i + j) % 2 == 0 ? Colors.white : Colors.brown;
         print("ID IS: ${(_sizeBoard * i) + j}");
@@ -46,17 +46,11 @@ class CheckersBoard {
           if (i < 3) {
             tmpCellType = CellType.BLACK;
             pawns.add(Pawn(
-                row: i,
-                column: j,
-                color: Colors.grey,
-                isKing: false));
+                id: id + 100, row: i, column: j, color: Colors.grey, isKing: false));
           } else if (i > 4) {
             tmpCellType = CellType.WHITE;
             pawns.add(Pawn(
-                row: i,
-                column: j,
-                color: Colors.white,
-                isKing: false));
+                id: id + 100, row: i, column: j, color: Colors.white, isKing: false));
           } else if (i == 3 || i == 4) {
             tmpCellType = CellType.EMPTY;
           }

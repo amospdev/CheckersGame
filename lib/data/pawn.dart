@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class Pawn {
   Color color;
 
+  int id;
   int row;
   int column;
 
@@ -12,14 +13,15 @@ class Pawn {
   bool isAlreadyKing = false;
 
   Pawn(
-      {required this.row,
+      {required this.id,
+      required this.row,
       required this.column,
       required this.color,
       required this.isKing})
       : _offset = Offset(column.toDouble(), row.toDouble());
 
-  static Pawn createEmpty() =>
-      Pawn(row: -1, column: -1, color: Colors.tealAccent, isKing: false);
+  static Pawn createEmpty() => Pawn(
+      id: -1, row: -1, column: -1, color: Colors.tealAccent, isKing: false);
 
   Offset get offset => _offset;
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
@@ -26,25 +25,20 @@ class GameViewModel extends ChangeNotifier {
 
   List<PositionDetails> get positionDetailsList => _positionDetailsList;
 
-  List<List<CellDetails>> get board => _board;
-  List<List<CellDetails>> _board = [];
+  // List<CellDetails> get board => _board;
 
-  List<Pawn> get pawns => _pawns;
-  List<Pawn> _pawns = [];
+  ValueNotifier<List<CellDetails>> boardValueNotifier =
+      ValueNotifier<List<CellDetails>>([]);
+
+  // List<CellDetails> _board = [];
+
+  ValueNotifier<List<Pawn>> pawnsValueNotifier = ValueNotifier<List<Pawn>>([]);
+  ValueNotifier<Offset> pawnMoveOffsetValueNotifier =
+      ValueNotifier<Offset>(Offset.zero);
 
   CellType get currentPlayer => _currentPlayer;
 
   CellType _currentPlayer = CellType.UNDEFINED;
-
-  // int get selectedRow => _selectedRow;
-  //
-  // int get selectedCol => _selectedCol;
-  //
-  // int get destinationRow => _destinationRow;
-  //
-  // int get destinationCol => _destinationCol;
-
-  // List<Path> get paths => _paths;
 
   GameViewModel() {
     _setCheckersBoard(_game.board);
@@ -76,6 +70,7 @@ class GameViewModel extends ChangeNotifier {
 
   TapOnBoard onClickCell(int row, int column) {
     TapOnBoard tapOnBoard = onTapBoardGame(row, column);
+    notifyListeners();
     print("onClickCell: $tapOnBoard");
     return tapOnBoard;
   }
@@ -83,6 +78,8 @@ class GameViewModel extends ChangeNotifier {
   void onClickPawn(int row, int column) {
     if (_isContinuePath) return;
     TapOnBoard tapOnBoard = onTapBoardGame(row, column);
+    notifyListeners();
+
     print(
         "onClickPawn: $tapOnBoard, currPath.isContinuePath: ${_isContinuePath}");
   }
@@ -113,7 +110,6 @@ class GameViewModel extends ChangeNotifier {
     if (isValidStartCellSelected) {
       _selectedStartCellActions(row, column);
       _setCheckersBoard(_game.board);
-      notifyListeners();
       return TapOnBoard.START;
     }
 
@@ -130,7 +126,6 @@ class GameViewModel extends ChangeNotifier {
     if (isValidDestinationCellSelected) {
       _pathSize = path.positionDetailsList.length;
       _isContinuePath = path.isContinuePath;
-      notifyListeners();
       return TapOnBoard.END;
     }
 
@@ -154,13 +149,13 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _setCheckersBoard(List<List<CellDetails>> board) {
-    _board.clear();
-    _board.addAll(board);
+    // boardValueNotifier.value.clear();
+    boardValueNotifier.value = board.expand((element) => element).toList();
   }
 
   void _setPawns(List<Pawn> pawns) {
-    _pawns.clear();
-    _pawns.addAll(pawns);
+    // pawnsValueNotifier.value.clear();
+    pawnsValueNotifier.value = pawns;
   }
 
   void _setCurrentPlayer(CellType currentPlayer) {
@@ -192,7 +187,6 @@ class GameViewModel extends ChangeNotifier {
     if (pawn == null || !pawn.isKing) return;
 
     _game.setIsAlreadyKing(pawn, true);
-    // notifyListeners();
   }
 
   void onPawnMoveAnimationStart() {
@@ -203,13 +197,15 @@ class GameViewModel extends ChangeNotifier {
     _pathSize = -1;
   }
 
-  Pawn getCurrPawn() => _pawns.firstWhere(
+  Pawn getCurrPawn() => pawnsValueNotifier.value.firstWhere(
       (pawn) => pawn.row == _selectedRow && pawn.column == _selectedCol,
       orElse: () => Pawn.createEmpty());
 
   void onMovePawn(Offset value) {
-    getCurrPawn().setOffset(value);
-    notifyListeners();
+    print("VM onMovePawn value: $value");
+    pawnMoveOffsetValueNotifier.value = value;
+    // getCurrPawn().setOffset(value);
+    // notifyListeners();
   }
 }
 

@@ -14,6 +14,8 @@ class CellPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CellPainter oldDelegate) {
-    return color != oldDelegate.color;
+    bool shouldRepaintByColor = color.value != oldDelegate.color.value;
+
+    return shouldRepaintByColor;
   }
 }

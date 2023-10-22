@@ -29,8 +29,6 @@ class CheckersBoard {
   CellType get player => _player;
 
   void resetBoard() {
-    List<Pawn> pawns = [];
-
     _board = List.generate(
         8, (i) => List<CellDetails>.filled(8, CellDetails.createEmpty()));
     for (int i = 0; i < 8; i++) {
@@ -39,28 +37,32 @@ class CheckersBoard {
         int id = (_sizeBoard * i) + j;
 
         Color cellColor = (i + j) % 2 == 0 ? Colors.white : Colors.brown;
-        print("ID IS: ${(_sizeBoard * i) + j}");
         if ((i + j) % 2 == 0) {
           tmpCellType = CellType.UNVALID;
         } else {
           if (i < 3) {
             tmpCellType = CellType.BLACK;
-            pawns.add(Pawn(
-                id: id + 100, row: i, column: j, color: Colors.grey, isKing: false));
           } else if (i > 4) {
             tmpCellType = CellType.WHITE;
-            pawns.add(Pawn(
-                id: id + 100, row: i, column: j, color: Colors.white, isKing: false));
           } else if (i == 3 || i == 4) {
             tmpCellType = CellType.EMPTY;
           }
         }
+
+        if (tmpCellType == CellType.WHITE || tmpCellType == CellType.BLACK) {
+          _pawns.add(Pawn(
+              id: id + 100,
+              row: i,
+              column: j,
+              color: tmpCellType == CellType.WHITE ? Colors.white : Colors.grey,
+              isKing: false));
+        }
+
         bool isEmpty =
             tmpCellType == CellType.EMPTY || tmpCellType == CellType.UNVALID;
         _board[i][j] = CellDetails(tmpCellType, id, isEmpty, cellColor, i, j);
       }
     }
-    _pawns.addAll(pawns);
   }
 
   CellDetails getCellDetails(int row, int column) => board

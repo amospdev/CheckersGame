@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
@@ -22,13 +21,9 @@ class GameViewModel extends ChangeNotifier {
   List<Path> _paths = [];
   bool _isInProcess = false;
 
-  final List<PositionDetails> _positionDetailsList = [];
+  final List<ValueNotifier<CellDetails>> _boardCells = [];
 
-  List<PositionDetails> get positionDetailsList => _positionDetailsList;
-
-  final List<CellDetails> _boardCells = [];
-
-  List<CellDetails> get boardCells => _boardCells;
+  List<ValueNotifier<CellDetails>> get boardCells => _boardCells;
 
   List<Pawn> _pawns = [];
 
@@ -42,7 +37,6 @@ class GameViewModel extends ChangeNotifier {
     _setCheckersBoard(_game.board);
     _setPawns(_game.pawns);
     _setCurrentPlayer(_game.player);
-    notifyListeners();
   }
 
   _setPaths(List<Path> paths) {
@@ -76,7 +70,6 @@ class GameViewModel extends ChangeNotifier {
   void onClickPawn(int row, int column) {
     if (_isContinuePath) return;
     TapOnBoard tapOnBoard = onTapBoardGame(row, column);
-    notifyListeners();
 
     print(
         "onClickPawn: $tapOnBoard, currPath.isContinuePath: ${_isContinuePath}");
@@ -147,12 +140,31 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _setCheckersBoard(List<List<CellDetails>> board) {
-    _boardCells.clear();
-    _boardCells.addAll(board.expand((element) => element));
+    List<CellDetails> flatBoard = [...board.expand((element) => element)];
+    if (_boardCells.isEmpty) {
+      _boardCells.addAll(flatBoard.map((cell) => ValueNotifier(cell)).toList());
+    } else {
+      for (final (index, cellDetails) in flatBoard.indexed) {
+        final tmpCell = _boardCells[index];
+
+        if (tmpCell.value.color.value != cellDetails.tmpColor.value ||
+            tmpCell.value.tmpColor.value != cellDetails.color.value) {
+          tmpCell.value = CellDetails(
+              cellDetails.cellType,
+              cellDetails.id,
+              cellDetails.isEmpty,
+              cellDetails.color,
+              cellDetails.row,
+              cellDetails.column)
+            ..setTmpColor(cellDetails.tmpColor);
+        }
+      }
+    }
   }
 
   void _setPawns(List<Pawn> pawns) {
-    _pawns = pawns;
+    _pawns.clear();
+    _pawns.addAll(pawns);
   }
 
   void _setCurrentPlayer(CellType currentPlayer) {

@@ -127,26 +127,26 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final gameViewModel = Provider.of<GameViewModel>(context, listen: false);
 
     return gameViewModel.boardCells
-        .map((cell) => ValueListenableBuilder<Color>(
-              valueListenable: cell.tmpColor,
-              builder: (ctx, cellColor, _) {
-                print("2 MAIN WIDGET _getCells ValueListenableBuilder: $cell");
+        .map((cell) => ValueListenableBuilder<CellDetails>(
+              valueListenable: cell,
+              builder: (ctx, cellDetails, _) {
+                print(
+                    "2 MAIN WIDGET _getCells ValueListenableBuilder: $cellDetails");
 
                 return Positioned(
-                  left: cell.offset.dx * cellSize,
-                  top: cell.offset.dy * cellSize,
+                  left: cellDetails.offset.dx * cellSize,
+                  top: cellDetails.offset.dy * cellSize,
                   child: RepaintBoundary(
                       child: GestureDetector(
                     onTap: () {
-                      TapOnBoard tapOnBoard =
-                          gameViewModel.onClickCell(cell.row, cell.column);
+                      TapOnBoard tapOnBoard = gameViewModel.onClickCell(
+                          cellDetails.row, cellDetails.column);
                       if (tapOnBoard == TapOnBoard.END) {
-                        handleCellTap(gameViewModel, cell);
+                        handleCellTap(gameViewModel, cellDetails);
                       }
                     },
                     child: Container(
-                      key: ValueKey(cell.id),
-                      color: cellColor,
+                      color: cellDetails.tmpColor,
                       width: cellSize,
                       height: cellSize,
                     ),
@@ -158,40 +158,47 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   List<Widget> _getPawns(double cellSize) {
-    print("1 MAIN WIDGET _getPawns");
 
     List<Pawn> currPawns = Provider.of<GameViewModel>(context).pawns;
-    Pawn? nowCurrPawn = currPawn;
-    if (nowCurrPawn != null) {
-      Pawn currPawn = currPawns[currPawns.indexOf(nowCurrPawn)];
-      currPawns.remove(currPawn);
-      currPawns.add(currPawn);
-    }
+    Pawn? tmpCurrPawn = currPawn;
+    print("1 MAIN WIDGET _getPawns tmpCurrPawn: $tmpCurrPawn, currPawn: $currPawn");
 
-    return currPawns
+    final widgets = currPawns
+        .where((pawn) => pawn != tmpCurrPawn)
         .map((pawn) => ValueListenableBuilder<Offset>(
               valueListenable: pawn.offset,
               builder: (ctx, offset, _) {
-                return _buildPawnWidget(pawn, cellSize, currPawn == pawn);
+                return _buildPawnWidget(pawn, cellSize, false);
               },
             ))
         .toList();
+
+    if (tmpCurrPawn != null) {
+      widgets.add(ValueListenableBuilder<Offset>(
+        valueListenable: tmpCurrPawn.offset,
+        builder: (ctx, offset, _) {
+          return _buildPawnWidget(tmpCurrPawn, cellSize, true);
+        },
+      ));
+    }
+
+    return widgets;
   }
 
-  Widget _getPawnAnimate(double cellSize) {
-    return AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(
-              _animation.value.dx * cellSize,
-              _animation.value.dy * cellSize,
-            ),
-            child: _buildPawnWidget(
-                currPawn ?? Pawn.createEmpty(), cellSize, true),
-          );
-        });
-  }
+  // Widget _getPawnAnimate(double cellSize) {
+  //   return AnimatedBuilder(
+  //       animation: _animation,
+  //       builder: (context, child) {
+  //         return Transform.translate(
+  //           offset: Offset(
+  //             _animation.value.dx * cellSize,
+  //             _animation.value.dy * cellSize,
+  //           ),
+  //           child: _buildPawnWidget(
+  //               currPawn ?? Pawn.createEmpty(), cellSize, true),
+  //         );
+  //       });
+  // }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
       PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController);

@@ -6,15 +6,18 @@ class CellDetails {
   bool isEmpty = true;
   int id = -1;
   Color color;
-  Color tmpColor;
-  final int row; // שורה
-  final int column; // עמודה
+  final int row;
+  final int column;
 
-  // final CellType cellType;
-  // final bool isCapture;
+  final ValueNotifier<Color> _tmpColorValueNotifier =
+      ValueNotifier<Color>(Colors.transparent);
 
-  CellDetails(this.cellType, this.id, this.isEmpty, this.color, this.row,
-      this.column) : tmpColor = color;
+  CellDetails(
+      this.cellType, this.id, this.isEmpty, this.color, this.row, this.column) {
+    _tmpColorValueNotifier.value = color;
+  }
+
+  ValueNotifier<Color> get tmpColor => _tmpColorValueNotifier;
 
   static CellDetails createEmpty() =>
       CellDetails(CellType.UNDEFINED, -1, true, Colors.white, -1, -1);
@@ -45,15 +48,36 @@ class CellDetails {
   }
 
   void changeColor(bool isChangeColor, Color color) {
-    tmpColor = isChangeColor ? color : this.color;
+    tmpColor.value = isChangeColor ? color : this.color;
   }
 
   void clearColor() {
-    tmpColor = color;
+    tmpColor.value = color;
   }
 
   @override
   String toString() {
-    return 'CellDetails{cellType: $cellType, isEmpty: $isEmpty}';
+    return 'CellDetails{cellType: $cellType, isEmpty: $isEmpty, color: $color, row: $row, column: $column}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CellDetails &&
+          runtimeType == other.runtimeType &&
+          cellType == other.cellType &&
+          isEmpty == other.isEmpty &&
+          id == other.id &&
+          color == other.color &&
+          row == other.row &&
+          column == other.column;
+
+  @override
+  int get hashCode =>
+      cellType.hashCode ^
+      isEmpty.hashCode ^
+      id.hashCode ^
+      color.hashCode ^
+      row.hashCode ^
+      column.hashCode;
 }

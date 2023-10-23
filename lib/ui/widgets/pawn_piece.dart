@@ -32,8 +32,8 @@ class PawnPieceState extends State<PawnPiece>
   void _initRadiusFactorAnimation() {
     _radiusFactorAnimation = TweenSequence<double>(
       [
-        _getTweenSequenceItem(1.0, 1.2, 50),
-        _getTweenSequenceItem(1.2, 1.0, 50),
+        _getTweenSequenceItem(1.0, 1.25, 50),
+        _getTweenSequenceItem(1.25, 1.0, 50),
       ],
     ).animate(widget.pawnMoveController);
   }
@@ -49,35 +49,32 @@ class PawnPieceState extends State<PawnPiece>
   Widget build(BuildContext context) =>
       _mainPawn(widget.pawn, widget.isAnimatingPawn, widget.cellSize);
 
-  Widget _mainPawn(Pawn pawn, bool isAnimatingPawn, double cellSize) {
-    return Consumer<GameViewModel>(
-        builder: (ctx, gameViewModel, child) =>
-            _getPawn(pawn, isAnimatingPawn, cellSize, gameViewModel));
-  }
+  Widget _mainPawn(Pawn pawn, bool isAnimatingPawn, double cellSize) =>
+      _getPawn(pawn, isAnimatingPawn, cellSize);
 
-  Widget _getPawn(Pawn pawn, bool isAnimatingPawn, double cellSize,
-      GameViewModel gameViewModel) {
+  Widget _getPawn(Pawn pawn, bool isAnimatingPawn, double cellSize) {
     return Positioned(
       left: pawn.offset.value.dx * cellSize,
       top: pawn.offset.value.dy * cellSize,
-      child: GestureDetector(
-        onTap: () => gameViewModel.onClickPawn(pawn.row, pawn.column),
+      child: RepaintBoundary(
+          child: GestureDetector(
+        onTap: () => Provider.of<GameViewModel>(context, listen: false)
+            .onClickPawn(pawn.row, pawn.column),
         child: Stack(
           alignment: Alignment.center,
           children: [
             Transform.scale(
               scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
               scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              child: RepaintBoundary(
-                  child: CustomPaint(
+              child: CustomPaint(
                 size: Size(cellSize, cellSize),
                 painter: PawnPainter(pawn.color),
-              )),
+              ),
             ),
             pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
           ],
         ),
-      ),
+      )),
     );
   }
 

@@ -26,8 +26,9 @@ class GameViewModel extends ChangeNotifier {
 
   List<PositionDetails> get positionDetailsList => _positionDetailsList;
 
-  ValueNotifier<List<CellDetails>> boardValueNotifier =
-      ValueNotifier<List<CellDetails>>([]);
+  final List<CellDetails> _boardCells = [];
+
+  List<CellDetails> get boardCells => _boardCells;
 
   List<Pawn> _pawns = [];
 
@@ -146,12 +147,11 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _setCheckersBoard(List<List<CellDetails>> board) {
-    // boardValueNotifier.value.clear();
-    boardValueNotifier.value = board.expand((element) => element).toList();
+    _boardCells.clear();
+    _boardCells.addAll(board.expand((element) => element));
   }
 
   void _setPawns(List<Pawn> pawns) {
-    // pawnsValueNotifier.value.clear();
     _pawns = pawns;
   }
 

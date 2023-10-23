@@ -155,8 +155,14 @@ class CheckersBoard {
   CellType _getCellTypeByPosition(Position position) =>
       _getCellType(position.row, position.column);
 
-  CellType _getCellType(int row, int col) =>
-      _isInBounds(row, col) ? _board[row][col].cellType : CellType.UNDEFINED;
+  CellType _getCellType(int row, int col) => _isInBounds(row, col)
+      ? _getCellDetails(row, col).cellType
+      : CellType.UNDEFINED;
+
+  CellDetails _getCellDetails(int row, int col) => _board[row][col];
+
+  CellDetails _getCellDetailsByPosition(Position position) =>
+      _getCellDetails(position.row, position.column);
 
   bool _isWhitePlayerTurn() =>
       _player == CellType.WHITE || _player == CellType.WHITE_KING;
@@ -252,6 +258,8 @@ class CheckersBoard {
 
   List<Path> getPossiblePathsByPosition(
       int row, int column, bool isContinuePath) {
+    _clearAllCellColors();
+
     List<Path> paths = [];
     Position startPosition = _createPosition(row, column);
     List<Position> directions = _getDirectionsByType(startPosition);
@@ -286,7 +294,6 @@ class CheckersBoard {
     bool isKing = _isKingByPosition(startPosition);
 
     List<Path> paths = [];
-
     if (isKing) {
       _fetchAllPathsKing(paths, startPosition);
     } else {
@@ -299,8 +306,6 @@ class CheckersBoard {
   }
 
   void _fetchAllPathsKing(List<Path> paths, Position startPosition) {
-    _clearAllCellColors();
-
     _fetchAllCapturePathsKing(paths, startPosition,
         [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
 
@@ -338,12 +343,15 @@ class CheckersBoard {
     }
   }
 
-  void _clearAllCellColors() => _board
-      .expand((element) => element)
-      .forEach((element) => element.clearColor());
+  void _clearAllCellColors() {
+    for (var element in _board) {
+      for (var cell in element) {
+        cell.clearColor();
+      }
+    }
+  }
 
   void _fetchAllPathsPiece(List<Path> paths, Position startPosition) {
-    _clearAllCellColors();
     _fetchAllCapturePathsPiece(paths, startPosition,
         [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
 
@@ -414,8 +422,6 @@ class CheckersBoard {
           : false;
 
   List<Path> getPossibleContinuePaths(int row, int col, directions) {
-    _clearAllCellColors();
-
     List<Path> paths = [];
 
     Position startPosition = _createPosition(row, col);
@@ -442,7 +448,8 @@ class CheckersBoard {
 
   PositionDetails _createPositionDetails(
           Position position, CellType cellType, bool isCapture) =>
-      PositionDetails(position, _getCellTypeByPosition(position), isCapture);
+      PositionDetails(position, _getCellTypeByPosition(position), isCapture,
+          _getCellDetailsByPosition(position));
 
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.any((element) => element.isCapture);
@@ -471,6 +478,7 @@ class CheckersBoard {
 
     _performMoveByPosition(
         startPosition, endPosition, path.positionDetailsList);
+    _clearAllCellColors();
   }
 
   Path _getRelevantPath(
@@ -491,6 +499,8 @@ class CheckersBoard {
 
     // IMPORTANT: Update the starting position to empty
     _clearStartPosition(startPosition);
+
+    // _clearAllCellColors();
   }
 
   void _updateEndPosition(Position startPosition, Position endPosition) {
@@ -565,7 +575,6 @@ class CheckersBoard {
     _clearPrevData();
     _printBoard();
     _switchPlayer();
-    _clearAllCellColors();
   }
 
   void _clearPrevData() {}
@@ -604,8 +613,10 @@ class PositionDetails {
   final Position position;
   final CellType cellType;
   final bool isCapture;
+  final CellDetails cellDetails;
 
-  PositionDetails(this.position, this.cellType, this.isCapture);
+  PositionDetails(
+      this.position, this.cellType, this.isCapture, this.cellDetails);
 
   @override
   bool operator ==(Object other) =>

@@ -141,8 +141,7 @@ class GameViewModel extends ChangeNotifier {
 
         if (tmpCell.color.value != cellDetails.tmpColor.value ||
             tmpCell.tmpColor.value != cellDetails.color.value) {
-          tmpCell.setCellDetailsDataValueNotifier(
-              tmpColor: cellDetails.tmpColor);
+          tmpCell.changeColor(cellDetails.tmpColor);
         }
       }
     }

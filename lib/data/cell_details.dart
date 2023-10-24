@@ -18,7 +18,7 @@ class CellDetails {
     _cellDetailsDataValueNotifier.value = CellDetailsData(tmpColor: color);
   }
 
-  void setCellDetailsDataValueNotifier({Color? tmpColor}) {
+  void _setCellDetailsDataValueNotifier({Color? tmpColor}) {
     _cellDetailsDataValueNotifier.value = CellDetailsData(
         tmpColor: tmpColor ?? _cellDetailsDataValueNotifier.value.tmpColor);
   }
@@ -56,11 +56,10 @@ class CellDetails {
     this.cellType = cellType;
   }
 
-  void changeColor(bool isChangeColor, Color color) =>
-      setCellDetailsDataValueNotifier(
-          tmpColor: isChangeColor ? color : this.color);
+  void changeColor(Color color) =>
+      _setCellDetailsDataValueNotifier(tmpColor: color);
 
-  void clearColor() => setCellDetailsDataValueNotifier(tmpColor: color);
+  void clearColor() => changeColor(color);
 
   @override
   String toString() {

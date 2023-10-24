@@ -370,24 +370,14 @@ class CheckersBoard {
     for (Path path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
         Position position = positionDetails.position;
+        CellDetails cellDetails = flatBoard.firstWhere((element) =>
+            element.row == position.row && element.column == position.column);
         if (index == 0) {
-          flatBoard
-              .firstWhere((element) =>
-                  element.row == position.row &&
-                  element.column == position.column)
-              .changeColor(true, Colors.green);
+          cellDetails.changeColor(Colors.green);
         } else if (positionDetails.isCapture) {
-          flatBoard
-              .firstWhere((element) =>
-                  element.row == position.row &&
-                  element.column == position.column)
-              .changeColor(true, Colors.redAccent);
+          cellDetails.changeColor(Colors.redAccent);
         } else {
-          flatBoard
-              .firstWhere((element) =>
-                  element.row == position.row &&
-                  element.column == position.column)
-              .changeColor(true, Colors.blueAccent);
+          cellDetails.changeColor(Colors.blueAccent);
         }
       }
     }

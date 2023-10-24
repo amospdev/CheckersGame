@@ -52,4 +52,25 @@ class Pawn {
   String toString() {
     return 'Pawn{id: $id, row: $row, column: $column, isKilled: ${_pawnDataValueNotifier.value.isKilled}, offset: ${_pawnDataValueNotifier.value.offset}, isKing: $isKing}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Pawn &&
+          runtimeType == other.runtimeType &&
+          color == other.color &&
+          id == other.id &&
+          row == other.row &&
+          column == other.column &&
+          isKing == other.isKing &&
+          _isKilled == other._isKilled;
+
+  @override
+  int get hashCode =>
+      color.hashCode ^
+      id.hashCode ^
+      row.hashCode ^
+      column.hashCode ^
+      isKing.hashCode ^
+      _isKilled.hashCode;
 }

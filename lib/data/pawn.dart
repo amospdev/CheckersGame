@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/data/pawn_data.dart';
 
 class Pawn {
   Color color;
@@ -7,10 +8,11 @@ class Pawn {
   int row;
   int column;
 
-  final ValueNotifier<Offset> _offsetValueNotifier =
-      ValueNotifier<Offset>(Offset.zero);
+  final ValueNotifier<PawnData> _pawnDataValueNotifier =
+      ValueNotifier<PawnData>(PawnData.createEmpty());
 
   bool isKing;
+  bool _isKilled = false;
 
   Pawn(
       {required this.id,
@@ -18,16 +20,20 @@ class Pawn {
       required this.column,
       required this.color,
       required this.isKing}) {
-    _offsetValueNotifier.value = Offset(column.toDouble(), row.toDouble());
+    _pawnDataValueNotifier.value = PawnData(
+        offset: Offset(column.toDouble(), row.toDouble()), isKilled: false);
   }
 
   static Pawn createEmpty() => Pawn(
       id: -1, row: -1, column: -1, color: Colors.tealAccent, isKing: false);
 
-  ValueNotifier<Offset> get offset => _offsetValueNotifier;
+  ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
 
-  void setOffset(Offset offset) {
-    _offsetValueNotifier.value = offset;
+  void setPawnDataNotifier({bool? isKilled, Offset? offset}) {
+    _pawnDataValueNotifier.value = PawnData(
+        offset: offset ?? Offset(column.toDouble(), row.toDouble()),
+        isKilled: isKilled ?? _isKilled);
+    _isKilled = _pawnDataValueNotifier.value.isKilled;
   }
 
   Pawn setPosition(int row, int column) {
@@ -37,26 +43,13 @@ class Pawn {
     return this;
   }
 
-  void setIsKing(bool isKing) {
+  Pawn setIsKing(bool isKing) {
     this.isKing = isKing;
+    return this;
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Pawn &&
-          runtimeType == other.runtimeType &&
-          color == other.color &&
-          row == other.row &&
-          column == other.column &&
-          isKing == other.isKing;
-
-  @override
-  int get hashCode =>
-      color.hashCode ^ row.hashCode ^ column.hashCode ^ isKing.hashCode;
-
-  @override
   String toString() {
-    return 'Pawn{row: $row, column: $column, offset: $offset, isKing: $isKing}';
+    return 'Pawn{id: $id, row: $row, column: $column, isKilled: ${_pawnDataValueNotifier.value.isKilled}, offset: ${_pawnDataValueNotifier.value.offset}, isKing: $isKing}';
   }
 }

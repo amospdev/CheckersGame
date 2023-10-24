@@ -17,6 +17,9 @@ class GameViewModel extends ChangeNotifier {
   int _pathSize = -1;
 
   int get pathSize => _pathSize;
+  Pawn? _currPawn;
+
+  Pawn? get currPawn => _currPawn;
 
   List<Path> _paths = [];
   bool _isInProcess = false;
@@ -25,7 +28,7 @@ class GameViewModel extends ChangeNotifier {
 
   List<ValueNotifier<CellDetails>> get boardCells => _boardCells;
 
-  List<Pawn> _pawns = [];
+  final List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;
 
@@ -62,17 +65,12 @@ class GameViewModel extends ChangeNotifier {
 
   TapOnBoard onClickCell(int row, int column) {
     TapOnBoard tapOnBoard = onTapBoardGame(row, column);
-    notifyListeners();
-    print("onClickCell: $tapOnBoard");
     return tapOnBoard;
   }
 
   void onClickPawn(int row, int column) {
     if (_isContinuePath) return;
-    TapOnBoard tapOnBoard = onTapBoardGame(row, column);
-
-    print(
-        "onClickPawn: $tapOnBoard, currPath.isContinuePath: ${_isContinuePath}");
+    onTapBoardGame(row, column);
   }
 
   TapOnBoard _onTapBoardGameValidator(int row, int column) {
@@ -95,8 +93,6 @@ class GameViewModel extends ChangeNotifier {
     if (tapOnBoard == TapOnBoard.UNVALID) return TapOnBoard.UNVALID;
 
     bool isValidStartCellSelected = _game.isValidStartCellSelected(row, column);
-    print(
-        "VM onTapBoardGame isValidStartCellSelected: $isValidStartCellSelected");
 
     if (isValidStartCellSelected) {
       _selectedStartCellActions(row, column);
@@ -111,12 +107,11 @@ class GameViewModel extends ChangeNotifier {
         _game.getPathByEndPosition(_destinationRow, _destinationCol, _paths);
     bool isValidDestinationCellSelected = path.isValidPath();
 
-    print(
-        "VM onTapBoardGame isValidDestinationCellSelected: $isValidStartCellSelected");
-
     if (isValidDestinationCellSelected) {
       _pathSize = path.positionDetailsList.length;
       _isContinuePath = path.isContinuePath;
+      _currPawn = _game.pawnsWithoutKills.firstWhere((element) =>
+          element.row == _selectedRow && element.column == _selectedCol);
       return TapOnBoard.END;
     }
 
@@ -124,13 +119,11 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void onPawnMoveAnimationFinish() {
-    print("VM onPawnMoveAnimationFinish");
-
     _selectedDestinationCellActions(_destinationRow, _destinationCol, _paths);
     _setCheckersBoard(_game.board);
     _setPawns(_game.pawns);
     _isInProcess = false;
-    notifyListeners();
+    _currPawn = null;
     _continueNextIterationOrTurn(_destinationRow, _destinationCol);
   }
 
@@ -162,9 +155,20 @@ class GameViewModel extends ChangeNotifier {
     }
   }
 
-  void _setPawns(List<Pawn> pawns) {
-    _pawns.clear();
-    _pawns.addAll(pawns);
+  void _setPawns(List<Pawn> newPawns) {
+    if (_pawns.isEmpty) {
+      // _pawns.clear();
+      _pawns.addAll(newPawns);
+    }
+
+    for (var (index, pawn) in newPawns.indexed) {
+      if (pawn.pawnDataNotifier.value.isKilled) {
+        Pawn oldPawn = _pawns[index];
+        if (!oldPawn.pawnDataNotifier.value.isKilled) {
+          oldPawn.setPawnDataNotifier(isKilled: true);
+        }
+      }
+    }
   }
 
   void _setCurrentPlayer(CellType currentPlayer) {
@@ -184,41 +188,30 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _clearPrevSelected() {
-    _selectedRow = -1;
-    _selectedCol = -1;
+    _clearSelectedRow();
+    _clearSelectedColumn();
   }
+
+  void _clearSelectedRow() => _selectedRow = -1;
+
+  void _clearSelectedColumn() => _selectedCol = -1;
 
   void _clearPrevPaths() => _paths.clear();
 
   void onFinishAnimateCrown(Pawn? pawn) {
-    print("VM onFinishAnimateCrown id: ${pawn?.id}");
-
-    if (pawn == null || !pawn.isKing) return;
+    if (pawn == null || _isKingPawn(pawn)) return;
     _markedKings.add(pawn.id);
   }
 
-  bool isAlreadyMarkedKing(int id) {
-    bool isContain = _markedKings.contains(id);
-    print("VM shouldAnimateCrown id: $id, isAlreadyMarkedKing: ${isContain}");
-    return isContain;
-  }
+  bool _isKingPawn(Pawn? pawn) => pawn?.isKing ?? false;
 
-  void onPawnMoveAnimationStart() {
-    _isInProcess = true;
-  }
+  bool isAlreadyMarkedKing(int id) => _markedKings.contains(id);
 
-  void _clearPathSize() {
-    _pathSize = -1;
-  }
+  void onPawnMoveAnimationStart() => _isInProcess = true;
 
-  Pawn getCurrPawn() => _pawns.firstWhere(
-      (pawn) => pawn.row == _selectedRow && pawn.column == _selectedCol,
-      orElse: () => Pawn.createEmpty());
+  void _clearPathSize() => _pathSize = -1;
 
-  void onMovePawn(Offset value) {
-    print("VM onMovePawn value: $value");
-    getCurrPawn().setOffset(value);
-  }
+  void onMovePawn(Offset value) => currPawn?.setPawnDataNotifier(offset: value);
 }
 
 enum TapOnBoard {

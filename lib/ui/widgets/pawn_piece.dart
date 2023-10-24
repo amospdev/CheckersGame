@@ -54,8 +54,8 @@ class PawnPieceState extends State<PawnPiece>
 
   Widget _getPawn(Pawn pawn, bool isAnimatingPawn, double cellSize) {
     return Positioned(
-      left: pawn.offset.value.dx * cellSize,
-      top: pawn.offset.value.dy * cellSize,
+      left: pawn.pawnDataNotifier.value.offset.dx * cellSize,
+      top: pawn.pawnDataNotifier.value.offset.dy * cellSize,
       child: RepaintBoundary(
           child: GestureDetector(
         onTap: () => Provider.of<GameViewModel>(context, listen: false)

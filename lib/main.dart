@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
+import 'package:untitled/data/pawn_data.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn_piece.dart';
@@ -36,7 +37,6 @@ class GameBoard extends StatefulWidget {
 class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
   late Animation<Offset> _animation;
-  Pawn? currPawn;
 
   static const int _pawnMoveDuration = 165;
 
@@ -61,13 +61,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final gameViewModel = context.read<GameViewModel>();
     gameViewModel.onMovePawn(_animation.value);
     if (_pawnMoveController.isCompleted) {
-      currPawn = null;
       gameViewModel.onPawnMoveAnimationFinish();
     }
   }
 
   void _startPawnMoveAnimation(GameViewModel gameViewModel) {
-    print("_startPawnMoveAnimation start");
     gameViewModel.onPawnMoveAnimationStart();
     _pawnMoveController.forward(from: 0.0);
   }
@@ -75,13 +73,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   void movePlayerTo(int row, int column, GameViewModel gameViewModel) {
     final endPosition = Offset(column.toDouble(), row.toDouble());
 
-    currPawn = gameViewModel.getCurrPawn();
-
     _pawnMoveController.duration =
         Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
 
     _animation = Tween<Offset>(
-      begin: currPawn?.offset.value,
+      begin: gameViewModel.currPawn?.pawnDataNotifier.value.offset,
       end: endPosition,
     ).animate(_pawnMoveController);
 
@@ -92,6 +88,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget build(BuildContext context) => _mainBoard(context);
 
   Widget _mainBoard(BuildContext context) {
+    print("MAIN WIDGET REBUILD _mainBoard");
     final cellSize =
         (MediaQuery.of(context).size.width - 10) / 8; // For an 8x8 board
 
@@ -122,7 +119,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   void handlePlayerTap(GameViewModel gameViewModel, Pawn pawn) {}
 
   List<Widget> _getCells(double cellSize) {
-    print("1 MAIN WIDGET _getCells");
+    print("MAIN WIDGET _getCells");
 
     final gameViewModel = Provider.of<GameViewModel>(context, listen: false);
 
@@ -130,8 +127,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .map((cell) => ValueListenableBuilder<CellDetails>(
               valueListenable: cell,
               builder: (ctx, cellDetails, _) {
-                print(
-                    "2 MAIN WIDGET _getCells ValueListenableBuilder: $cellDetails");
+                print("MAIN WIDGET REBUILD _getCells: $cell");
 
                 return Positioned(
                   left: cellDetails.offset.dx * cellSize,
@@ -158,47 +154,28 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   List<Widget> _getPawns(double cellSize) {
+    print("MAIN WIDGET _getPawns");
 
-    List<Pawn> currPawns = Provider.of<GameViewModel>(context).pawns;
-    Pawn? tmpCurrPawn = currPawn;
-    print("1 MAIN WIDGET _getPawns tmpCurrPawn: $tmpCurrPawn, currPawn: $currPawn");
+    List<Pawn> currPawns =
+        Provider.of<GameViewModel>(context, listen: false).pawns;
+    Pawn? currPawn =
+        Provider.of<GameViewModel>(context, listen: false).currPawn;
 
     final widgets = currPawns
-        .where((pawn) => pawn != tmpCurrPawn)
-        .map((pawn) => ValueListenableBuilder<Offset>(
-              valueListenable: pawn.offset,
-              builder: (ctx, offset, _) {
-                return _buildPawnWidget(pawn, cellSize, false);
+        .map((pawn) => ValueListenableBuilder<PawnData>(
+              valueListenable: pawn.pawnDataNotifier,
+              builder: (ctx, pawnData, _) {
+                print("MAIN WIDGET REBUILD _getPawns: $pawn");
+
+                return pawnData.isKilled
+                    ? Container()
+                    : _buildPawnWidget(pawn, cellSize, pawn == currPawn);
               },
             ))
         .toList();
 
-    if (tmpCurrPawn != null) {
-      widgets.add(ValueListenableBuilder<Offset>(
-        valueListenable: tmpCurrPawn.offset,
-        builder: (ctx, offset, _) {
-          return _buildPawnWidget(tmpCurrPawn, cellSize, true);
-        },
-      ));
-    }
-
     return widgets;
   }
-
-  // Widget _getPawnAnimate(double cellSize) {
-  //   return AnimatedBuilder(
-  //       animation: _animation,
-  //       builder: (context, child) {
-  //         return Transform.translate(
-  //           offset: Offset(
-  //             _animation.value.dx * cellSize,
-  //             _animation.value.dy * cellSize,
-  //           ),
-  //           child: _buildPawnWidget(
-  //               currPawn ?? Pawn.createEmpty(), cellSize, true),
-  //         );
-  //       });
-  // }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
       PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController);

@@ -20,9 +20,16 @@ class CheckersBoard {
 
   List<List<CellDetails>> get board => _board;
 
+  List<CellDetails> get flatBoard =>
+      _board.expand((element) => element).toList();
+
   final List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;
+
+  List<Pawn> get pawnsWithoutKills => _pawns
+      .where((element) => !element.pawnDataNotifier.value.isKilled)
+      .toList();
 
   CellType _player = CellType.BLACK;
 
@@ -65,8 +72,7 @@ class CheckersBoard {
     }
   }
 
-  CellDetails getCellDetails(int row, int column) => board
-      .expand((element) => element)
+  CellDetails getCellDetails(int row, int column) => flatBoard
       .firstWhere((element) => element.row == row && element.column == column);
 
   List<Position> _getPieceDirections() => [
@@ -81,9 +87,8 @@ class CheckersBoard {
         _createPosition(-1, 1)
       ];
 
-  void _switchPlayer() {
-    _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
-  }
+  void _switchPlayer() =>
+      _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
 
   void _printBoard() {
     for (int i = 0; i < 8; i++) {
@@ -300,8 +305,6 @@ class CheckersBoard {
       _fetchAllPathsPiece(paths, startPosition);
     }
 
-    print("PATHS TOTAL: ${paths.length}");
-
     return paths;
   }
 
@@ -368,22 +371,19 @@ class CheckersBoard {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
         Position position = positionDetails.position;
         if (index == 0) {
-          _board
-              .expand((element) => element)
+          flatBoard
               .firstWhere((element) =>
                   element.row == position.row &&
                   element.column == position.column)
               .changeColor(true, Colors.green);
         } else if (positionDetails.isCapture) {
-          _board
-              .expand((element) => element)
+          flatBoard
               .firstWhere((element) =>
                   element.row == position.row &&
                   element.column == position.column)
               .changeColor(true, Colors.redAccent);
         } else {
-          _board
-              .expand((element) => element)
+          flatBoard
               .firstWhere((element) =>
                   element.row == position.row &&
                   element.column == position.column)
@@ -428,9 +428,6 @@ class CheckersBoard {
 
     _fetchAllCapturePathsPiece(paths, startPosition,
         [_getPositionDetailsNonCapture(startPosition)], directions);
-
-    print(
-        "TYPE: ${_getCellTypeByPosition(startPosition)}, row, col: $row, $col, paths size: ${paths.length}");
 
     return paths;
   }
@@ -514,18 +511,21 @@ class CheckersBoard {
     CellType cellType = _computePieceEndPath(isBlackCellPlayer, isKing);
 
     _setCell(cellType, endPosition);
-    print("IS KING: $isKing");
+
     _updatePawns(startPosition, endPosition, isKing);
   }
 
   void _updatePawns(
           Position startPosition, Position endPosition, bool isKing) =>
-      _pawns
+      pawnsWithoutKills
           .firstWhere((pawn) =>
               pawn.row == startPosition.row &&
               pawn.column == startPosition.column)
           .setPosition(endPosition.row, endPosition.column)
-          .setIsKing(isKing);
+          .setIsKing(isKing)
+          .setPawnDataNotifier(
+              offset: Offset(
+                  endPosition.column.toDouble(), endPosition.row.toDouble()));
 
   bool _isKingPiece(
           {required Position startPosition,
@@ -542,9 +542,13 @@ class CheckersBoard {
       if (positionDetails.isCapture) {
         _clearCapturePiece(positionDetails.position);
 
-        _pawns.removeWhere((pawn) =>
-            pawn.row == positionDetails.position.row &&
-            pawn.column == positionDetails.position.column);
+        pawnsWithoutKills
+            .firstWhere(
+                (pawn) =>
+                    pawn.row == positionDetails.position.row &&
+                    pawn.column == positionDetails.position.column,
+                orElse: () => Pawn.createEmpty())
+            .setPawnDataNotifier(isKilled: true);
       }
     }
   }

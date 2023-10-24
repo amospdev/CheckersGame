@@ -17,6 +17,7 @@ class GameViewModel extends ChangeNotifier {
   int _destinationRow = -1;
   int _destinationCol = -1;
   int _pathSize = -1;
+  int _indexCurrPawn = -1;
 
   int get pathSize => _pathSize;
   Pawn? _currPawn;
@@ -112,12 +113,23 @@ class GameViewModel extends ChangeNotifier {
     if (isValidDestinationCellSelected) {
       _pathSize = path.positionDetailsList.length;
       _isContinuePath = path.isContinuePath;
-      _currPawn = _game.pawnsWithoutKills.firstWhere((element) =>
-          element.row == _selectedRow && element.column == _selectedCol);
+      _setCurrPawn();
+      _setIndexCurrPawn(_currPawn);
       return TapOnBoard.END;
     }
 
     return TapOnBoard.UNVALID;
+  }
+
+  void _setIndexCurrPawn(Pawn? currPawn) {
+    if (currPawn == null) return;
+    _indexCurrPawn = _game.pawnsWithoutKills.indexOf(currPawn);
+  }
+
+  void _setCurrPawn() {
+    _currPawn = _game.pawnsWithoutKills.firstWhere((element) =>
+        element.row == _selectedRow && element.column == _selectedCol)
+      ..setPawnDataNotifier(isAnimating: true);
   }
 
   void onPawnMoveAnimationFinish() {
@@ -137,22 +149,23 @@ class GameViewModel extends ChangeNotifier {
   void _setCheckersBoard(List<CellDetails> flatBoard) {
     if (_boardCells.isEmpty) {
       _boardCells.addAll(flatBoard);
-    } else {
-      for (final (index, cellDetails) in flatBoard.indexed) {
-        final tmpCell = _boardCells[index];
+      return;
+    }
 
-        if (tmpCell.color.value != cellDetails.tmpColor.value ||
-            tmpCell.tmpColor.value != cellDetails.color.value) {
-          tmpCell.changeColor(cellDetails.tmpColor);
-        }
+    for (final (index, cellDetails) in flatBoard.indexed) {
+      final tmpCell = _boardCells[index];
+
+      if (tmpCell.color.value != cellDetails.tmpColor.value ||
+          tmpCell.tmpColor.value != cellDetails.color.value) {
+        tmpCell.changeColor(cellDetails.tmpColor);
       }
     }
   }
 
   void _setPawns(List<Pawn> newPawns) {
     if (_pawns.isEmpty) {
-      // _pawns.clear();
       _pawns.addAll(newPawns);
+      return;
     }
 
     for (var (index, pawn) in newPawns.indexed) {
@@ -162,6 +175,10 @@ class GameViewModel extends ChangeNotifier {
           oldPawn.setPawnDataNotifier(isKilled: true);
         }
       }
+    }
+
+    if (_indexCurrPawn != -1) {
+      _pawns[_indexCurrPawn].setPawnDataNotifier(isAnimating: false);
     }
   }
 
@@ -179,6 +196,7 @@ class GameViewModel extends ChangeNotifier {
     _clearPrevSelected();
     _clearPrevPaths();
     _clearPathSize();
+    _clearIndexCurrPawn();
   }
 
   void _clearPrevSelected() {
@@ -206,4 +224,6 @@ class GameViewModel extends ChangeNotifier {
   void _clearPathSize() => _pathSize = -1;
 
   void onMovePawn(Offset value) => currPawn?.setPawnDataNotifier(offset: value);
+
+  void _clearIndexCurrPawn() => _indexCurrPawn = -1;
 }

@@ -12,7 +12,6 @@ class Pawn {
       ValueNotifier<PawnData>(PawnData.createEmpty());
 
   bool isKing;
-  bool _isKilled = false;
 
   Pawn(
       {required this.id,
@@ -21,7 +20,9 @@ class Pawn {
       required this.color,
       required this.isKing}) {
     _pawnDataValueNotifier.value = PawnData(
-        offset: Offset(column.toDouble(), row.toDouble()), isKilled: false);
+        offset: Offset(column.toDouble(), row.toDouble()),
+        isKilled: false,
+        isAnimating: false);
   }
 
   static Pawn createEmpty() => Pawn(
@@ -29,11 +30,12 @@ class Pawn {
 
   ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
 
-  void setPawnDataNotifier({bool? isKilled, Offset? offset}) {
+  void setPawnDataNotifier(
+      {bool? isKilled, Offset? offset, bool? isAnimating}) {
     _pawnDataValueNotifier.value = PawnData(
+        isAnimating: isAnimating ?? _pawnDataValueNotifier.value.isAnimating,
         offset: offset ?? Offset(column.toDouble(), row.toDouble()),
-        isKilled: isKilled ?? _isKilled);
-    _isKilled = _pawnDataValueNotifier.value.isKilled;
+        isKilled: isKilled ?? _pawnDataValueNotifier.value.isKilled);
   }
 
   Pawn setPosition(int row, int column) {
@@ -62,8 +64,7 @@ class Pawn {
           id == other.id &&
           row == other.row &&
           column == other.column &&
-          isKing == other.isKing &&
-          _isKilled == other._isKilled;
+          isKing == other.isKing;
 
   @override
   int get hashCode =>
@@ -71,6 +72,5 @@ class Pawn {
       id.hashCode ^
       row.hashCode ^
       column.hashCode ^
-      isKing.hashCode ^
-      _isKilled.hashCode;
+      isKing.hashCode;
 }

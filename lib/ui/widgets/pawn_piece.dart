@@ -56,8 +56,7 @@ class PawnPieceState extends State<PawnPiece>
     return Positioned(
       left: pawn.pawnDataNotifier.value.offset.dx * cellSize,
       top: pawn.pawnDataNotifier.value.offset.dy * cellSize,
-      child: RepaintBoundary(
-          child: GestureDetector(
+      child: GestureDetector(
         onTap: () => Provider.of<GameViewModel>(context, listen: false)
             .onClickPawn(pawn.row, pawn.column),
         child: Stack(
@@ -66,15 +65,16 @@ class PawnPieceState extends State<PawnPiece>
             Transform.scale(
               scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
               scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              child: CustomPaint(
+              child: RepaintBoundary(
+                  child: CustomPaint(
                 size: Size(cellSize, cellSize),
                 painter: PawnPainter(pawn.color),
-              ),
+              )),
             ),
             pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
           ],
         ),
-      )),
+      ),
     );
   }
 

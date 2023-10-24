@@ -6,7 +6,6 @@ import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game_view_model.dart';
-import 'package:untitled/ui/cell.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn_piece.dart';
 
@@ -144,9 +143,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     // print("MAIN WIDGET REBUILD _getCells: $cell");
 
                     return RepaintBoundary(
-                        child: CustomPaint(
-                      painter: CellPainter(cellDetailsData.tmpColor),
-                      size: Size(cellSize, cellSize),
+                        child: Container(
+                      color: cell.tmpColor,
+                      height: cellSize,
+                      width: cellSize,
                     ));
                   },
                 ),
@@ -160,8 +160,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     List<Pawn> currPawns =
         Provider.of<GameViewModel>(context, listen: false).pawns;
-    Pawn? currPawn =
-        Provider.of<GameViewModel>(context, listen: false).currPawn;
 
     final widgets = currPawns
         .map((pawn) => ValueListenableBuilder<PawnData>(
@@ -171,7 +169,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
                 return pawnData.isKilled
                     ? Container()
-                    : _buildPawnWidget(pawn, cellSize, pawn == currPawn);
+                    : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating);
               },
             ))
         .toList();

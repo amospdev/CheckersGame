@@ -328,13 +328,13 @@ class CheckersBoard {
 
   void _fetchAllCapturePathsKing(List<Path> paths, Position startPosition,
           List<PositionDetails> positionDetails, List<Position> directions) =>
-      _fetchAllCapturePathsPiece(paths, startPosition,
-          [_getPositionDetailsNonCapture(startPosition)], directions);
+      _fetchAllCapturePathsPiece(
+          paths, startPosition, [...positionDetails], directions);
 
   void _fetchAllSimplePathsKingSingle(List<Path> paths, Position startPosition,
           List<PositionDetails> positionDetails, List<Position> directions) =>
-      _fetchAllSimplePathsPiece(paths, startPosition,
-          [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+      _fetchAllSimplePathsPiece(
+          paths, startPosition, [...positionDetails], directions);
 
   void _fetchAllCapturePathsPiece(List<Path> paths, Position startPosition,
       List<PositionDetails> positionDetails, List<Position> directions) {

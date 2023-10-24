@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 class CellDetails {
@@ -9,14 +10,23 @@ class CellDetails {
   final int row;
   final int column;
 
-  Color _tmpColor = Colors.transparent;
+  final ValueNotifier<CellDetailsData> _cellDetailsDataValueNotifier =
+      ValueNotifier<CellDetailsData>(CellDetailsData.createEmpty());
 
   CellDetails(
       this.cellType, this.id, this.isEmpty, this.color, this.row, this.column) {
-    _tmpColor = color;
+    _cellDetailsDataValueNotifier.value = CellDetailsData(tmpColor: color);
   }
 
-  Color get tmpColor => _tmpColor;
+  void setCellDetailsDataValueNotifier({Color? tmpColor}) {
+    _cellDetailsDataValueNotifier.value = CellDetailsData(
+        tmpColor: tmpColor ?? _cellDetailsDataValueNotifier.value.tmpColor);
+  }
+
+  ValueNotifier<CellDetailsData> get cellDetailsData =>
+      _cellDetailsDataValueNotifier;
+
+  Color get tmpColor => _cellDetailsDataValueNotifier.value.tmpColor;
 
   static CellDetails createEmpty() =>
       CellDetails(CellType.UNDEFINED, -1, true, Colors.white, -1, -1);
@@ -46,20 +56,14 @@ class CellDetails {
     this.cellType = cellType;
   }
 
-  void changeColor(bool isChangeColor, Color color) {
-    _tmpColor = isChangeColor ? color : this.color;
-  }
+  void changeColor(bool isChangeColor, Color color) =>
+      setCellDetailsDataValueNotifier(
+          tmpColor: isChangeColor ? color : this.color);
 
-  void setTmpColor(Color tmpColor) {
-    _tmpColor = tmpColor;
-  }
-
-  void clearColor() {
-    _tmpColor = color;
-  }
+  void clearColor() => setCellDetailsDataValueNotifier(tmpColor: color);
 
   @override
   String toString() {
-    return 'CellDetails{cellType: $cellType, isEmpty: $isEmpty, id: $id, color: $color, row: $row, column: $column, _tmpColor: $_tmpColor}';
+    return 'CellDetails{cellType: $cellType, isEmpty: $isEmpty, id: $id, row: $row, column: $column}';
   }
 }

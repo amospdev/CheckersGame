@@ -24,9 +24,9 @@ class GameViewModel extends ChangeNotifier {
   List<Path> _paths = [];
   bool _isInProcess = false;
 
-  final List<ValueNotifier<CellDetails>> _boardCells = [];
+  final List<CellDetails> _boardCells = [];
 
-  List<ValueNotifier<CellDetails>> get boardCells => _boardCells;
+  List<CellDetails> get boardCells => _boardCells;
 
   final List<Pawn> _pawns = [];
 
@@ -37,7 +37,7 @@ class GameViewModel extends ChangeNotifier {
   CellType _currentPlayer = CellType.UNDEFINED;
 
   GameViewModel() {
-    _setCheckersBoard(_game.board);
+    _setCheckersBoard(_game.flatBoard);
     _setPawns(_game.pawns);
     _setCurrentPlayer(_game.player);
   }
@@ -96,7 +96,7 @@ class GameViewModel extends ChangeNotifier {
 
     if (isValidStartCellSelected) {
       _selectedStartCellActions(row, column);
-      _setCheckersBoard(_game.board);
+      _setCheckersBoard(_game.flatBoard);
       return TapOnBoard.START;
     }
 
@@ -120,7 +120,7 @@ class GameViewModel extends ChangeNotifier {
 
   void onPawnMoveAnimationFinish() {
     _selectedDestinationCellActions(_destinationRow, _destinationCol, _paths);
-    _setCheckersBoard(_game.board);
+    _setCheckersBoard(_game.flatBoard);
     _setPawns(_game.pawns);
     _isInProcess = false;
     _currPawn = null;
@@ -132,24 +132,17 @@ class GameViewModel extends ChangeNotifier {
     _selectedCol = col;
   }
 
-  void _setCheckersBoard(List<List<CellDetails>> board) {
-    List<CellDetails> flatBoard = [...board.expand((element) => element)];
+  void _setCheckersBoard(List<CellDetails> flatBoard) {
     if (_boardCells.isEmpty) {
-      _boardCells.addAll(flatBoard.map((cell) => ValueNotifier(cell)).toList());
+      _boardCells.addAll(flatBoard);
     } else {
       for (final (index, cellDetails) in flatBoard.indexed) {
         final tmpCell = _boardCells[index];
 
-        if (tmpCell.value.color.value != cellDetails.tmpColor.value ||
-            tmpCell.value.tmpColor.value != cellDetails.color.value) {
-          tmpCell.value = CellDetails(
-              cellDetails.cellType,
-              cellDetails.id,
-              cellDetails.isEmpty,
-              cellDetails.color,
-              cellDetails.row,
-              cellDetails.column)
-            ..setTmpColor(cellDetails.tmpColor);
+        if (tmpCell.color.value != cellDetails.tmpColor.value ||
+            tmpCell.tmpColor.value != cellDetails.color.value) {
+          tmpCell.setCellDetailsDataValueNotifier(
+              tmpColor: cellDetails.tmpColor);
         }
       }
     }

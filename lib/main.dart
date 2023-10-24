@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
 import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/cell.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn_piece.dart';
 
@@ -88,7 +90,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget build(BuildContext context) => _mainBoard(context);
 
   Widget _mainBoard(BuildContext context) {
-    print("MAIN WIDGET REBUILD _mainBoard");
+    // print("MAIN WIDGET REBUILD _mainBoard");
     final cellSize =
         (MediaQuery.of(context).size.width - 10) / 8; // For an 8x8 board
 
@@ -119,42 +121,41 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   void handlePlayerTap(GameViewModel gameViewModel, Pawn pawn) {}
 
   List<Widget> _getCells(double cellSize) {
-    print("MAIN WIDGET _getCells");
+    // print("MAIN WIDGET _getCells");
 
     final gameViewModel = Provider.of<GameViewModel>(context, listen: false);
 
     return gameViewModel.boardCells
-        .map((cell) => ValueListenableBuilder<CellDetails>(
-              valueListenable: cell,
-              builder: (ctx, cellDetails, _) {
-                print("MAIN WIDGET REBUILD _getCells: $cell");
+        .map((cell) => Positioned(
+              left: cell.offset.dx * cellSize,
+              top: cell.offset.dy * cellSize,
+              child: GestureDetector(
+                onTap: () {
+                  TapOnBoard tapOnBoard =
+                      gameViewModel.onClickCell(cell.row, cell.column);
+                  if (tapOnBoard == TapOnBoard.END) {
+                    handleCellTap(gameViewModel, cell);
+                  }
+                },
+                child: ValueListenableBuilder<CellDetailsData>(
+                  valueListenable: cell.cellDetailsData,
+                  builder: (ctx, cellDetailsData, _) {
+                    // print("MAIN WIDGET REBUILD _getCells: $cell");
 
-                return Positioned(
-                  left: cellDetails.offset.dx * cellSize,
-                  top: cellDetails.offset.dy * cellSize,
-                  child: RepaintBoundary(
-                      child: GestureDetector(
-                    onTap: () {
-                      TapOnBoard tapOnBoard = gameViewModel.onClickCell(
-                          cellDetails.row, cellDetails.column);
-                      if (tapOnBoard == TapOnBoard.END) {
-                        handleCellTap(gameViewModel, cellDetails);
-                      }
-                    },
-                    child: Container(
-                      color: cellDetails.tmpColor,
-                      width: cellSize,
-                      height: cellSize,
-                    ),
-                  )),
-                );
-              },
+                    return RepaintBoundary(
+                        child: CustomPaint(
+                      painter: CellPainter(cellDetailsData.tmpColor),
+                      size: Size(cellSize, cellSize),
+                    ));
+                  },
+                ),
+              ),
             ))
         .toList();
   }
 
   List<Widget> _getPawns(double cellSize) {
-    print("MAIN WIDGET _getPawns");
+    // print("MAIN WIDGET _getPawns");
 
     List<Pawn> currPawns =
         Provider.of<GameViewModel>(context, listen: false).pawns;
@@ -165,7 +166,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                print("MAIN WIDGET REBUILD _getPawns: $pawn");
+                // print("MAIN WIDGET REBUILD _getPawns: $pawn");
 
                 return pawnData.isKilled
                     ? Container()

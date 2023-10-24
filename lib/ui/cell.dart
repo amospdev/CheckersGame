@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 class CellPainter extends CustomPainter {
   Color color;
-  final Offset offset;
 
-  CellPainter(this.color, this.offset);
+  CellPainter(this.color);
 
   @override
   void paint(Canvas canvas, Size size) {

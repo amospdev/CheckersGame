@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
+import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/game_rules_type.dart';
 
@@ -91,15 +91,16 @@ class CheckersBoard {
       _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
 
   void _printBoard() {
-    for (int i = 0; i < 8; i++) {
-      String row = "";
-      for (int j = 0; j < 8; j++) {
-        row += "${_board[i][j].cellType.index} ";
-      }
-      if (kDebugMode) {
-        print(row);
-      }
-    }
+
+    // for (int i = 0; i < 8; i++) {
+    //   String row = "";
+    //   for (int j = 0; j < 8; j++) {
+    //     row += "${_board[i][j].cellType.index} ";
+    //   }
+    //   if (kDebugMode) {
+    //     print(row);
+    //   }
+    // }
   }
 
   bool _isInBoundsByPosition(Position position) =>
@@ -299,25 +300,30 @@ class CheckersBoard {
     bool isKing = _isKingByPosition(startPosition);
 
     List<Path> paths = [];
+    PositionDetails startPositionPath =
+        _getPositionDetailsNonCapture(startPosition);
     if (isKing) {
-      _fetchAllPathsKing(paths, startPosition);
+      _fetchAllPathsKing(
+          paths, startPosition, startPositionPath, _getKingDirections());
     } else {
-      _fetchAllPathsPiece(paths, startPosition);
+      _fetchAllPathsPiece(
+          paths, startPosition, startPositionPath, _getPieceDirections());
     }
 
     return paths;
   }
 
-  void _fetchAllPathsKing(List<Path> paths, Position startPosition) {
-    _fetchAllCapturePathsKing(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+  void _fetchAllPathsKing(List<Path> paths, Position startPosition,
+      PositionDetails startPositionPath, List<Position> kingDirections) {
+    _fetchAllCapturePathsKing(
+        paths, startPosition, [startPositionPath], kingDirections);
 
     if (_hasCapturePaths(paths)) {
       return;
     }
 
-    _fetchAllSimplePathsKingSingle(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getKingDirections());
+    _fetchAllSimplePathsKingSingle(
+        paths, startPosition, [startPositionPath], kingDirections);
   }
 
   void _fetchAllCapturePathsKing(List<Path> paths, Position startPosition,
@@ -354,31 +360,34 @@ class CheckersBoard {
     }
   }
 
-  void _fetchAllPathsPiece(List<Path> paths, Position startPosition) {
-    _fetchAllCapturePathsPiece(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
+  void _fetchAllPathsPiece(List<Path> paths, Position startPosition,
+      PositionDetails startPositionPath, List<Position> pieceDirections) {
+    _fetchAllCapturePathsPiece(
+        paths, startPosition, [startPositionPath], pieceDirections);
 
     if (_hasCapturePaths(paths)) {
       return;
     }
 
-    _fetchAllSimplePathsPiece(paths, startPosition,
-        [_getPositionDetailsNonCapture(startPosition)], _getPieceDirections());
+    _fetchAllSimplePathsPiece(
+        paths, startPosition, [startPositionPath], pieceDirections);
   }
 
   void _paintCells(List<Path> paths) {
     for (Path path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
-        Position position = positionDetails.position;
-        CellDetails cellDetails = flatBoard.firstWhere((element) =>
-            element.row == position.row && element.column == position.column);
+        Color color;
         if (index == 0) {
-          cellDetails.changeColor(Colors.green);
+          color = Colors.green;
         } else if (positionDetails.isCapture) {
-          cellDetails.changeColor(Colors.redAccent);
+          color = Colors.redAccent;
         } else {
-          cellDetails.changeColor(Colors.blueAccent);
+          color = Colors.blueAccent;
         }
+        flatBoard
+            .firstWhere(
+                (element) => element.position == positionDetails.position)
+            .changeColor(color);
       }
     }
   }
@@ -582,25 +591,6 @@ class CheckersBoard {
 
   Path _createPath(List<PositionDetails> positionDetailsList) =>
       Path(positionDetailsList);
-}
-
-class Position {
-  final int row;
-  final int column;
-
-  Position(this.row, this.column);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Position && other.row == row && other.column == column;
-  }
-
-  @override
-  int get hashCode => row.hashCode ^ column.hashCode;
-
-  @override
-  String toString() => '($row, $column)';
 }
 
 class PositionDetails {

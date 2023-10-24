@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
+import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/game_rules_type.dart';
+import 'package:untitled/enum/tap_on_board.dart';
 import 'game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
@@ -204,11 +206,4 @@ class GameViewModel extends ChangeNotifier {
   void _clearPathSize() => _pathSize = -1;
 
   void onMovePawn(Offset value) => currPawn?.setPawnDataNotifier(offset: value);
-}
-
-enum TapOnBoard {
-  START,
-  END,
-  UNVALID,
-  VALID,
 }

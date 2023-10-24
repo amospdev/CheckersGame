@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details_data.dart';
+import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 class CellDetails {
@@ -10,12 +11,16 @@ class CellDetails {
   final int row;
   final int column;
 
+  Position get position => _position;
+  Position _position = Position(-1, -1);
+
   final ValueNotifier<CellDetailsData> _cellDetailsDataValueNotifier =
       ValueNotifier<CellDetailsData>(CellDetailsData.createEmpty());
 
   CellDetails(
       this.cellType, this.id, this.isEmpty, this.color, this.row, this.column) {
     _cellDetailsDataValueNotifier.value = CellDetailsData(tmpColor: color);
+    _position = Position(row, column);
   }
 
   void _setCellDetailsDataValueNotifier({Color? tmpColor}) {

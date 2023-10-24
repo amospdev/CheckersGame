@@ -4,6 +4,7 @@ import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/cell.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';

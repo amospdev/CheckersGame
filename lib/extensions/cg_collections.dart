@@ -17,17 +17,4 @@ extension FirstWhereOrNullExtension<T> on Iterable<T> {
     }
     return Optional<T>.empty();
   }
-
 }
-
-// extension FirstWhereOrAbsentExtension<E> on Iterable<E> {
-//   Optional<E> firstWhereOrAbsent(bool Function(E) test) {
-//     for (var element in this) {
-//       if (test(element)) {
-//         return Optional.of(element);
-//       }
-//     }
-//     return Optional<E>.empty();
-//   }
-// }
-

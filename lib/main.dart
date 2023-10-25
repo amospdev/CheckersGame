@@ -40,7 +40,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
   late Animation<Offset> _animation;
 
-  static const int _pawnMoveDuration = 165;
+  static const int _pawnMoveDuration = 150;
 
   @override
   void initState() {
@@ -143,7 +143,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     // print("MAIN WIDGET REBUILD _getCells: $cell");
 
                     return RepaintBoundary(
-                        child: Container(
+                        child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 125),
                       color: cell.tmpColor,
                       height: cellSize,
                       width: cellSize,
@@ -156,8 +157,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   List<Widget> _getPawns(double cellSize) {
-    // print("MAIN WIDGET _getPawns");
-
     List<Pawn> currPawns =
         Provider.of<GameViewModel>(context, listen: false).pawns;
 
@@ -165,11 +164,17 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                // print("MAIN WIDGET REBUILD _getPawns: $pawn");
-
-                return pawnData.isKilled
-                    ? Container()
-                    : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating);
+                return Positioned(
+                  left: pawnData.offset.dx * cellSize,
+                  top: pawnData.offset.dy * cellSize,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: pawnData.isKilled
+                        ? Container(key: ValueKey('empty_${pawn.id}'))
+                        : _buildPawnWidget(
+                            pawn, cellSize, pawnData.isAnimating),
+                  ),
+                );
               },
             ))
         .toList();
@@ -178,7 +183,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
-      PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController);
+      PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController,
+          key: ValueKey('pawn_${pawn.id}PawnPiece'));
 
   @override
   void dispose() {

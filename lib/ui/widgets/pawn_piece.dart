@@ -53,27 +53,23 @@ class PawnPieceState extends State<PawnPiece>
       _getPawn(pawn, isAnimatingPawn, cellSize);
 
   Widget _getPawn(Pawn pawn, bool isAnimatingPawn, double cellSize) {
-    return Positioned(
-      left: pawn.pawnDataNotifier.value.offset.dx * cellSize,
-      top: pawn.pawnDataNotifier.value.offset.dy * cellSize,
-      child: GestureDetector(
-        onTap: () => Provider.of<GameViewModel>(context, listen: false)
-            .onClickPawn(pawn.row, pawn.column),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Transform.scale(
-              scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-              child: RepaintBoundary(
-                  child: CustomPaint(
-                size: Size(cellSize, cellSize),
-                painter: PawnPainter(pawn.color),
-              )),
-            ),
-            pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
-          ],
-        ),
+    return GestureDetector(
+      onTap: () => Provider.of<GameViewModel>(context, listen: false)
+          .onClickPawn(pawn.row, pawn.column),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Transform.scale(
+            scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
+            scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
+            child: RepaintBoundary(
+                child: CustomPaint(
+                  size: Size(cellSize, cellSize),
+                  painter: PawnPainter(pawn.color),
+                )),
+          ),
+          pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
+        ],
       ),
     );
   }

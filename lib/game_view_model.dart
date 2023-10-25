@@ -17,7 +17,6 @@ class GameViewModel extends ChangeNotifier {
   int _destinationRow = -1;
   int _destinationCol = -1;
   int _pathSize = -1;
-  int _indexCurrPawn = -1;
 
   int get pathSize => _pathSize;
   Pawn? _currPawn;
@@ -114,16 +113,10 @@ class GameViewModel extends ChangeNotifier {
       _pathSize = path.positionDetailsList.length;
       _isContinuePath = path.isContinuePath;
       _setCurrPawn();
-      _setIndexCurrPawn(_currPawn);
       return TapOnBoard.END;
     }
 
     return TapOnBoard.UNVALID;
-  }
-
-  void _setIndexCurrPawn(Pawn? currPawn) {
-    if (currPawn == null) return;
-    _indexCurrPawn = _game.pawnsWithoutKills.indexOf(currPawn);
   }
 
   void _setCurrPawn() {
@@ -136,8 +129,7 @@ class GameViewModel extends ChangeNotifier {
     _selectedDestinationCellActions(_destinationRow, _destinationCol, _paths);
     _setCheckersBoard(_game.flatBoard);
     _setPawns(_game.pawns);
-    _isInProcess = false;
-    _currPawn = null;
+    _clearDataPreNextTurnState();
     _continueNextIterationOrTurn(_destinationRow, _destinationCol);
   }
 
@@ -168,8 +160,8 @@ class GameViewModel extends ChangeNotifier {
       return;
     }
 
-    for (var (index, pawn) in newPawns.indexed) {
-      if (pawn.pawnDataNotifier.value.isKilled) {
+    for (var (index, newPawn) in newPawns.indexed) {
+      if (newPawn.pawnDataNotifier.value.isKilled) {
         Pawn oldPawn = _pawns[index];
         if (!oldPawn.pawnDataNotifier.value.isKilled) {
           oldPawn.setPawnDataNotifier(isKilled: true);
@@ -177,9 +169,7 @@ class GameViewModel extends ChangeNotifier {
       }
     }
 
-    if (_indexCurrPawn != -1) {
-      _pawns[_indexCurrPawn].setPawnDataNotifier(isAnimating: false);
-    }
+    _currPawn?.setPawnDataNotifier(isAnimating: false);
   }
 
   void _setCurrentPlayer(CellType currentPlayer) {
@@ -187,26 +177,34 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _nextTurn() {
-    _clearPrevState();
+    _clearDataNextTurnState();
     _game.nextTurn();
     _setCurrentPlayer(_game.player);
   }
 
-  void _clearPrevState() {
+  void _clearDataPreNextTurnState() {
+    _resetIsInProcess();
+    _resetCurrPawn();
+  }
+
+  void _clearDataNextTurnState() {
     _clearPrevSelected();
     _clearPrevPaths();
-    _clearPathSize();
-    _clearIndexCurrPawn();
+    _resetPathSize();
   }
 
   void _clearPrevSelected() {
-    _clearSelectedRow();
-    _clearSelectedColumn();
+    _resetSelectedRow();
+    _resetSelectedColumn();
   }
 
-  void _clearSelectedRow() => _selectedRow = -1;
+  void _resetIsInProcess() => _isInProcess = false;
 
-  void _clearSelectedColumn() => _selectedCol = -1;
+  void _resetCurrPawn() => _currPawn = null;
+
+  void _resetSelectedRow() => _selectedRow = -1;
+
+  void _resetSelectedColumn() => _selectedCol = -1;
 
   void _clearPrevPaths() => _paths.clear();
 
@@ -219,11 +217,12 @@ class GameViewModel extends ChangeNotifier {
 
   bool isAlreadyMarkedKing(int id) => _markedKings.contains(id);
 
-  void onPawnMoveAnimationStart() => _isInProcess = true;
+  void onPawnMoveAnimationStart(Offset endPosition) {
+    _isInProcess = true;
+    currPawn?.setPawnDataNotifier(offset: endPosition);
+  }
 
-  void _clearPathSize() => _pathSize = -1;
+  void _resetPathSize() => _pathSize = -1;
 
   void onMovePawn(Offset value) => currPawn?.setPawnDataNotifier(offset: value);
-
-  void _clearIndexCurrPawn() => _indexCurrPawn = -1;
 }

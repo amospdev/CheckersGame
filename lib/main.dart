@@ -38,7 +38,6 @@ class GameBoard extends StatefulWidget {
 
 class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
-  late Animation<Offset> _animation;
 
   static const int _pawnMoveDuration = 150;
 
@@ -49,41 +48,25 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
-    );
-
-    _animation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(_pawnMoveController);
-
-    _animation.addListener(_animationListener);
+    )..addStatusListener((status) {
+        final gameViewModel = context.read<GameViewModel>();
+        if (_pawnMoveController.isCompleted) {
+          gameViewModel.onPawnMoveAnimationFinish();
+        }
+      });
   }
 
-  void _animationListener() {
-    final gameViewModel = context.read<GameViewModel>();
-    gameViewModel.onMovePawn(_animation.value);
-    if (_pawnMoveController.isCompleted) {
-      gameViewModel.onPawnMoveAnimationFinish();
-    }
-  }
-
-  void _startPawnMoveAnimation(GameViewModel gameViewModel) {
-    gameViewModel.onPawnMoveAnimationStart();
-    _pawnMoveController.forward(from: 0.0);
-  }
+  void _startPawnMoveAnimation() => _pawnMoveController.forward(from: 0.0);
 
   void movePlayerTo(int row, int column, GameViewModel gameViewModel) {
     final endPosition = Offset(column.toDouble(), row.toDouble());
 
+    gameViewModel.onPawnMoveAnimationStart(endPosition);
+
     _pawnMoveController.duration =
         Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
 
-    _animation = Tween<Offset>(
-      begin: gameViewModel.currPawn?.pawnDataNotifier.value.offset,
-      end: endPosition,
-    ).animate(_pawnMoveController);
-
-    _startPawnMoveAnimation(gameViewModel);
+    _startPawnMoveAnimation();
   }
 
   @override
@@ -117,8 +100,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   void handleCellTap(GameViewModel gameViewModel, CellDetails cell) =>
       movePlayerTo(cell.row, cell.column, gameViewModel);
-
-  void handlePlayerTap(GameViewModel gameViewModel, Pawn pawn) {}
 
   List<Widget> _getCells(double cellSize) {
     // print("MAIN WIDGET _getCells");
@@ -164,7 +145,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                return Positioned(
+                return AnimatedPositioned(
+                  duration: _pawnMoveController.duration ??
+                      const Duration(milliseconds: 200),
                   left: pawnData.offset.dx * cellSize,
                   top: pawnData.offset.dy * cellSize,
                   child: AnimatedSwitcher(
@@ -189,7 +172,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   @override
   void dispose() {
     _pawnMoveController.dispose();
-    _animation.removeListener(_animationListener);
     super.dispose();
   }
 }

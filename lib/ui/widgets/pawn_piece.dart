@@ -59,14 +59,19 @@ class PawnPieceState extends State<PawnPiece>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Transform.scale(
-            scaleX: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-            scaleY: isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-            child: RepaintBoundary(
-                child: CustomPaint(
+          AnimatedBuilder(
+            animation: _radiusFactorAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale:
+                    widget.isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
+                child: RepaintBoundary(
+                    child: CustomPaint(
                   size: Size(cellSize, cellSize),
                   painter: PawnPainter(pawn.color),
                 )),
+              );
+            },
           ),
           pawn.isKing ? CrownAnimation(pawn) : const SizedBox(),
         ],

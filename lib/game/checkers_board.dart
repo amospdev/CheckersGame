@@ -91,7 +91,6 @@ class CheckersBoard {
       _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
 
   void _printBoard() {
-
     // for (int i = 0; i < 8; i++) {
     //   String row = "";
     //   for (int j = 0; j < 8; j++) {
@@ -495,8 +494,6 @@ class CheckersBoard {
 
     // IMPORTANT: Update the starting position to empty
     _clearStartPosition(startPosition);
-
-    // _clearAllCellColors();
   }
 
   void _updateEndPosition(Position startPosition, Position endPosition) {
@@ -511,11 +508,10 @@ class CheckersBoard {
 
     _setCell(cellType, endPosition);
 
-    _updatePawns(startPosition, endPosition, isKing);
+    _updatePawn(startPosition, endPosition, isKing);
   }
 
-  void _updatePawns(
-          Position startPosition, Position endPosition, bool isKing) =>
+  void _updatePawn(Position startPosition, Position endPosition, bool isKing) =>
       pawnsWithoutKills
           .firstWhere((pawn) =>
               pawn.row == startPosition.row &&
@@ -524,7 +520,8 @@ class CheckersBoard {
           .setIsKing(isKing)
           .setPawnDataNotifier(
               offset: Offset(
-                  endPosition.column.toDouble(), endPosition.row.toDouble()));
+                  endPosition.column.toDouble(), endPosition.row.toDouble()),
+              isAnimating: false);
 
   bool _isKingPiece(
           {required Position startPosition,

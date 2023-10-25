@@ -4,6 +4,8 @@ import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/game_rules_type.dart';
+import 'package:untitled/extensions/cg_collections.dart';
+import 'package:untitled/extensions/cg_optional.dart';
 
 class CheckersBoard {
   static const int _whiteKingRow = 0;
@@ -71,9 +73,6 @@ class CheckersBoard {
       }
     }
   }
-
-  CellDetails getCellDetails(int row, int column) => flatBoard
-      .firstWhere((element) => element.row == row && element.column == column);
 
   List<Position> _getPieceDirections() => [
         _createPosition(_getRowDirection(), 1),
@@ -354,7 +353,9 @@ class CheckersBoard {
   void _clearAllCellColors() {
     for (var element in _board) {
       for (var cell in element) {
-        cell.clearColor();
+        if (cell.tmpColor != cell.color) {
+          cell.clearColor();
+        }
       }
     }
   }
@@ -383,10 +384,15 @@ class CheckersBoard {
         } else {
           color = Colors.blueAccent;
         }
-        flatBoard
-            .firstWhere(
-                (element) => element.position == positionDetails.position)
-            .changeColor(color);
+        Optional<CellDetails> cellDetails = flatBoard.firstWhereOrAbsent(
+            (element) => element.position == positionDetails.position);
+
+        if (cellDetails.isAbsent) {
+          print("CB _paintCells cellDetails is ABSENT");
+          continue;
+        }
+
+        cellDetails.value.changeColor(color);
       }
     }
   }
@@ -469,18 +475,27 @@ class CheckersBoard {
     if (_isPathNotValid(paths)) return;
     Position startPosition = _createPosition(startRow, startCol);
     Position endPosition = _createPosition(endRow, endCol);
-    Path path = _getRelevantPath(paths, startPosition, endPosition);
+    Optional<Path> path = _getRelevantPath(paths, startPosition, endPosition);
+    if (path.isAbsent) return;
 
     _performMoveByPosition(
-        startPosition, endPosition, path.positionDetailsList);
+        startPosition, endPosition, path.value.positionDetailsList);
     _clearAllCellColors();
   }
 
-  Path _getRelevantPath(
-          List<Path> paths, Position startPosition, Position endPosition) =>
-      paths.firstWhere((element) =>
-          element.positionDetailsList.first.position == startPosition &&
-          element.positionDetailsList.last.position == endPosition);
+  Optional<Path> _getRelevantPath(
+      List<Path> paths, Position startPosition, Position endPosition) {
+    Optional<Path> path = paths.firstWhereOrAbsent((element) =>
+        element.positionDetailsList.first.position == startPosition &&
+        element.positionDetailsList.last.position == endPosition);
+
+    if (path.isAbsent) {
+      print("CB _getRelevantPath path IS ABSENT");
+      return const Optional.empty();
+    }
+
+    return path;
+  }
 
   bool _isPathNotValid(List<Path> paths) => paths.isEmpty;
 
@@ -511,17 +526,23 @@ class CheckersBoard {
     _updatePawn(startPosition, endPosition, isKing);
   }
 
-  void _updatePawn(Position startPosition, Position endPosition, bool isKing) =>
-      pawnsWithoutKills
-          .firstWhere((pawn) =>
-              pawn.row == startPosition.row &&
-              pawn.column == startPosition.column)
-          .setPosition(endPosition.row, endPosition.column)
-          .setIsKing(isKing)
-          .setPawnDataNotifier(
-              offset: Offset(
-                  endPosition.column.toDouble(), endPosition.row.toDouble()),
-              isAnimating: false);
+  void _updatePawn(Position startPosition, Position endPosition, bool isKing) {
+    Optional<Pawn> pawn = pawnsWithoutKills.firstWhereOrAbsent((pawn) =>
+        pawn.row == startPosition.row && pawn.column == startPosition.column);
+
+    if (pawn.isAbsent) {
+      print("CB _updatePawn pawn IS ABSENT");
+      return;
+    }
+
+    pawn.value
+        .setPosition(endPosition.row, endPosition.column)
+        .setIsKing(isKing)
+        .setPawnDataNotifier(
+            offset: Offset(
+                endPosition.column.toDouble(), endPosition.row.toDouble()),
+            isAnimating: false);
+  }
 
   bool _isKingPiece(
           {required Position startPosition,
@@ -538,13 +559,14 @@ class CheckersBoard {
       if (positionDetails.isCapture) {
         _clearCapturePiece(positionDetails.position);
 
-        pawnsWithoutKills
-            .firstWhere(
-                (pawn) =>
-                    pawn.row == positionDetails.position.row &&
-                    pawn.column == positionDetails.position.column,
-                orElse: () => Pawn.createEmpty())
-            .setPawnDataNotifier(isKilled: true);
+        Optional<Pawn> pawn = pawnsWithoutKills.firstWhereOrAbsent((pawn) =>
+            pawn.row == positionDetails.position.row &&
+            pawn.column == positionDetails.position.column);
+        if (pawn.isAbsent) {
+          print("CB _removeCapturedPieces pawn IS ABSENT");
+          continue;
+        }
+        pawn.value.setPawnDataNotifier(isKilled: true);
       }
     }
   }
@@ -579,12 +601,18 @@ class CheckersBoard {
 
   void _clearPrevData() {}
 
-  Path getPathByEndPosition(int endRow, int endColumn, List<Path> paths) =>
-      paths.firstWhere(
-          (element) =>
-              element.positionDetailsList.last.position ==
-              _createPosition(endRow, endColumn),
-          orElse: () => Path.createEmpty());
+  Optional<Path> getPathByEndPosition(
+      int endRow, int endColumn, List<Path> paths) {
+    Optional<Path> path = paths.firstWhereOrAbsent((element) =>
+        element.positionDetailsList.last.position ==
+        _createPosition(endRow, endColumn));
+
+    if (path.isAbsent) {
+      print("CB getPathByEndPosition pawn IS ABSENT");
+      return const Optional.empty();
+    }
+    return path;
+  }
 
   Path _createPath(List<PositionDetails> positionDetailsList) =>
       Path(positionDetailsList);

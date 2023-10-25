@@ -5,6 +5,8 @@ import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/game_rules_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
+import 'package:untitled/extensions/cg_collections.dart';
+import 'package:untitled/extensions/cg_optional.dart';
 import 'game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
@@ -105,8 +107,12 @@ class GameViewModel extends ChangeNotifier {
     _destinationRow = row;
     _destinationCol = column;
 
-    Path path =
+    Optional<Path> optionalPath =
         _game.getPathByEndPosition(_destinationRow, _destinationCol, _paths);
+    if (optionalPath.isAbsent) return TapOnBoard.UNVALID;
+
+    Path path = optionalPath.value;
+
     bool isValidDestinationCellSelected = path.isValidPath();
 
     if (isValidDestinationCellSelected) {
@@ -120,9 +126,16 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _setCurrPawn() {
-    _currPawn = _game.pawnsWithoutKills.firstWhere((element) =>
-        element.row == _selectedRow && element.column == _selectedCol)
-      ..setPawnDataNotifier(isAnimating: true);
+    Pawn? currPawn = _game.pawnsWithoutKills.firstWhereOrNull((element) =>
+        element.row == _selectedRow && element.column == _selectedCol);
+
+    if (currPawn == null) {
+      return;
+    }
+
+    currPawn.setPawnDataNotifier(isAnimating: true);
+
+    _currPawn = currPawn;
   }
 
   void onPawnMoveAnimationFinish() {

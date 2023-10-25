@@ -23,10 +23,9 @@ class CellDetails {
     _position = Position(row, column);
   }
 
-  void _setCellDetailsDataValueNotifier({Color? tmpColor}) {
-    _cellDetailsDataValueNotifier.value = CellDetailsData(
-        tmpColor: tmpColor ?? _cellDetailsDataValueNotifier.value.tmpColor);
-  }
+  void _setCellDetailsDataValueNotifier({Color? tmpColor}) =>
+      _cellDetailsDataValueNotifier.value = CellDetailsData(
+          tmpColor: tmpColor ?? _cellDetailsDataValueNotifier.value.tmpColor);
 
   ValueNotifier<CellDetailsData> get cellDetailsData =>
       _cellDetailsDataValueNotifier;

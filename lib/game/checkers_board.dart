@@ -192,17 +192,9 @@ class CheckersBoard {
       _isSamePlayer(position.row, position.column);
 
   bool _isSamePlayer(int row, int column) {
-    if (_isWhiteByPosition(_createPosition(row, column)) &&
-        _isWhitePlayerTurn()) {
-      return true;
-    }
-
-    if (_isBlackByPosition(_createPosition(row, column)) &&
-        _isBlackPlayerTurn()) {
-      return true;
-    }
-
-    return false;
+    Position position = _createPosition(row, column);
+    return (_isWhiteByPosition(position) && _isWhitePlayerTurn()) ||
+        (_isBlackByPosition(position) && _isBlackPlayerTurn());
   }
 
   bool _isValidStartCellSelectedByPosition(Position startPosition) =>

@@ -3,14 +3,13 @@ import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
-import 'package:untitled/enum/game_rules_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_optional.dart';
 import 'game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
-  final CheckersBoard _game = CheckersBoard(GameRulesType.KING_SINGLE);
+  final CheckersBoard _game = CheckersBoard();
   final Set<int> _markedKings = {};
 
   bool _isContinuePath = false;
@@ -52,8 +51,8 @@ class GameViewModel extends ChangeNotifier {
 
   _setPaths(List<Path> paths) => _paths = paths;
 
-  void _performMove() => _game.performMove(
-      _selectedRow, _selectedCol, _destinationRow, _destinationCol, _paths);
+  void _performMove() => _game.performMove(_selectedRow, _selectedCol,
+      _destinationRow, _destinationCol, _paths, _game.board);
 
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>
       _isContinuePath ? onTapBoardGame(endRow, endColumn) : _nextTurn();
@@ -83,7 +82,8 @@ class GameViewModel extends ChangeNotifier {
       return TapOnBoard.UNVALID;
     }
 
-    if (_game.isValidStartCellSelected(rowStartOrEnd, columnStartOrEnd)) {
+    if (_game.isValidStartCellSelected(
+        rowStartOrEnd, columnStartOrEnd, _game.board)) {
       return _handleStartCellTap(rowStartOrEnd, columnStartOrEnd);
     }
 
@@ -96,7 +96,8 @@ class GameViewModel extends ChangeNotifier {
 
   TapOnBoard _handleStartCellTap(int row, int column) {
     _setSelectPiece(row, column);
-    _setPaths(_game.getPossiblePathsByPosition(row, column, _isContinuePath));
+    _setPaths(_game.getPossiblePathsByPosition(
+        row, column, _isContinuePath, _game.board));
     _setCheckersBoard(_game.flatBoard);
     return TapOnBoard.START;
   }
@@ -144,7 +145,7 @@ class GameViewModel extends ChangeNotifier {
     _destinationCol = col;
   }
 
-  void _setCheckersBoard(List<CellDetails> flatBoard) {
+  void _setCheckersBoard(Iterable<CellDetails> flatBoard) {
     if (_boardCells.isEmpty) {
       _boardCells.addAll(flatBoard);
       return;
@@ -183,7 +184,7 @@ class GameViewModel extends ChangeNotifier {
 
   void _nextTurn() {
     _clearDataNextTurnState();
-    _game.nextTurn();
+    _game.nextTurn(_game.board);
     _setCurrentPlayer(_game.player);
   }
 

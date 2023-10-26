@@ -227,12 +227,14 @@ class CheckersBoard {
 
   bool _isCanCellStartCaptureMoveKing(
           Position startPosition, List<Position> directions) =>
-      directions.any((positionDir) {
-        Position nextPosition = _getNextPosition(startPosition, positionDir);
-        Position afterNextPosition =
-            _getNextPosition(nextPosition, positionDir);
-        return _isCaptureMove(nextPosition, afterNextPosition);
-      });
+      directions.any((positionDir) =>
+          _isPointCaptureMove(startPosition, positionDir));
+
+  bool _isPointCaptureMove(Position startPosition, Position positionDir) {
+    Position nextPosition = _getNextPosition(startPosition, positionDir);
+    Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+    return _isPointsCaptureMove(nextPosition, afterNextPosition);
+  }
 
   bool _isCanCellStartSimpleMoveKing(
       Position startPosition, List<Position> directions) {
@@ -249,7 +251,7 @@ class CheckersBoard {
     for (Position positionDir in directions) {
       Position nextPosition = _getNextPosition(startPosition, positionDir);
       Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
-      if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
+      if (_isPointsCaptureMove(nextPosition, afterNextPosition)) return true;
     }
 
     return false;
@@ -348,7 +350,7 @@ class CheckersBoard {
       Position nextPosition = _getNextPosition(startPosition, positionDir);
       Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
       List<PositionDetails> positionDetailsTmp = [...positionDetails];
-      bool isNotCaptureMove = !_isCaptureMove(nextPosition, afterNextPosition);
+      bool isNotCaptureMove = !_isPointsCaptureMove(nextPosition, afterNextPosition);
       if (isNotCaptureMove) continue;
 
       positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
@@ -467,7 +469,7 @@ class CheckersBoard {
   bool _hasCapturePaths(List<Path> paths) => paths.any(
       (element) => _hasCapturePositionDetails(element.positionDetailsList));
 
-  bool _isCaptureMove(Position currPosition, Position nextPosition) =>
+  bool _isPointsCaptureMove(Position currPosition, Position nextPosition) =>
       _isInBoundsByPosition(currPosition) &&
       _isInBoundsByPosition(nextPosition) &&
       _isOpponentCell(currPosition) &&

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
 class MainGameBorder extends StatelessWidget {
-  final double cellSize;
-
-  const MainGameBorder(this.cellSize, {super.key});
+  const MainGameBorder({super.key});
 
   @override
-  Widget build(BuildContext context) => _mainGameBorder(cellSize);
+  Widget build(BuildContext context) =>
+      _mainGameBorder((MediaQuery.of(context).size.width - 10) / 8);
 
   Widget _mainGameBorder(double cellSize) => Container(
-    key: const ValueKey("MainGameBorderWidget"),
       width: 8 * cellSize + 10,
       // Increased size to account for the border and prevent cut-off
       height: 8 * cellSize + 10,

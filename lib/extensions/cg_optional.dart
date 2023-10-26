@@ -20,11 +20,18 @@ class Optional<T> {
 
   T orElse(T defaultValue) => _value ?? defaultValue;
 
-  Optional<U> map<U>(U Function(T) mapper) {
+  bool condition(bool Function(Optional<T>) predicate) {
+    if (isPresent && predicate(Optional.of(_value as T))) {
+      return true;
+    }
+    return false;
+  }
+
+  Optional<U> map<U>(U Function(Optional<T>) mapper) {
     if (!isPresent) {
       return Optional<U>.empty();
     }
-    return Optional<U>.of(mapper(_value as T));
+    return Optional<U>.of(mapper(Optional.of(_value as T)));
   }
 
   void ifPresent(void Function(T) consumer) {

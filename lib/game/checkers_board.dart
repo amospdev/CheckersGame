@@ -262,28 +262,20 @@ class CheckersBoard {
       int row, int column, bool isContinuePath) {
     _clearAllCellColors();
 
-    List<Path> paths = [];
     Position startPosition = _createPosition(row, column);
     List<Position> directions = _getDirectionsByType(startPosition);
-    if (isContinuePath) {
-      paths.addAll(getPossibleContinuePaths(row, column, directions));
-    } else {
-      paths.addAll(getPossiblePaths(row, column));
-    }
 
-    for (Path path in paths) {
+    List<Path> paths = isContinuePath
+        ? getPossibleContinuePaths(row, column, directions)
+        : getPossiblePaths(row, column);
+
+    for (var path in paths) {
       Position position = path.positionDetailsList.last.position;
-      bool isContinuePaths = false;
-
-      isContinuePaths = _isContinuePaths(
+      paths[paths.indexOf(path)].isContinuePath = _isContinuePaths(
           position.row, position.column, path.positionDetailsList, directions);
-
-      // path.isContinuePath = isContinuePaths;
-      paths[paths.indexOf(path)].isContinuePath = isContinuePaths;
     }
 
     _paintCells(paths);
-
     return paths;
   }
 

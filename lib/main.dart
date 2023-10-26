@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
@@ -21,9 +22,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("REBUILD MyApp");
+    if (kDebugMode) {
+      print("REBUILD MyApp");
+    }
     return MaterialApp(
-      title: 'דמקה',
+      title: 'Checkers Game',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const GameBoard(),
     );
@@ -41,16 +44,16 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late AnimationController _pawnMoveController;
 
   static const int _pawnMoveDuration = 150;
+  late final GameViewModel gameViewModel;
 
   @override
   void initState() {
     super.initState();
-
+    gameViewModel = Provider.of<GameViewModel>(context, listen: false);
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     )..addStatusListener((status) {
-        final gameViewModel = context.read<GameViewModel>();
         if (_pawnMoveController.isCompleted) {
           gameViewModel.onPawnMoveAnimationFinish();
         }
@@ -59,11 +62,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   void _startPawnMoveAnimation() => _pawnMoveController.forward(from: 0.0);
 
-  void movePlayerTo(int row, int column, GameViewModel gameViewModel) {
-    final endPosition = Offset(column.toDouble(), row.toDouble());
-
-    gameViewModel.onPawnMoveAnimationStart(endPosition);
-
+  void movePlayerTo(int row, int column) {
+    gameViewModel.onPawnMoveAnimationStart();
     _pawnMoveController.duration =
         Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
 
@@ -74,16 +74,17 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget build(BuildContext context) => _mainBoard(context);
 
   Widget _mainBoard(BuildContext context) {
-    print("MAIN WIDGET REBUILD _mainBoard");
+    if (kDebugMode) {
+      print("MAIN WIDGET REBUILD _mainBoard");
+    }
     final cellSize =
         (MediaQuery.of(context).size.width - 10) / 8; // For an 8x8 board
 
     return Scaffold(
       body: Center(
-        child: RepaintBoundary(
-            child: Stack(
+        child: Stack(
           children: [
-            RepaintBoundary(child: MainGameBorder(cellSize)),
+            const MainGameBorder(),
             Container(
               margin: const EdgeInsets.only(left: 5, top: 5),
               width: 8 * cellSize,
@@ -94,21 +95,22 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               ),
             )
           ],
-        )),
+        ),
       ),
     );
   }
 
-  void handleCellTap(GameViewModel gameViewModel, CellDetails cell) =>
-      movePlayerTo(cell.row, cell.column, gameViewModel);
+  void handleCellTap(CellDetails cell) => movePlayerTo(cell.row, cell.column);
 
   List<Widget> _getCells(double cellSize) {
-    print("MAIN WIDGET _getCells");
-
-    final gameViewModel = context.read<GameViewModel>();
+    if (kDebugMode) {
+      print("MAIN WIDGET _getCells");
+    }
 
     return gameViewModel.boardCells.map((cell) {
-      print("MAIN WIDGET ***REBUILD*** _getCells START");
+      if (kDebugMode) {
+        print("MAIN WIDGET ***REBUILD*** Positioned START");
+      }
 
       return Positioned(
         left: cell.offset.dx * cellSize,
@@ -116,16 +118,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
-                gameViewModel.onClickCell(cell.row, cell.column);
+                gameViewModel.onTapBoardGame(cell.row, cell.column);
             if (tapOnBoard == TapOnBoard.END) {
-              handleCellTap(gameViewModel, cell);
+              handleCellTap(cell);
             }
           },
           child: ValueListenableBuilder<CellDetailsData>(
             valueListenable: cell.cellDetailsData,
             builder: (ctx, cellDetailsData, _) {
-              print(
+              if (kDebugMode) {
+                print(
                   "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
+              }
 
               return RepaintBoundary(
                   child: AnimatedContainer(
@@ -142,13 +146,17 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   List<Widget> _getPawns(double cellSize) {
-    List<Pawn> currPawns =
-        Provider.of<GameViewModel>(context, listen: false).pawns;
+    print("MAIN WIDGET _getPawns");
 
-    final widgets = currPawns
+    return gameViewModel.pawns
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
+                if (kDebugMode) {
+                  print(
+                    "MAIN WIDGET ***REBUILD*** _getPawns ValueListenableBuilder $pawn");
+                }
+
                 return AnimatedPositioned(
                   duration: _pawnMoveController.duration ??
                       const Duration(milliseconds: 200),
@@ -166,8 +174,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               },
             ))
         .toList();
-
-    return widgets;
   }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>

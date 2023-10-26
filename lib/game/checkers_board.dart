@@ -226,15 +226,13 @@ class CheckersBoard {
       _isCanCellStartSimpleMoveKing(startPosition, _getKingDirections());
 
   bool _isCanCellStartCaptureMoveKing(
-      Position startPosition, List<Position> directions) {
-    for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
-      if (_isCaptureMove(nextPosition, afterNextPosition)) return true;
-    }
-
-    return false;
-  }
+          Position startPosition, List<Position> directions) =>
+      directions.any((positionDir) {
+        Position nextPosition = _getNextPosition(startPosition, positionDir);
+        Position afterNextPosition =
+            _getNextPosition(nextPosition, positionDir);
+        return _isCaptureMove(nextPosition, afterNextPosition);
+      });
 
   bool _isCanCellStartSimpleMoveKing(
       Position startPosition, List<Position> directions) {

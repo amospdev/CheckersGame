@@ -8,6 +8,11 @@ import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/cg_optional.dart';
 
+// Define the colors as constants at the top of your file for better clarity
+const START_POSITION_COLOR = Colors.green;
+const CAPTURE_COLOR = Colors.redAccent;
+const END_POSITION_COLOR = Colors.blueAccent;
+
 class CheckersBoard {
   static const int _whiteKingRow = 0;
   static const int _blackKingRow = 7;
@@ -304,9 +309,7 @@ class CheckersBoard {
     _fetchAllCapturePathsKing(
         paths, startPosition, [startPositionPath], kingDirections);
 
-    if (_hasCapturePaths(paths)) {
-      return paths;
-    }
+    if (_hasCapturePaths(paths)) return paths;
 
     _fetchAllSimplePathsKingSingle(
         paths, startPosition, [startPositionPath], kingDirections);
@@ -369,20 +372,23 @@ class CheckersBoard {
   void _paintCells(List<Path> paths) {
     for (Path path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
+        // Determine the color using a switch-case
         Color color;
-        if (index == 0) {
-          color = Colors.green;
-        } else if (positionDetails.isCapture) {
-          color = Colors.redAccent;
-        } else {
-          color = Colors.blueAccent;
+        switch (index) {
+          case 0:
+            color = START_POSITION_COLOR;
+            break;
+          default:
+            color =
+                positionDetails.isCapture ? CAPTURE_COLOR : END_POSITION_COLOR;
+            break;
         }
+
         Optional<CellDetails> cellDetails = flatBoard.firstWhereOrAbsent(
             (element) => element.position == positionDetails.position);
 
         if (cellDetails.isAbsent) {
           logDebug("CB _paintCells cellDetails is ABSENT");
-
           continue;
         }
 

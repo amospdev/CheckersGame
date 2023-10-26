@@ -266,8 +266,8 @@ class CheckersBoard {
     List<Position> directions = _getDirectionsByType(startPosition);
 
     List<Path> paths = isContinuePath
-        ? getPossibleContinuePaths(row, column, directions)
-        : getPossiblePaths(row, column);
+        ? _getPossibleContinuePaths(row, column, directions)
+        : _getPossiblePaths(row, column);
 
     for (var path in paths) {
       Position position = path.positionDetailsList.last.position;
@@ -279,7 +279,7 @@ class CheckersBoard {
     return paths;
   }
 
-  List<Path> getPossiblePaths(int row, int column) {
+  List<Path> _getPossiblePaths(int row, int column) {
     Position startPosition = _createPosition(row, column);
     if (_isEmptyCellByPosition(startPosition)) return [];
     if (_isUnValidCellByPosition(startPosition)) return [];
@@ -413,11 +413,11 @@ class CheckersBoard {
   bool _isContinuePaths(int row, int col, List<PositionDetails> positionDetails,
           List<Position> directions) =>
       _hasCapturePositionDetails(positionDetails) &&
-              getPossibleContinuePaths(row, col, directions).isNotEmpty
+              _getPossibleContinuePaths(row, col, directions).isNotEmpty
           ? true
           : false;
 
-  List<Path> getPossibleContinuePaths(int row, int col, directions) {
+  List<Path> _getPossibleContinuePaths(int row, int col, directions) {
     List<Path> paths = [];
 
     Position startPosition = _createPosition(row, col);

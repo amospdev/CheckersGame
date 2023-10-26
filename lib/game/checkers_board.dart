@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
@@ -207,6 +208,10 @@ class CheckersBoard {
   bool isValidStartCellSelected(int row, int column) =>
       _isValidStartCellSelectedByPosition(_createPosition(row, column));
 
+  bool isValidEndCellSelected(int endRow, int endColumn, List<Path> paths) =>
+      getPathByEndPosition(endRow, endColumn, paths)
+          .condition((path) => path.isPresent && path.value.isValidPath());
+
   bool _isCanCellStartPiece(Position startPosition) =>
       _isCanCellStartCaptureMovePiece(startPosition, _getPieceDirections()) ||
       _isCanCellStartSimpleMovePiece(startPosition, _getPieceDirections());
@@ -388,7 +393,9 @@ class CheckersBoard {
             (element) => element.position == positionDetails.position);
 
         if (cellDetails.isAbsent) {
-          print("CB _paintCells cellDetails is ABSENT");
+          if (kDebugMode) {
+            print("CB _paintCells cellDetails is ABSENT");
+          }
           continue;
         }
 
@@ -563,7 +570,9 @@ class CheckersBoard {
             pawn.row == positionDetails.position.row &&
             pawn.column == positionDetails.position.column);
         if (pawn.isAbsent) {
-          print("CB _removeCapturedPieces pawn IS ABSENT");
+          if (kDebugMode) {
+            print("CB _removeCapturedPieces pawn IS ABSENT");
+          }
           continue;
         }
         pawn.value.setPawnDataNotifier(isKilled: true);
@@ -608,9 +617,13 @@ class CheckersBoard {
         _createPosition(endRow, endColumn));
 
     if (path.isAbsent) {
-      print("CB getPathByEndPosition pawn IS ABSENT");
+      if (kDebugMode) {
+        print(
+            "CB getPathByEndPosition pawn IS ABSENT endRow: $endRow, endColumn: $endColumn, paths: ${paths.length}, paths: $paths");
+      }
       return const Optional.empty();
     }
+
     return path;
   }
 

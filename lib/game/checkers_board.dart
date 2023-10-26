@@ -227,8 +227,8 @@ class CheckersBoard {
 
   bool _isCanCellStartCaptureMoveKing(
           Position startPosition, List<Position> directions) =>
-      directions.any((positionDir) =>
-          _isPointCaptureMove(startPosition, positionDir));
+      directions.any(
+          (positionDir) => _isPointCaptureMove(startPosition, positionDir));
 
   bool _isPointCaptureMove(Position startPosition, Position positionDir) {
     Position nextPosition = _getNextPosition(startPosition, positionDir);
@@ -237,14 +237,9 @@ class CheckersBoard {
   }
 
   bool _isCanCellStartSimpleMoveKing(
-      Position startPosition, List<Position> directions) {
-    for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      if (_isSimpleMove(startPosition, nextPosition)) return true;
-    }
-
-    return false;
-  }
+          Position startPosition, List<Position> directions) =>
+      directions.any((positionDir) => _isSimpleMove(
+          startPosition, _getNextPosition(startPosition, positionDir)));
 
   bool _isCanCellStartCaptureMovePiece(
       Position startPosition, List<Position> directions) {
@@ -350,7 +345,8 @@ class CheckersBoard {
       Position nextPosition = _getNextPosition(startPosition, positionDir);
       Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
       List<PositionDetails> positionDetailsTmp = [...positionDetails];
-      bool isNotCaptureMove = !_isPointsCaptureMove(nextPosition, afterNextPosition);
+      bool isNotCaptureMove =
+          !_isPointsCaptureMove(nextPosition, afterNextPosition);
       if (isNotCaptureMove) continue;
 
       positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));

@@ -281,37 +281,37 @@ class CheckersBoard {
 
   List<Path> _getPossiblePaths(int row, int column) {
     Position startPosition = _createPosition(row, column);
-    if (_isEmptyCellByPosition(startPosition)) return [];
-    if (_isUnValidCellByPosition(startPosition)) return [];
-    if (_isNotSamePlayerByPosition(startPosition)) return [];
 
-    bool isKing = _isKingByPosition(startPosition);
-
-    List<Path> paths = [];
-    PositionDetails startPositionPath =
-        _getPositionDetailsNonCapture(startPosition);
-    if (isKing) {
-      _fetchAllPathsKing(
-          paths, startPosition, startPositionPath, _getKingDirections());
-    } else {
-      _fetchAllPathsPiece(
-          paths, startPosition, startPositionPath, _getPieceDirections());
+    // Combine conditions to exit early
+    if (_isEmptyCellByPosition(startPosition) ||
+        _isUnValidCellByPosition(startPosition) ||
+        _isNotSamePlayerByPosition(startPosition)) {
+      return [];
     }
 
-    return paths;
+    PositionDetails startPositionPath =
+        _getPositionDetailsNonCapture(startPosition);
+
+    return _isKingByPosition(startPosition)
+        ? _fetchAllPathsKing(
+            [], startPosition, startPositionPath, _getKingDirections())
+        : _fetchAllPathsPiece(
+            [], startPosition, startPositionPath, _getPieceDirections());
   }
 
-  void _fetchAllPathsKing(List<Path> paths, Position startPosition,
+  List<Path> _fetchAllPathsKing(List<Path> paths, Position startPosition,
       PositionDetails startPositionPath, List<Position> kingDirections) {
     _fetchAllCapturePathsKing(
         paths, startPosition, [startPositionPath], kingDirections);
 
     if (_hasCapturePaths(paths)) {
-      return;
+      return paths;
     }
 
     _fetchAllSimplePathsKingSingle(
         paths, startPosition, [startPositionPath], kingDirections);
+
+    return paths;
   }
 
   void _fetchAllCapturePathsKing(List<Path> paths, Position startPosition,
@@ -351,17 +351,19 @@ class CheckersBoard {
     }
   }
 
-  void _fetchAllPathsPiece(List<Path> paths, Position startPosition,
+  List<Path> _fetchAllPathsPiece(List<Path> paths, Position startPosition,
       PositionDetails startPositionPath, List<Position> pieceDirections) {
     _fetchAllCapturePathsPiece(
         paths, startPosition, [startPositionPath], pieceDirections);
 
     if (_hasCapturePaths(paths)) {
-      return;
+      return paths;
     }
 
     _fetchAllSimplePathsPiece(
         paths, startPosition, [startPositionPath], pieceDirections);
+
+    return paths;
   }
 
   void _paintCells(List<Path> paths) {

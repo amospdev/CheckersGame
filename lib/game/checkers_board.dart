@@ -9,9 +9,9 @@ import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/cg_optional.dart';
 
 // Define the colors as constants at the top of your file for better clarity
-const START_POSITION_COLOR = Colors.green;
-const CAPTURE_COLOR = Colors.redAccent;
-const END_POSITION_COLOR = Colors.blueAccent;
+const startPositionColor = Colors.green;
+const captureColor = Colors.redAccent;
+const endPositionColor = Colors.blueAccent;
 
 class CheckersBoard {
   static const int _whiteKingRow = 0;
@@ -298,49 +298,60 @@ class CheckersBoard {
         _getPositionDetailsNonCapture(startPosition);
 
     return _isKingByPosition(startPosition)
-        ? _fetchAllPathsKing(
+        ? _fetchAllPathsByDirections(
             [], startPosition, startPositionPath, _getKingDirections())
-        : _fetchAllPathsPiece(
+        : _fetchAllPathsByDirections(
             [], startPosition, startPositionPath, _getPieceDirections());
   }
 
-  List<Path> _fetchAllPathsKing(List<Path> paths, Position startPosition,
-      PositionDetails startPositionPath, List<Position> kingDirections) {
-    _fetchAllCapturePathsKing(
+  List<Path> _fetchAllPathsByDirections(
+      List<Path> paths,
+      Position startPosition,
+      PositionDetails startPositionPath,
+      List<Position> kingDirections) {
+    _fetchAllCapturePathsByDirections(
         paths, startPosition, [startPositionPath], kingDirections);
 
     if (_hasCapturePaths(paths)) return paths;
 
-    _fetchAllSimplePathsKingSingle(
+    _fetchAllSimplePathsByDirections(
         paths, startPosition, [startPositionPath], kingDirections);
 
     return paths;
   }
 
-  void _fetchAllCapturePathsKing(List<Path> paths, Position startPosition,
-          List<PositionDetails> positionDetails, List<Position> directions) =>
-      _fetchAllCapturePathsPiece(
-          paths, startPosition, [...positionDetails], directions);
-
-  void _fetchAllSimplePathsKingSingle(List<Path> paths, Position startPosition,
-          List<PositionDetails> positionDetails, List<Position> directions) =>
-      _fetchAllSimplePathsPiece(
-          paths, startPosition, [...positionDetails], directions);
-
-  void _fetchAllCapturePathsPiece(List<Path> paths, Position startPosition,
-      List<PositionDetails> positionDetails, List<Position> directions) {
+  void _fetchAllCapturePathsByDirections(
+      List<Path> paths,
+      Position startPosition,
+      List<PositionDetails> positionDetails,
+      List<Position> directions) {
     for (Position positionDir in directions) {
       Position nextPosition = _getNextPosition(startPosition, positionDir);
       Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
-      List<PositionDetails> positionDetailsTmp = [...positionDetails];
-      bool isNotCaptureMove =
-          !_isPointsCaptureMove(nextPosition, afterNextPosition);
-      if (isNotCaptureMove) continue;
 
-      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition));
-      positionDetailsTmp.add(_getPositionDetailsNonCapture(afterNextPosition));
+      if (_isPointsCaptureMove(nextPosition, afterNextPosition)) {
+        List<PositionDetails> positionDetailsList =
+            List<PositionDetails>.from(positionDetails)
+                .addItem(_getPositionDetailsCapture(nextPosition))
+                .addItem(_getPositionDetailsNonCapture(afterNextPosition));
+        paths.add(Path(positionDetailsList));
+      }
+    }
+  }
 
-      paths.add(_createPath(positionDetailsTmp));
+  void _fetchAllSimplePathsByDirections(
+      List<Path> paths,
+      Position startPosition,
+      List<PositionDetails> positionDetails,
+      List<Position> directions) {
+    for (Position positionDir in directions) {
+      Position nextPosition = _getNextPosition(startPosition, positionDir);
+
+      if (_isSimpleMove(startPosition, nextPosition)) {
+        Path path = Path(List<PositionDetails>.from(positionDetails)
+            .addItem(_getPositionDetailsNonCapture(nextPosition)));
+        paths.add(path);
+      }
     }
   }
 
@@ -354,21 +365,6 @@ class CheckersBoard {
     }
   }
 
-  List<Path> _fetchAllPathsPiece(List<Path> paths, Position startPosition,
-      PositionDetails startPositionPath, List<Position> pieceDirections) {
-    _fetchAllCapturePathsPiece(
-        paths, startPosition, [startPositionPath], pieceDirections);
-
-    if (_hasCapturePaths(paths)) {
-      return paths;
-    }
-
-    _fetchAllSimplePathsPiece(
-        paths, startPosition, [startPositionPath], pieceDirections);
-
-    return paths;
-  }
-
   void _paintCells(List<Path> paths) {
     for (Path path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
@@ -376,11 +372,10 @@ class CheckersBoard {
         Color color;
         switch (index) {
           case 0:
-            color = START_POSITION_COLOR;
+            color = startPositionColor;
             break;
           default:
-            color =
-                positionDetails.isCapture ? CAPTURE_COLOR : END_POSITION_COLOR;
+            color = positionDetails.isCapture ? captureColor : endPositionColor;
             break;
         }
 
@@ -393,19 +388,6 @@ class CheckersBoard {
         }
 
         cellDetails.value.changeColor(color);
-      }
-    }
-  }
-
-  void _fetchAllSimplePathsPiece(List<Path> paths, Position startPosition,
-      List<PositionDetails> positionDetails, List<Position> directions) {
-    for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-
-      if (_isSimpleMove(startPosition, nextPosition)) {
-        Path path = _createPath(
-            [...positionDetails, _getPositionDetailsNonCapture(nextPosition)]);
-        paths.add(path);
       }
     }
   }
@@ -430,7 +412,7 @@ class CheckersBoard {
 
     Position startPosition = _createPosition(row, col);
 
-    _fetchAllCapturePathsPiece(paths, startPosition,
+    _fetchAllCapturePathsByDirections(paths, startPosition,
         [_getPositionDetailsNonCapture(startPosition)], directions);
 
     return paths;
@@ -617,9 +599,6 @@ class CheckersBoard {
 
     return path;
   }
-
-  Path _createPath(List<PositionDetails> positionDetailsList) =>
-      Path(positionDetailsList);
 }
 
 class PositionDetails {

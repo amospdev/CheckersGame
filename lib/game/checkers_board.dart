@@ -241,7 +241,8 @@ class CheckersBoard {
       directions.any((positionDir) => _isSimpleMove(
           startPosition, _getNextPosition(startPosition, positionDir)));
 
-  bool _isCanCellStartCaptureMovePiece(Position startPosition, List<Position> directions) {
+  bool _isCanCellStartCaptureMovePiece(
+      Position startPosition, List<Position> directions) {
     return directions.any((positionDir) {
       Position nextPosition = _getNextPosition(startPosition, positionDir);
       Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
@@ -250,14 +251,9 @@ class CheckersBoard {
   }
 
   bool _isCanCellStartSimpleMovePiece(
-      Position startPosition, List<Position> directions) {
-    for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      if (_isSimpleMove(startPosition, nextPosition)) return true;
-    }
-
-    return false;
-  }
+          Position startPosition, List<Position> directions) =>
+      directions.any((positionDir) => _isSimpleMove(
+          startPosition, _getNextPosition(startPosition, positionDir)));
 
   bool _isNotSamePlayerByPosition(Position position) =>
       !_isSamePlayerByPosition(position);

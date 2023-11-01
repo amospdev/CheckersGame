@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_optional.dart';
-import 'game/checkers_board.dart';
+import 'package:untitled/game/checkers_board.dart';
 
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _game = CheckersBoard();
@@ -19,12 +21,14 @@ class GameViewModel extends ChangeNotifier {
   int _destinationCol = -1;
   int _pathSize = -1;
 
+  bool aiMode = false;
+
   int get pathSize => _pathSize;
   Pawn? _currPawn;
 
   Pawn? get currPawn => _currPawn;
 
-  List<Path> _paths = [];
+  List<PathPawn> _paths = [];
   bool _isInProcess = false;
 
   final List<CellDetails> _boardCells = [];
@@ -49,7 +53,7 @@ class GameViewModel extends ChangeNotifier {
     _setCurrentPlayer(_game.player);
   }
 
-  _setPaths(List<Path> paths) => _paths = paths;
+  _setPaths(List<PathPawn> paths) => _paths = paths;
 
   void _performMove() => _game.performMove(_selectedRow, _selectedCol,
       _destinationRow, _destinationCol, _paths, _game.board);
@@ -83,7 +87,7 @@ class GameViewModel extends ChangeNotifier {
     }
 
     if (_game.isValidStartCellSelected(
-        rowStartOrEnd, columnStartOrEnd, _game.board)) {
+        rowStartOrEnd, columnStartOrEnd, _game.board, _game.player)) {
       return _handleStartCellTap(rowStartOrEnd, columnStartOrEnd);
     }
 
@@ -97,7 +101,8 @@ class GameViewModel extends ChangeNotifier {
   TapOnBoard _handleStartCellTap(int row, int column) {
     _setSelectPiece(row, column);
     _setPaths(_game.getPossiblePathsByPosition(
-        row, column, _isContinuePath, _game.board));
+        row, column, _isContinuePath, _game.board, _game.player,
+        isAIMode: false));
     _setCheckersBoard(_game.flatBoard);
     return TapOnBoard.START;
   }
@@ -105,7 +110,7 @@ class GameViewModel extends ChangeNotifier {
   TapOnBoard _handleDestinationCellTap(int row, int column) {
     _setDestinationPiece(row, column);
 
-    Optional<Path> optionalPath =
+    Optional<PathPawn> optionalPath =
         _game.getPathByEndPosition(_destinationRow, _destinationCol, _paths);
 
     if (optionalPath.isAbsent) return TapOnBoard.UNVALID;
@@ -127,12 +132,14 @@ class GameViewModel extends ChangeNotifier {
     _currPawn = currPawn;
   }
 
-  void onPawnMoveAnimationFinish() {
+  Future<bool> onPawnMoveAnimationFinish() async {
     _performMove();
     _setCheckersBoard(_game.flatBoard);
     _setPawns(_game.pawns);
     _clearDataPreNextTurnState();
     _continueNextIterationOrTurn(_destinationRow, _destinationCol);
+    await Future.delayed(const Duration(milliseconds: 500));
+    return Future.value(true);
   }
 
   void _setSelectPiece(int row, int col) {
@@ -183,9 +190,20 @@ class GameViewModel extends ChangeNotifier {
       _currentPlayer = currentPlayer;
 
   void _nextTurn() {
+    print("CB NEXT TURN");
     _clearDataNextTurnState();
     _game.nextTurn(_game.board);
     _setCurrentPlayer(_game.player);
+  }
+
+  bool maybeAI() => currentPlayer == aiType && aiMode;
+
+  PathPawn? aIMove() {
+    ComputerPlayer aiPlayer = ComputerPlayer();
+    PathPawn? path = aiPlayer.getBestMoveForAI(_game);
+    // Position start = path?.positionDetailsList.first.position ?? Position(0, 0);
+
+    return path;
   }
 
   void _clearDataPreNextTurnState() {

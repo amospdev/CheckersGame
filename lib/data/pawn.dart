@@ -25,6 +25,18 @@ class Pawn {
         isAnimating: false);
   }
 
+  Pawn copy() {
+    return Pawn(
+      id: id,
+      row: row,
+      column: column,
+      color: color,
+      // Assuming Color is immutable, which it is in Dart.
+      isKing: isKing,
+      // ... (copy any other properties) ...
+    );
+  }
+
   static Pawn createEmpty() => Pawn(
       id: -1, row: -1, column: -1, color: Colors.tealAccent, isKing: false);
 

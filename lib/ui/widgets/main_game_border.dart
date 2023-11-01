@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/extensions/screen_ratio.dart';
+import 'package:untitled/game/checkers_board.dart';
 
 class MainGameBorder extends StatelessWidget {
   const MainGameBorder({super.key});
 
   @override
   Widget build(BuildContext context) =>
-      _mainGameBorder((MediaQuery.of(context).size.width - 10) / 8);
+      _mainGameBorder((MediaQuery.of(context).sizeByOrientation - 10) / CheckersBoard.sizeBoard);
 
   Widget _mainGameBorder(double cellSize) => Container(
-      width: 8 * cellSize + 10,
+      width: CheckersBoard.sizeBoard * cellSize + 10,
       // Increased size to account for the border and prevent cut-off
-      height: 8 * cellSize + 10,
+      height: CheckersBoard.sizeBoard * cellSize + 10,
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.brown.shade200,

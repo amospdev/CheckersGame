@@ -65,11 +65,17 @@ class PawnPieceState extends State<PawnPiece>
               return Transform.scale(
                 scale:
                     widget.isAnimatingPawn ? _radiusFactorAnimation.value : 1.0,
-                child: RepaintBoundary(
-                    child: CustomPaint(
-                  size: Size(cellSize, cellSize),
-                  painter: PawnPainter(pawn.color),
-                )),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    RepaintBoundary(
+                        child: CustomPaint(
+                      size: Size(cellSize, cellSize),
+                      painter: PawnPainter(pawn.color),
+                    )),
+                    Text('${pawn.row}, ${pawn.column}', textAlign: TextAlign.center)
+                  ],
+                ),
               );
             },
           ),

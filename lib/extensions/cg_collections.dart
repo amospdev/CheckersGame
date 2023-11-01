@@ -1,6 +1,6 @@
 import 'package:untitled/extensions/cg_optional.dart';
 
-extension FirstWhereOrNullExtension<T> on List<T> {
+extension ListExtensions<T> on List<T> {
   T? firstWhereOrNull(bool Function(T) predicate) {
     try {
       return firstWhere(predicate);

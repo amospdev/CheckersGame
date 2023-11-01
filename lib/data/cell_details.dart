@@ -23,6 +23,26 @@ class CellDetails {
     _position = Position(row, column);
   }
 
+  static CellDetails createEmpty() =>
+      CellDetails(CellType.UNDEFINED, -1, true, Colors.white, -1, -1);
+
+  // The copy method
+  CellDetails copy() {
+    return CellDetails(
+      cellType,
+      id,
+      isEmpty,
+      color,
+      row,
+      column,
+    );
+  }
+
+  CellType getCellTypePlayer() =>
+      cellType == CellType.BLACK || cellType == CellType.BLACK_KING
+          ? CellType.BLACK
+          : CellType.WHITE;
+
   void _setCellDetailsDataValueNotifier({Color? tmpColor}) =>
       _cellDetailsDataValueNotifier.value = CellDetailsData(
           tmpColor: tmpColor ?? _cellDetailsDataValueNotifier.value.tmpColor);
@@ -31,9 +51,6 @@ class CellDetails {
       _cellDetailsDataValueNotifier;
 
   Color get tmpColor => _cellDetailsDataValueNotifier.value.tmpColor;
-
-  static CellDetails createEmpty() =>
-      CellDetails(CellType.UNDEFINED, -1, true, Colors.white, -1, -1);
 
   Offset get offset => Offset(column.toDouble(), row.toDouble());
 

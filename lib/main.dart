@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/cell_details_data.dart';
+import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_log.dart';
+import 'package:untitled/extensions/screen_ratio.dart';
+import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn_piece.dart';
@@ -51,9 +55,31 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
-    )..addStatusListener((status) {
+    )..addStatusListener((status) async {
         if (_pawnMoveController.isCompleted) {
-          gameViewModel.onPawnMoveAnimationFinish();
+          gameViewModel.onPawnMoveAnimationFinish().then((value) async {
+            bool isAI = gameViewModel.maybeAI();
+
+            if (isAI) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              PathPawn? path = gameViewModel.aIMove();
+              if (path == null) return;
+              gameViewModel.onClickPawn(
+                  path.positionDetailsList.first.position.row,
+                  path.positionDetailsList.first.position.column);
+
+              await Future.delayed(const Duration(milliseconds: 300));
+
+              TapOnBoard tapOnBoardEnd = gameViewModel.onTapBoardGame(
+                  path.positionDetailsList.last.position.row,
+                  path.positionDetailsList.last.position.column);
+
+              if (tapOnBoardEnd == TapOnBoard.END) {
+                movePlayerTo(path.positionDetailsList.last.position.row,
+                    path.positionDetailsList.last.position.column);
+              }
+            }
+          });
         }
       });
   }
@@ -73,8 +99,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   Widget _mainBoard(BuildContext context) {
     logDebug("MAIN WIDGET REBUILD _mainBoard");
-    final cellSize =
-        (MediaQuery.of(context).size.width - 10) / 8; // For an 8x8 board
+    final cellSize = (MediaQuery.of(context).sizeByOrientation - 10) /
+        CheckersBoard.sizeBoard; // For an 8x8 board
 
     return Scaffold(
       body: Center(
@@ -83,9 +109,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             const MainGameBorder(),
             Container(
               margin: const EdgeInsets.only(left: 5, top: 5),
-              width: 8 * cellSize,
+              width: CheckersBoard.sizeBoard * cellSize,
               // Increased size to account for the border and prevent cut-off
-              height: 8 * cellSize,
+              height: CheckersBoard.sizeBoard * cellSize,
               child: Stack(
                 children: [..._getCells(cellSize), ..._getPawns(cellSize)],
               ),
@@ -121,13 +147,22 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               logDebug(
                   "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
 
-              return RepaintBoundary(
-                  child: AnimatedContainer(
-                duration: const Duration(milliseconds: 125),
-                color: cell.tmpColor,
-                height: cellSize,
-                width: cellSize,
-              ));
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  RepaintBoundary(
+                      child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 125),
+                    color: cell.tmpColor,
+                    height: cellSize,
+                    width: cellSize,
+                  )),
+                  cell.cellType == CellType.UNVALID
+                      ? Container()
+                      : Text('${cell.row}, ${cell.column}',
+                          textAlign: TextAlign.center)
+                ],
+              );
             },
           ),
         ),

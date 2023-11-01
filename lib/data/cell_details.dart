@@ -38,10 +38,15 @@ class CellDetails {
     );
   }
 
-  CellType getCellTypePlayer() =>
-      cellType == CellType.BLACK || cellType == CellType.BLACK_KING
-          ? CellType.BLACK
-          : CellType.WHITE;
+  CellType getCellTypePlayer() {
+    if (cellType == CellType.BLACK || cellType == CellType.BLACK_KING) {
+      return CellType.BLACK;
+    } else if (cellType == CellType.WHITE || cellType == CellType.WHITE_KING) {
+      return CellType.WHITE;
+    }
+
+    return CellType.UNDEFINED;
+  }
 
   void _setCellDetailsDataValueNotifier({Color? tmpColor}) =>
       _cellDetailsDataValueNotifier.value = CellDetailsData(

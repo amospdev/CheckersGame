@@ -29,7 +29,6 @@ class CheckersBoard {
       _board.addAll(board);
     }
 
-    // printBoard(_board);
   }
 
   final Evaluator evaluator = Evaluator();
@@ -108,11 +107,10 @@ class CheckersBoard {
       _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
 
   void printBoard(List<List<CellDetails>> board) {
+    logDebug("\n\n**********************************");
+
     String horizontalLine =
         "${"+---" * sizeBoard}+"; // creates +---+---+... for 8 times
-    print("");
-    print("**********************************");
-    print("");
 
     for (int i = 0; i < sizeBoard; i++) {
       String row = "|"; // starts the row with |
@@ -135,19 +133,16 @@ class CheckersBoard {
         }
       }
 
-      print(horizontalLine);
-      print(row);
+      logDebug(horizontalLine);
+      logDebug(row);
     }
 
-    print(horizontalLine); // closing line
-    print("");
-    print("");
-    print("BLACKS: ${getBlacks(flatBoard)}");
-    print("WHITES: ${getWithes(flatBoard)}");
-    print("");
+    logDebug(horizontalLine); // closing line
 
-    print("**********************************");
-    print("");
+    logDebug("BLACKS: ${getAllPieces(CellType.BLACK)}");
+    logDebug("WHITES: ${getAllPieces(CellType.WHITE)}");
+
+    logDebug("**********************************\n\n");
   }
 
   bool _isInBoundsByPosition(Position position) =>
@@ -855,21 +850,4 @@ class CheckersBoard {
     return isMandatoryCapture ? resultPaths : paths;
   }
 
-  int getWithes(Iterable<CellDetails> flatBoard) {
-    return flatBoard
-        .where((element) =>
-            isWhiteByPosition(Position(element.row, element.column), board))
-        .length;
-  }
-
-  int getBlacks(Iterable<CellDetails> flatBoard) {
-    return flatBoard
-        .where((element) =>
-            isBlackByPosition(Position(element.row, element.column), board))
-        .length;
-  }
-
-  int evaluate(bool isMax) {
-    return evaluator.evaluate(isMax, board, this);
-  }
 }

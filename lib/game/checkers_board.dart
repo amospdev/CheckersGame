@@ -149,8 +149,8 @@ class CheckersBoard {
       _getCellType(row, column, board) == CellType.BLACK_KING ||
       _getCellType(row, column, board) == CellType.WHITE_KING;
 
-  bool _isEmptyCell(int row, int col, List<List<CellDetails>> board) =>
-      _getCellType(row, col, board) == CellType.EMPTY;
+  // bool _isEmptyCell(int row, int col, List<List<CellDetails>> board) =>
+  //     _getCellType(row, col, board) == CellType.EMPTY;
 
   bool _isBlack(int row, int column, List<List<CellDetails>> board) =>
       _getCellType(row, column, board) == CellType.BLACK ||
@@ -159,9 +159,6 @@ class CheckersBoard {
   bool _isWhite(int row, int column, List<List<CellDetails>> board) =>
       _getCellType(row, column, board) == CellType.WHITE ||
       _getCellType(row, column, board) == CellType.WHITE_KING;
-
-  bool _isUnValidCell(int row, int column, List<List<CellDetails>> board) =>
-      _getCellType(row, column, board) == CellType.UNVALID;
 
   bool isOpponentCell(Position position, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
@@ -239,14 +236,15 @@ class CheckersBoard {
       {required bool isAIMode}) {
     _clearAllCellColors(board);
 
-    Position startPosition = _createPosition(row, column);
-    List<Position> directions =
-        _getDirectionsByType(startPosition, board, cellTypePlayer);
+    CellDetails startCellDetails = getCellDetails(row, column, board);
+    List<Position> directions = _getDirectionsByType(
+        startCellDetails.position, board, cellTypePlayer, startCellDetails);
 
     List<PathPawn> paths = isContinuePath
         ? _getPossibleContinuePaths(
             row, column, directions, board, cellTypePlayer)
-        : _getPossiblePaths(row, column, board, isAIMode, cellTypePlayer);
+        : _getPossiblePaths(
+            row, column, board, isAIMode, cellTypePlayer, startCellDetails);
 
     if (isAIMode) return paths;
 
@@ -265,13 +263,18 @@ class CheckersBoard {
     return paths;
   }
 
-  List<PathPawn> _getPossiblePaths(int row, int column,
-      List<List<CellDetails>> board, bool isAIMode, CellType cellTypePlayer) {
-    Position startPosition = _createPosition(row, column);
+  List<PathPawn> _getPossiblePaths(
+      int row,
+      int column,
+      List<List<CellDetails>> board,
+      bool isAIMode,
+      CellType cellTypePlayer,
+      CellDetails startCellDetails) {
+    Position startPosition = startCellDetails.position;
 
     // Combine conditions to exit early
-    if (_isEmptyCell(startPosition.row, startPosition.column, board) ||
-        _isUnValidCell(startPosition.row, startPosition.column, board) ||
+    if (startCellDetails.isEmptyCell ||
+        startCellDetails.isUnValid ||
         !_isSamePlayer(
             startPosition.row, startPosition.column, board, cellTypePlayer)) {
       return [];
@@ -279,18 +282,17 @@ class CheckersBoard {
 
     PositionDetails startPositionPath =
         _getPositionDetailsNonCapture(startPosition, board);
-    bool isKing = _isKing(startPosition.row, startPosition.column, board);
-    return isKing
-        ? _fetchAllPathsByDirections([], startPosition, startPositionPath,
-            getKingDirections(), board, isAIMode, isKing, cellTypePlayer)
-        : _fetchAllPathsByDirections([],
-            startPosition,
-            startPositionPath,
-            getPieceDirections(cellTypePlayer: cellTypePlayer),
-            board,
-            isAIMode,
-            isKing,
-            cellTypePlayer);
+    return _fetchAllPathsByDirections(
+        [],
+        startPosition,
+        startPositionPath,
+        startCellDetails.isKing
+            ? getKingDirections()
+            : getPieceDirections(cellTypePlayer: cellTypePlayer),
+        board,
+        isAIMode,
+        startCellDetails.isKing,
+        cellTypePlayer);
   }
 
   List<PathPawn> _fetchAllPathsByDirections(
@@ -442,9 +444,12 @@ class CheckersBoard {
     return paths;
   }
 
-  List<Position> _getDirectionsByType(Position startPosition,
-          List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      _isKing(startPosition.row, startPosition.column, board)
+  List<Position> _getDirectionsByType(
+          Position startPosition,
+          List<List<CellDetails>> board,
+          CellType cellTypePlayer,
+          CellDetails startCellDetails) =>
+      startCellDetails.isKing
           ? getKingDirections()
           : getPieceDirections(cellTypePlayer: cellTypePlayer);
 
@@ -477,7 +482,7 @@ class CheckersBoard {
       _isInBounds(currPosition.row, currPosition.column) &&
       _isInBounds(nextPosition.row, nextPosition.column) &&
       isOpponentCell(currPosition, board, cellTypePlayer) &&
-      _isEmptyCell(nextPosition.row, nextPosition.column, board);
+      getCellDetails(nextPosition.row, nextPosition.column, board).isEmptyCell;
 
   bool _isSimpleMove(Position currPosition, Position nextPosition,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
@@ -485,7 +490,7 @@ class CheckersBoard {
       _isInBounds(nextPosition.row, nextPosition.column) &&
       _isSamePlayer(
           currPosition.row, currPosition.column, board, cellTypePlayer) &&
-      _isEmptyCell(nextPosition.row, nextPosition.column, board);
+      getCellDetails(nextPosition.row, nextPosition.column, board).isEmptyCell;
 
   CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn path) {
     Position startPosition = path.positionDetailsList.first.position;

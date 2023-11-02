@@ -28,7 +28,6 @@ class CheckersBoard {
     } else {
       _board.addAll(board);
     }
-
   }
 
   final Evaluator evaluator = Evaluator();
@@ -144,9 +143,6 @@ class CheckersBoard {
 
     logDebug("**********************************\n\n");
   }
-
-  bool _isInBoundsByPosition(Position position) =>
-      _isInBounds(position.row, position.column);
 
   bool _isInBounds(int row, int col) =>
       _isRowInBounds(row) && _isColumnInBounds(col);
@@ -515,15 +511,15 @@ class CheckersBoard {
 
   bool _isPointsCaptureMove(Position currPosition, Position nextPosition,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      _isInBoundsByPosition(currPosition) &&
-      _isInBoundsByPosition(nextPosition) &&
+      _isInBounds(currPosition.row, currPosition.column) &&
+      _isInBounds(nextPosition.row, nextPosition.column) &&
       isOpponentCell(currPosition, board, cellTypePlayer) &&
       isEmptyCellByPosition(nextPosition, board);
 
   bool _isSimpleMove(Position currPosition, Position nextPosition,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      _isInBoundsByPosition(currPosition) &&
-      _isInBoundsByPosition(nextPosition) &&
+      _isInBounds(currPosition.row, currPosition.column) &&
+      _isInBounds(nextPosition.row, nextPosition.column) &&
       _isSamePlayerByPosition(currPosition, board, cellTypePlayer) &&
       isEmptyCellByPosition(nextPosition, board);
 
@@ -849,5 +845,4 @@ class CheckersBoard {
 
     return isMandatoryCapture ? resultPaths : paths;
   }
-
 }

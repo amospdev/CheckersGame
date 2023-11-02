@@ -142,30 +142,32 @@ class CheckersBoard {
     logDebug("**********************************\n\n");
   }
 
-  bool _isInBounds(int row, int col) =>
-      row >= 0 && row < sizeBoard && col >= 0 && col < sizeBoard;
-
-  bool isOpponentCell(Position position, List<List<CellDetails>> board,
+  bool isOpponentCell(CellDetails cellDetails, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
-      (getCellDetails(position.row, position.column, board).isWhite &&
-          cellTypePlayer == CellType.BLACK) ||
-      (getCellDetails(position.row, position.column, board).isBlack &&
-          cellTypePlayer == CellType.WHITE);
+      (cellDetails.isWhite && cellTypePlayer == CellType.BLACK) ||
+      (cellDetails.isBlack && cellTypePlayer == CellType.WHITE);
 
   CellType getCellTypePlayer(
-          int row, int column, List<List<CellDetails>> board) =>
-      getCellDetails(row, column, board).isBlack
+          Position position, List<List<CellDetails>> board) =>
+      getCellDetailsByPosition(position, board).isBlack
           ? CellType.BLACK
           : CellType.WHITE;
 
   bool isOpponentCellAI(int row, int column, List<List<CellDetails>> board) =>
-      getCellTypePlayer(row, column, board) != player;
+      getCellTypePlayer(_createPosition(row, column), board) != player;
 
-  CellType _getCellType(int row, int col, List<List<CellDetails>> board) =>
-      getCellDetails(row, col, board).cellType;
+  // CellType _getCellType(Position position, List<List<CellDetails>> board) =>
+  //     getCellDetailsByPosition(position, board).cellType;
 
-  CellDetails getCellDetails(int row, int col, List<List<CellDetails>> board) =>
-      _isInBounds(row, col) ? board[row][col] : CellDetails.createEmpty();
+  CellDetails getCellDetails(
+          int row, int column, List<List<CellDetails>> board) =>
+      getCellDetailsByPosition(_createPosition(row, column), board);
+
+  CellDetails getCellDetailsByPosition(
+          Position position, List<List<CellDetails>> board) =>
+      position.isInBounds
+          ? board[position.row][position.column]
+          : CellDetails.createEmpty();
 
   bool _isWhitePlayerTurn(CellType cellTypePlayer) =>
       cellTypePlayer == CellType.WHITE || cellTypePlayer == CellType.WHITE_KING;
@@ -176,9 +178,9 @@ class CheckersBoard {
   bool _isSamePlayer(int row, int column, List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     Position position = _createPosition(row, column);
-    return (getCellDetails(position.row, position.column, board).isWhite &&
+    return (getCellDetailsByPosition(position, board).isWhite &&
             _isWhitePlayerTurn(cellTypePlayer)) ||
-        (getCellDetails(position.row, position.column, board).isBlack &&
+        (getCellDetailsByPosition(position, board).isBlack &&
             _isBlackPlayerTurn(cellTypePlayer));
   }
 
@@ -223,7 +225,8 @@ class CheckersBoard {
       {required bool isAIMode}) {
     _clearAllCellColors(board);
 
-    CellDetails startCellDetails = getCellDetails(row, column, board);
+    CellDetails startCellDetails =
+        getCellDetailsByPosition(_createPosition(row, column), board);
     List<Position> directions = _getDirectionsByType(
         startCellDetails.position, board, cellTypePlayer, startCellDetails);
 
@@ -442,21 +445,15 @@ class CheckersBoard {
 
   PositionDetails _getPositionDetailsNonCapture(
           Position position, List<List<CellDetails>> board) =>
-      _createPositionDetails(position,
-          _getCellType(position.row, position.column, board), false, board);
+      _createPositionDetails(position, false, board);
 
   PositionDetails _getPositionDetailsCapture(
           Position position, List<List<CellDetails>> board) =>
-      _createPositionDetails(position,
-          _getCellType(position.row, position.column, board), true, board);
+      _createPositionDetails(position, true, board);
 
-  PositionDetails _createPositionDetails(Position position, CellType cellType,
-          bool isCapture, List<List<CellDetails>> board) =>
-      PositionDetails(
-          position,
-          _getCellType(position.row, position.column, board),
-          isCapture,
-          getCellDetails(position.row, position.column, board));
+  PositionDetails _createPositionDetails(
+          Position position, bool isCapture, List<List<CellDetails>> board) =>
+      PositionDetails(isCapture, getCellDetailsByPosition(position, board));
 
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.any((element) => element.isCapture);
@@ -466,18 +463,19 @@ class CheckersBoard {
 
   bool _isPointsCaptureMove(Position currPosition, Position nextPosition,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      _isInBounds(currPosition.row, currPosition.column) &&
-      _isInBounds(nextPosition.row, nextPosition.column) &&
-      isOpponentCell(currPosition, board, cellTypePlayer) &&
-      getCellDetails(nextPosition.row, nextPosition.column, board).isEmptyCell;
+      currPosition.isInBounds &&
+      nextPosition.isInBounds &&
+      isOpponentCell(getCellDetailsByPosition(currPosition, board), board,
+          cellTypePlayer) &&
+      getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
   bool _isSimpleMove(Position currPosition, Position nextPosition,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      _isInBounds(currPosition.row, currPosition.column) &&
-      _isInBounds(nextPosition.row, nextPosition.column) &&
+      currPosition.isInBounds &&
+      nextPosition.isInBounds &&
       _isSamePlayer(
           currPosition.row, currPosition.column, board, cellTypePlayer) &&
-      getCellDetails(nextPosition.row, nextPosition.column, board).isEmptyCell;
+      getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
   CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn path) {
     Position startPosition = path.positionDetailsList.first.position;
@@ -536,7 +534,7 @@ class CheckersBoard {
   void _updateEndPosition(Position startPosition, Position endPosition,
       List<List<CellDetails>> board) {
     bool isBlackCellPlayer =
-        getCellDetails(startPosition.row, startPosition.column, board).isBlack;
+        getCellDetailsByPosition(startPosition, board).isBlack;
 
     bool isKing = _isKingPiece(board,
         startPosition: startPosition,
@@ -572,7 +570,7 @@ class CheckersBoard {
           {required Position startPosition,
           required Position endPosition,
           required bool isBlackCellPlayer}) =>
-      getCellDetails(startPosition.row, startPosition.column, board).isKing ||
+      getCellDetailsByPosition(startPosition, board).isKing ||
       _isKingRow(
           endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
 

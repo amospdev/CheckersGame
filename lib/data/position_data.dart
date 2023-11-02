@@ -1,3 +1,5 @@
+import 'package:untitled/game/checkers_board.dart';
+
 class Position {
   final int row;
   final int column;
@@ -9,6 +11,12 @@ class Position {
     if (identical(this, other)) return true;
     return other is Position && other.row == row && other.column == column;
   }
+
+  bool get isInBounds =>
+      row >= 0 &&
+      row < CheckersBoard.sizeBoard &&
+      column >= 0 &&
+      column < CheckersBoard.sizeBoard;
 
   @override
   int get hashCode => row.hashCode ^ column.hashCode;

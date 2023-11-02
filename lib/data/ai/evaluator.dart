@@ -103,10 +103,11 @@ class Evaluator {
     }
 
     for (Position pos in checkPositions) {
-      if (!checkersBoard.isOpponentCell(pos, board, cellTypePlayer) &&
-          !checkersBoard
-              .getCellDetails(pos.row, pos.column, board)
-              .isEmptyCell) {
+      CellDetails currCellDetails =
+          checkersBoard.getCellDetailsByPosition(pos, board);
+      if (!checkersBoard.isOpponentCell(
+              currCellDetails, board, cellTypePlayer) &&
+          !currCellDetails.isEmptyCell) {
         return true; // If there is a friendly piece in any of the directions, this piece is protected
       }
     }

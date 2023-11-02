@@ -25,39 +25,34 @@ class TranspositionTable {
 }
 
 class ComputerPlayer {
-  ComputerPlayer();
+  final int depth;
+
+  ComputerPlayer(this.depth);
 
   final Evaluator evaluator = Evaluator();
-  int depth = 3;
   String treeData = "";
   Set<int> depthSet = {};
 
   int minimax(CheckersBoard checkersBoard, int depth, bool isMaximizing,
       int alpha, int beta, TranspositionTable transpositionTable) {
-    // bool isContainDepth = depthSet.contains(depth);
-    // if(!isContainDepth){
-    //   treeData += 'DEPTH: $depth';
-    //
-    // }
-    // depthSet.add(depth);
     if (depth == 0) {
       int? evaluateMemory =
-      transpositionTable.get(checkersBoard.board.toString());
+          transpositionTable.get(checkersBoard.board.toString());
       if (evaluateMemory != null) return evaluateMemory;
 
       int evaluate =
-      evaluator.evaluate(isMaximizing, checkersBoard.board, checkersBoard);
+          evaluator.evaluate(isMaximizing, checkersBoard.board, checkersBoard);
       transpositionTable.set(checkersBoard.board.toString(), evaluate);
       return evaluate;
     }
 
     if (checkersBoard.isGameOver(checkersBoard.board)) {
       int? evaluateMemory =
-      transpositionTable.get(checkersBoard.board.toString());
+          transpositionTable.get(checkersBoard.board.toString());
       if (evaluateMemory != null) return evaluateMemory;
 
       int evaluate =
-      evaluator.evaluate(isMaximizing, checkersBoard.board, checkersBoard);
+          evaluator.evaluate(isMaximizing, checkersBoard.board, checkersBoard);
       transpositionTable.set(checkersBoard.board.toString(), evaluate);
       return evaluate;
     }
@@ -65,7 +60,7 @@ class ComputerPlayer {
     if (isMaximizing) {
       int maxEval = -9999;
       List<PathPawn> allPaths =
-      checkersBoard.getLegalMoves(aiType, checkersBoard.board);
+          checkersBoard.getLegalMoves(aiType, checkersBoard.board);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
@@ -84,13 +79,13 @@ class ComputerPlayer {
     } else {
       int minEval = 9999;
       List<PathPawn> allPaths =
-      checkersBoard.getLegalMoves(humanType, checkersBoard.board);
+          checkersBoard.getLegalMoves(humanType, checkersBoard.board);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
         newBoard.performMoveAI(newBoard, path);
         int eval =
-        minimax(newBoard, depth - 1, true, alpha, beta, transpositionTable);
+            minimax(newBoard, depth - 1, true, alpha, beta, transpositionTable);
 
         minEval = min(minEval, eval);
         beta = min(beta, eval);
@@ -106,26 +101,22 @@ class ComputerPlayer {
     bool isContainDepth = depthSet.contains(depth);
     String indentation = '';
 
-
-
     indentation += ''.padLeft(depth * 12);
     if (!isContainDepth) {
       treeData += '\n${indentation}D: $depth';
     }
     treeData += '\n$indentation$label: $value';
     depthSet.add(value);
-
   }
 
   PathPawn? getBestMoveForAI(CheckersBoard checkersBoard) {
     TranspositionTable transpositionTable = TranspositionTable();
     final bestMove = getMove(checkersBoard, transpositionTable);
-    // Print the minimax tree in horizontal format
     return bestMove;
   }
 
-  PathPawn? getMove(CheckersBoard checkersBoard,
-      TranspositionTable transpositionTable) {
+  PathPawn? getMove(
+      CheckersBoard checkersBoard, TranspositionTable transpositionTable) {
     int bestValue = -9999;
     PathPawn? bestMove;
 

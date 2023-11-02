@@ -9,6 +9,7 @@ import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_optional.dart';
 import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/settings_repo.dart';
 
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _game = CheckersBoard();
@@ -21,7 +22,7 @@ class GameViewModel extends ChangeNotifier {
   int _destinationCol = -1;
   int _pathSize = -1;
 
-  bool aiMode = false;
+  bool aiMode = SettingsRepository().isAIMode;
 
   int get pathSize => _pathSize;
   Pawn? _currPawn;
@@ -199,9 +200,8 @@ class GameViewModel extends ChangeNotifier {
   bool maybeAI() => currentPlayer == aiType && aiMode;
 
   PathPawn? aIMove() {
-    ComputerPlayer aiPlayer = ComputerPlayer();
+    ComputerPlayer aiPlayer = ComputerPlayer(SettingsRepository().depthLevel);
     PathPawn? path = aiPlayer.getBestMoveForAI(_game);
-    // Position start = path?.positionDetailsList.first.position ?? Position(0, 0);
 
     return path;
   }

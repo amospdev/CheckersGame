@@ -1,0 +1,5 @@
+enum GameMode{
+  ONLINE_MODE,
+  OFFLINE_MODE,
+  AI_MODE
+}

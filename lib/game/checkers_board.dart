@@ -145,10 +145,6 @@ class CheckersBoard {
   bool _isInBounds(int row, int col) =>
       row >= 0 && row < sizeBoard && col >= 0 && col < sizeBoard;
 
-  bool _isKing(int row, int column, List<List<CellDetails>> board) =>
-      _getCellType(row, column, board) == CellType.BLACK_KING ||
-      _getCellType(row, column, board) == CellType.WHITE_KING;
-
   bool isOpponentCell(Position position, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
       (getCellDetails(position.row, position.column, board).isWhite &&
@@ -576,7 +572,7 @@ class CheckersBoard {
           {required Position startPosition,
           required Position endPosition,
           required bool isBlackCellPlayer}) =>
-      _isKing(startPosition.row, startPosition.column, board) ||
+      getCellDetails(startPosition.row, startPosition.column, board).isKing ||
       _isKingRow(
           endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
 

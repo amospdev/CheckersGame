@@ -14,15 +14,10 @@ class Evaluator {
     for (int row = 0; row < CheckersBoard.sizeBoard; row++) {
       for (int column = 0; column < CheckersBoard.sizeBoard; column++) {
         CellDetails cellDetails = board[row][column];
-        Position currPosition = Position(row, column);
         if (cellDetails.cellType != CellType.EMPTY &&
             cellDetails.cellType != CellType.UNVALID) {
-          if (checkersBoard.isBlackByPosition(currPosition, board)) {
-            if (checkersBoard.isKingByPosition(currPosition, board)) {
-              humanData.king += 1;
-            } else {
-              humanData.pawn += 1;
-            }
+          if (cellDetails.isBlack) {
+            cellDetails.isKing ? humanData.king += 1 : humanData.pawn += 1;
 
             if (row == 0) {
               humanData.backRowPiece += 1;
@@ -49,12 +44,10 @@ class Evaluator {
                 humanData.protectedPiece += 1;
               }
             }
-          } else if (checkersBoard.isWhiteByPosition(currPosition, board)) {
-            if (checkersBoard.isKingByPosition(currPosition, board)) {
-              computerData.king += 1;
-            } else {
-              computerData.pawn += 1;
-            }
+          } else if (cellDetails.isWhite) {
+            cellDetails.isKing
+                ? computerData.king += 1
+                : computerData.pawn += 1;
 
             if (row == 7) {
               computerData.backRowPiece += 1;
@@ -89,7 +82,7 @@ class Evaluator {
 
     return (max ? sum : -sum).toInt();
   }
-  
+
   bool isProtected(int row, int col, List<List<CellDetails>> board,
       CellType cellTypePlayer, CheckersBoard checkersBoard) {
     List<Position> checkPositions;
@@ -111,7 +104,9 @@ class Evaluator {
 
     for (Position pos in checkPositions) {
       if (!checkersBoard.isOpponentCell(pos, board, cellTypePlayer) &&
-          !checkersBoard.isEmptyCellByPosition(pos, board)) {
+          !checkersBoard
+              .getCellDetails(pos.row, pos.column, board)
+              .isEmptyCell) {
         return true; // If there is a friendly piece in any of the directions, this piece is protected
       }
     }
@@ -120,21 +115,21 @@ class Evaluator {
 
   bool isLeftVulnerable(List<List<CellDetails>> board,
       CheckersBoard checkersBoard, int row, int col) {
-    CellType cellType = board[row][col].cellType;
+    CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
     bool isLeftTopVulnerable = false;
     bool isLeftBottomVulnerable = false;
 
-    isLeftTopVulnerable = checkersBoard.isEmptyCellByPosition(
-            Position(row - 1, col + 1), board) &&
-        checkersBoard.isOpponentCellAI(Position(row + 1, col - 1), board);
+    isLeftTopVulnerable =
+        checkersBoard.getCellDetails(row - 1, col + 1, board).isEmptyCell &&
+            checkersBoard.isOpponentCellAI(row + 1, col - 1, board);
 
-    isLeftBottomVulnerable = checkersBoard.isEmptyCellByPosition(
-            Position(row + 1, col + 1), board) &&
-        checkersBoard.isOpponentCellAI(Position(row - 1, col - 1), board);
+    isLeftBottomVulnerable =
+        checkersBoard.getCellDetails(row + 1, col + 1, board).isEmptyCell &&
+            checkersBoard.isOpponentCellAI(row - 1, col - 1, board);
 
-    if (cellType == CellType.BLACK_KING || cellType == CellType.WHITE_KING) {
+    if (currCellDetails.isKing) {
       return isLeftTopVulnerable || isLeftBottomVulnerable;
-    } else if (cellType == humanType) {
+    } else if (currCellDetails.cellType == humanType) {
       return isLeftTopVulnerable;
     } else {
       return isLeftBottomVulnerable;
@@ -143,21 +138,21 @@ class Evaluator {
 
   bool isRightVulnerable(List<List<CellDetails>> board,
       CheckersBoard checkersBoard, int row, int col) {
-    CellType cellType = board[row][col].cellType;
+    CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
     bool isRightTopVulnerable = false;
     bool isRightBottomVulnerable = false;
 
-    isRightTopVulnerable = checkersBoard.isEmptyCellByPosition(
-            Position(row - 1, col - 1), board) &&
-        checkersBoard.isOpponentCellAI(Position(row + 1, col + 1), board);
+    isRightTopVulnerable =
+        checkersBoard.getCellDetails(row - 1, col - 1, board).isEmptyCell &&
+            checkersBoard.isOpponentCellAI(row + 1, col + 1, board);
 
-    isRightBottomVulnerable = checkersBoard.isEmptyCellByPosition(
-            Position(row + 1, col - 1), board) &&
-        checkersBoard.isOpponentCellAI(Position(row - 1, col + 1), board);
+    isRightBottomVulnerable =
+        checkersBoard.getCellDetails(row + 1, col - 1, board).isEmptyCell &&
+            checkersBoard.isOpponentCellAI(row - 1, col + 1, board);
 
-    if (cellType == CellType.BLACK_KING || cellType == CellType.WHITE_KING) {
+    if (currCellDetails.isKing) {
       return isRightTopVulnerable || isRightBottomVulnerable;
-    } else if (cellType == humanType) {
+    } else if (currCellDetails.cellType == humanType) {
       return isRightTopVulnerable;
     } else {
       return isRightBottomVulnerable;

@@ -5,7 +5,6 @@ import 'package:untitled/enum/cell_type.dart';
 
 class CellDetails {
   CellType cellType = CellType.UNDEFINED;
-  bool isEmpty = true;
   int id = -1;
   Color color;
   final int row;
@@ -18,20 +17,19 @@ class CellDetails {
       ValueNotifier<CellDetailsData>(CellDetailsData.createEmpty());
 
   CellDetails(
-      this.cellType, this.id, this.isEmpty, this.color, this.row, this.column) {
+      this.cellType, this.id, this.color, this.row, this.column) {
     _cellDetailsDataValueNotifier.value = CellDetailsData(tmpColor: color);
     _position = Position(row, column);
   }
 
   static CellDetails createEmpty() =>
-      CellDetails(CellType.UNDEFINED, -1, true, Colors.white, -1, -1);
+      CellDetails(CellType.UNDEFINED, -1, Colors.white, -1, -1);
 
   // The copy method
   CellDetails copy() {
     return CellDetails(
       cellType,
       id,
-      isEmpty,
       color,
       row,
       column,
@@ -59,26 +57,30 @@ class CellDetails {
 
   Offset get offset => Offset(column.toDouble(), row.toDouble());
 
-  bool isContainBlack() =>
+  bool get isBlack =>
       cellType == CellType.BLACK || cellType == CellType.BLACK_KING;
 
-  bool isContainBlackKing() => cellType == CellType.BLACK_KING;
+  bool get isBlackKing => cellType == CellType.BLACK_KING;
 
-  bool isContainBlackPiece() => cellType == CellType.BLACK;
+  bool get isBlackPawn => cellType == CellType.BLACK;
 
-  bool isContainWhite() =>
+  bool get isWhite =>
       cellType == CellType.WHITE || cellType == CellType.WHITE_KING;
 
-  bool isContainWhiteKing() => cellType == CellType.WHITE_KING;
+  bool get isWhiteKing => cellType == CellType.WHITE_KING;
 
-  bool isContainWhitePiece() => cellType == CellType.WHITE;
+  bool get isKing =>
+      cellType == CellType.WHITE_KING || cellType == CellType.BLACK_KING;
 
-  bool isEmptyCell() => cellType == CellType.EMPTY;
+  bool get isPawn => cellType == CellType.WHITE || cellType == CellType.BLACK;
 
-  bool isUnValid() => cellType == CellType.UNVALID;
+  bool get isWhitePawn => cellType == CellType.WHITE;
 
-  void setCellType({required CellType cellType, required bool isEmpty}) {
-    this.isEmpty = isEmpty;
+  bool get isEmptyCell => cellType == CellType.EMPTY;
+
+  bool get isUnValid => cellType == CellType.UNVALID;
+
+  void setCellType({required CellType cellType}) {
     this.cellType = cellType;
   }
 
@@ -89,6 +91,6 @@ class CellDetails {
 
   @override
   String toString() {
-    return 'CellDetails{cellType: $cellType, isEmpty: $isEmpty, id: $id, row: $row, column: $column}';
+    return 'CellDetails{cellType: $cellType, id: $id, row: $row, column: $column}';
   }
 }

@@ -149,27 +149,18 @@ class CheckersBoard {
       _getCellType(row, column, board) == CellType.BLACK_KING ||
       _getCellType(row, column, board) == CellType.WHITE_KING;
 
-  // bool _isEmptyCell(int row, int col, List<List<CellDetails>> board) =>
-  //     _getCellType(row, col, board) == CellType.EMPTY;
-
-  bool _isBlack(int row, int column, List<List<CellDetails>> board) =>
-      _getCellType(row, column, board) == CellType.BLACK ||
-      _getCellType(row, column, board) == CellType.BLACK_KING;
-
-  bool _isWhite(int row, int column, List<List<CellDetails>> board) =>
-      _getCellType(row, column, board) == CellType.WHITE ||
-      _getCellType(row, column, board) == CellType.WHITE_KING;
-
   bool isOpponentCell(Position position, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
-      (_isWhite(position.row, position.column, board) &&
+      (getCellDetails(position.row, position.column, board).isWhite &&
           cellTypePlayer == CellType.BLACK) ||
-      (_isBlack(position.row, position.column, board) &&
+      (getCellDetails(position.row, position.column, board).isBlack &&
           cellTypePlayer == CellType.WHITE);
 
   CellType getCellTypePlayer(
           int row, int column, List<List<CellDetails>> board) =>
-      _isBlack(row, column, board) ? CellType.BLACK : CellType.WHITE;
+      getCellDetails(row, column, board).isBlack
+          ? CellType.BLACK
+          : CellType.WHITE;
 
   bool isOpponentCellAI(int row, int column, List<List<CellDetails>> board) =>
       getCellTypePlayer(row, column, board) != player;
@@ -189,9 +180,9 @@ class CheckersBoard {
   bool _isSamePlayer(int row, int column, List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     Position position = _createPosition(row, column);
-    return (_isWhite(position.row, position.column, board) &&
+    return (getCellDetails(position.row, position.column, board).isWhite &&
             _isWhitePlayerTurn(cellTypePlayer)) ||
-        (_isBlack(position.row, position.column, board) &&
+        (getCellDetails(position.row, position.column, board).isBlack &&
             _isBlackPlayerTurn(cellTypePlayer));
   }
 
@@ -549,7 +540,7 @@ class CheckersBoard {
   void _updateEndPosition(Position startPosition, Position endPosition,
       List<List<CellDetails>> board) {
     bool isBlackCellPlayer =
-        _isBlack(startPosition.row, startPosition.column, board);
+        getCellDetails(startPosition.row, startPosition.column, board).isBlack;
 
     bool isKing = _isKingPiece(board,
         startPosition: startPosition,

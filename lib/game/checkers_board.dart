@@ -156,9 +156,6 @@ class CheckersBoard {
   bool isOpponentCellAI(int row, int column, List<List<CellDetails>> board) =>
       getCellTypePlayer(_createPosition(row, column), board) != player;
 
-  // CellType _getCellType(Position position, List<List<CellDetails>> board) =>
-  //     getCellDetailsByPosition(position, board).cellType;
-
   CellDetails getCellDetails(
           int row, int column, List<List<CellDetails>> board) =>
       getCellDetailsByPosition(_createPosition(row, column), board);
@@ -175,14 +172,10 @@ class CheckersBoard {
   bool _isBlackPlayerTurn(CellType cellTypePlayer) =>
       cellTypePlayer == CellType.BLACK || cellTypePlayer == CellType.BLACK_KING;
 
-  bool _isSamePlayer(int row, int column, List<List<CellDetails>> board,
-      CellType cellTypePlayer) {
-    Position position = _createPosition(row, column);
-    return (getCellDetailsByPosition(position, board).isWhite &&
-            _isWhitePlayerTurn(cellTypePlayer)) ||
-        (getCellDetailsByPosition(position, board).isBlack &&
-            _isBlackPlayerTurn(cellTypePlayer));
-  }
+  bool _isSamePlayer(List<List<CellDetails>> board, CellType cellTypePlayer,
+          CellDetails cellDetails) =>
+      (cellDetails.isWhite && _isWhitePlayerTurn(cellTypePlayer)) ||
+      (cellDetails.isBlack && _isBlackPlayerTurn(cellTypePlayer));
 
   bool isValidStartCellSelected(int row, int column,
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
@@ -265,8 +258,7 @@ class CheckersBoard {
     // Combine conditions to exit early
     if (startCellDetails.isEmptyCell ||
         startCellDetails.isUnValid ||
-        !_isSamePlayer(
-            startPosition.row, startPosition.column, board, cellTypePlayer)) {
+        !_isSamePlayer(board, cellTypePlayer,startCellDetails)) {
       return [];
     }
 
@@ -473,8 +465,8 @@ class CheckersBoard {
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
       currPosition.isInBounds &&
       nextPosition.isInBounds &&
-      _isSamePlayer(
-          currPosition.row, currPosition.column, board, cellTypePlayer) &&
+      _isSamePlayer(board, cellTypePlayer,
+          getCellDetailsByPosition(currPosition, board)) &&
       getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
   CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn path) {
@@ -770,8 +762,7 @@ class CheckersBoard {
     List<PathPawn> paths = [];
     for (List<CellDetails> cellTypeList in board) {
       for (CellDetails cellDetails in cellTypeList) {
-        if (_isSamePlayer(
-            cellDetails.row, cellDetails.column, board, cellTypePlayer)) {
+        if (_isSamePlayer(board, cellTypePlayer, cellDetails)) {
           List<PathPawn> currPaths = _getPossiblePathsByPosition(
               cellDetails.row, cellDetails.column, board, cellTypePlayer);
           paths.addAll(currPaths);

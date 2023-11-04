@@ -154,7 +154,11 @@ class CheckersBoard {
           : CellType.WHITE;
 
   bool isOpponentCellAI(int row, int column, List<List<CellDetails>> board) =>
-      getCellTypePlayer(_createPosition(row, column), board) != player;
+      getCellDetails(row, column, board).isEmptyCell ||
+              getCellDetails(row, column, board).isUnValid ||
+              getCellDetails(row, column, board).cellType == CellType.UNDEFINED
+          ? false
+          : (getCellTypePlayer(_createPosition(row, column), board) != player);
 
   CellDetails getCellDetails(
           int row, int column, List<List<CellDetails>> board) =>
@@ -258,7 +262,7 @@ class CheckersBoard {
     // Combine conditions to exit early
     if (startCellDetails.isEmptyCell ||
         startCellDetails.isUnValid ||
-        !_isSamePlayer(board, cellTypePlayer,startCellDetails)) {
+        !_isSamePlayer(board, cellTypePlayer, startCellDetails)) {
       return [];
     }
 

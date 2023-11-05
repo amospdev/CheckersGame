@@ -56,20 +56,20 @@ class CheckersBoard {
   void createBoard() {
     _board = List.generate(sizeBoard,
         (i) => List<CellDetails>.filled(sizeBoard, CellDetails.createEmpty()));
-    for (int i = 0; i < sizeBoard; i++) {
-      for (int j = 0; j < sizeBoard; j++) {
+    for (int row = 0; row < sizeBoard; row++) {
+      for (int column = 0; column < sizeBoard; column++) {
         CellType tmpCellType = CellType.UNDEFINED;
-        int id = (sizeBoard * i) + j;
+        int id = (sizeBoard * row) + column;
 
-        Color cellColor = (i + j) % 2 == 0 ? Colors.white : Colors.brown;
-        if ((i + j) % 2 == 0) {
+        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
+        if ((row + column) % 2 == 0) {
           tmpCellType = CellType.UNVALID;
         } else {
-          if (i < (sizeBoard / 2) - 1) {
+          if (row < (sizeBoard / 2) - 1) {
             tmpCellType = CellType.BLACK;
-          } else if (i > (sizeBoard / 2)) {
+          } else if (row > (sizeBoard / 2)) {
             tmpCellType = CellType.WHITE;
-          } else if (i == (sizeBoard / 2) - 1 || i == (sizeBoard / 2)) {
+          } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {
             tmpCellType = CellType.EMPTY;
           }
         }
@@ -77,13 +77,14 @@ class CheckersBoard {
         if (tmpCellType == CellType.WHITE || tmpCellType == CellType.BLACK) {
           _pawns.add(Pawn(
               id: id + 100,
-              row: i,
-              column: j,
+              row: row,
+              column: column,
               color: tmpCellType == CellType.WHITE ? Colors.white : Colors.grey,
               isKing: false));
         }
 
-        _board[i][j] = CellDetails(tmpCellType, id, cellColor, i, j);
+        _board[row][column] =
+            CellDetails(tmpCellType, id, cellColor, row, column);
       }
     }
   }
@@ -136,29 +137,17 @@ class CheckersBoard {
 
     logDebug(horizontalLine); // closing line
 
-    logDebug("BLACKS: ${getAllPieces(CellType.BLACK)}");
-    logDebug("WHITES: ${getAllPieces(CellType.WHITE)}");
-
     logDebug("**********************************\n\n");
   }
 
-  bool isOpponentCell(CellDetails cellDetails, List<List<CellDetails>> board,
+  bool isOpponentCell(int row, int column, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
-      (cellDetails.isWhite && cellTypePlayer == CellType.BLACK) ||
-      (cellDetails.isBlack && cellTypePlayer == CellType.WHITE);
-
-  CellType getCellTypePlayer(
-          Position position, List<List<CellDetails>> board) =>
-      getCellDetailsByPosition(position, board).isBlack
-          ? CellType.BLACK
-          : CellType.WHITE;
-
-  bool isOpponentCellAI(int row, int column, List<List<CellDetails>> board) =>
       getCellDetails(row, column, board).isEmptyCell ||
               getCellDetails(row, column, board).isUnValid ||
               getCellDetails(row, column, board).cellType == CellType.UNDEFINED
           ? false
-          : (getCellTypePlayer(_createPosition(row, column), board) != player);
+          : (getCellDetails(row, column, board).getCellTypePlayer() !=
+              cellTypePlayer);
 
   CellDetails getCellDetails(
           int row, int column, List<List<CellDetails>> board) =>
@@ -200,8 +189,8 @@ class CheckersBoard {
       List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     return directions.any((positionDir) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      Position nextPosition = startPosition.nextPosition(positionDir);
+      Position afterNextPosition = nextPosition.nextPosition(positionDir);
       return _isPointsCaptureMove(
           nextPosition, afterNextPosition, board, cellTypePlayer);
     });
@@ -319,8 +308,8 @@ class CheckersBoard {
       List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      Position nextPosition = startPosition.nextPosition(positionDir);
+      Position afterNextPosition = nextPosition.nextPosition(positionDir);
 
       if (_isPointsCaptureMove(
           nextPosition, afterNextPosition, board, cellTypePlayer)) {
@@ -341,7 +330,7 @@ class CheckersBoard {
       List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
+      Position nextPosition = startPosition.nextPosition(positionDir);
 
       if (_isSimpleMove(startPosition, nextPosition, board, cellTypePlayer)) {
         PathPawn path = PathPawn(List<PositionDetails>.from(positionDetails)
@@ -392,10 +381,6 @@ class CheckersBoard {
 
   int _getRowDirection({required CellType cellTypePlayer}) =>
       cellTypePlayer == CellType.BLACK ? 1 : -1;
-
-  Position _getNextPosition(Position position, Position positionDir) =>
-      _createPosition(
-          position.row + positionDir.row, position.column + positionDir.column);
 
   Position _createPosition(int row, int column) => Position(row, column);
 
@@ -461,8 +446,8 @@ class CheckersBoard {
           List<List<CellDetails>> board, CellType cellTypePlayer) =>
       currPosition.isInBounds &&
       nextPosition.isInBounds &&
-      isOpponentCell(getCellDetailsByPosition(currPosition, board), board,
-          cellTypePlayer) &&
+      isOpponentCell(
+          currPosition.row, currPosition.column, board, cellTypePlayer) &&
       getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
   bool _isSimpleMove(Position currPosition, Position nextPosition,
@@ -656,8 +641,8 @@ class CheckersBoard {
         continue;
       }
 
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      Position nextPosition = startPosition.nextPosition(positionDir);
+      Position afterNextPosition = nextPosition.nextPosition(positionDir);
 
       //Check if the position already exists
       if (positionDetails.any((details) => details.position == nextPosition)) {
@@ -692,8 +677,8 @@ class CheckersBoard {
       List<List<CellDetails>> board,
       CellType cellTypePlayer) {
     for (Position positionDir in directions) {
-      Position nextPosition = _getNextPosition(startPosition, positionDir);
-      Position afterNextPosition = _getNextPosition(nextPosition, positionDir);
+      Position nextPosition = startPosition.nextPosition(positionDir);
+      Position afterNextPosition = nextPosition.nextPosition(positionDir);
       List<PositionDetails> positionDetailsTmp = [...positionDetails];
       bool isNotCaptureMove = !_isPointsCaptureMove(
           nextPosition, afterNextPosition, board, cellTypePlayer);
@@ -725,11 +710,23 @@ class CheckersBoard {
   }
 
   bool isGameOver(List<List<CellDetails>> board) {
-    if (getAllPieces(CellType.BLACK) == 0) {
+    if (board
+        .where((cellDetailsList) => cellDetailsList
+            .where((element) =>
+                element.cellType == CellType.BLACK ||
+                element.cellType == CellType.BLACK_KING)
+            .isNotEmpty)
+        .isEmpty) {
       print("CB GM BLACK 0");
       return true;
     }
-    if (getAllPieces(CellType.WHITE) == 0) {
+    if (board
+        .where((cellDetailsList) => cellDetailsList
+            .where((element) =>
+                element.cellType == CellType.WHITE ||
+                element.cellType == CellType.WHITE_KING)
+            .isNotEmpty)
+        .isEmpty) {
       print("CB GM WHITE 0");
 
       return true;
@@ -746,19 +743,6 @@ class CheckersBoard {
     }
 
     return false;
-  }
-
-  int getAllPieces(CellType cellTypePlayer) {
-    int piecesCounter = 0;
-    for (List<CellDetails> cellTypeList in board) {
-      for (CellDetails cellDetails in cellTypeList) {
-        if (cellTypePlayer == cellDetails.getCellTypePlayer()) {
-          piecesCounter++;
-        }
-      }
-    }
-
-    return piecesCounter;
   }
 
   List<PathPawn> getLegalMoves(

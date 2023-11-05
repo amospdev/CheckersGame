@@ -36,11 +36,6 @@ class CheckersBoard {
 
   List<List<CellDetails>> get board => _board;
 
-  Iterable<CellDetails> get flatBoard => _getFlatBoard(_board);
-
-  Iterable<CellDetails> _getFlatBoard(List<List<CellDetails>> board) =>
-      board.expand((element) => element);
-
   final List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;

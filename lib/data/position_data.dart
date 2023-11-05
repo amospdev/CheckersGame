@@ -18,6 +18,9 @@ class Position {
       column >= 0 &&
       column < CheckersBoard.sizeBoard;
 
+  Position nextPosition(Position positionDir) =>
+      Position(row + positionDir.row, column + positionDir.column);
+
   @override
   int get hashCode => row.hashCode ^ column.hashCode;
 

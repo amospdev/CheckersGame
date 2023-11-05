@@ -1,7 +1,7 @@
 import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/ai/heuristic_data.dart';
 import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/position_data.dart';
+import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 

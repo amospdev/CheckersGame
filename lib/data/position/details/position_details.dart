@@ -1,5 +1,5 @@
 import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/position_data.dart';
+import 'package:untitled/data/position/position_data.dart';
 
 class PositionDetails {
   final bool isCapture;
@@ -23,4 +23,13 @@ class PositionDetails {
   String toString() {
     return 'PositionDetails{position: $position, isCapture: $isCapture}';
   }
+}
+
+class PositionDetailsCapture extends PositionDetails {
+  PositionDetailsCapture(CellDetails cellDetails) : super(true, cellDetails);
+}
+
+class PositionDetailsNonCapture extends PositionDetails {
+  PositionDetailsNonCapture(CellDetails cellDetails)
+      : super(false, cellDetails);
 }

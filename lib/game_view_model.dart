@@ -3,7 +3,7 @@ import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/position_data.dart';
+import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
@@ -103,7 +103,7 @@ class GameViewModel extends ChangeNotifier {
     _setSelectPiece(row, column);
     _setPaths(_game.getPossiblePathsByPosition(
         row, column, _isContinuePath, _game.board, _game.player,
-        isAIMode: false));
+        isAIMode: false, currPaths: _paths));
     _setCheckersBoard(_game.flatBoard);
     return TapOnBoard.START;
   }
@@ -197,7 +197,6 @@ class GameViewModel extends ChangeNotifier {
     _setCurrentPlayer(_game.player);
     bool isGameOver = _game.isGameOver(_game.board);
     print("CB NEXT TURN isGameOver: $isGameOver");
-
   }
 
   bool maybeAI() => currentPlayer == aiType && aiMode;

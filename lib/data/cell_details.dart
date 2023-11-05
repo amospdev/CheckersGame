@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details_data.dart';
-import 'package:untitled/data/position_data.dart';
+import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 class CellDetails {

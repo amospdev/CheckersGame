@@ -1,4 +1,4 @@
-import 'package:untitled/data/position_details.dart';
+import 'package:untitled/data/position/details/position_details.dart';
 
 class PathPawn {
   final List<PositionDetails> positionDetailsList;

@@ -3,8 +3,8 @@ import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/position_data.dart';
-import 'package:untitled/data/position_details.dart';
+import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/position/details/position_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
@@ -208,8 +208,11 @@ class CheckersBoard {
       bool isContinuePath,
       List<List<CellDetails>> board,
       CellType cellTypePlayer,
-      {required bool isAIMode}) {
-    _clearAllCellColors(board);
+      {required bool isAIMode,
+      List<PathPawn>? currPaths}) {
+    if (currPaths != null) {
+      _paintCells(currPaths, true);
+    }
 
     CellDetails startCellDetails =
         getCellDetailsByPosition(_createPosition(row, column), board);
@@ -235,7 +238,7 @@ class CheckersBoard {
           cellTypePlayer);
     }
 
-    _paintCells(paths);
+    _paintCells(paths, false);
     return paths;
   }
 
@@ -255,12 +258,11 @@ class CheckersBoard {
       return [];
     }
 
-    PositionDetails startPositionPath =
-        _getPositionDetailsNonCapture(startPosition, board);
     return _fetchAllPathsByDirections(
         [],
         startPosition,
-        startPositionPath,
+        PositionDetailsNonCapture(
+            getCellDetailsByPosition(startPosition, board)),
         startCellDetails.isKing
             ? getKingDirections()
             : getPieceDirections(cellTypePlayer: cellTypePlayer),
@@ -313,10 +315,14 @@ class CheckersBoard {
 
       if (_isPointsCaptureMove(
           nextPosition, afterNextPosition, board, cellTypePlayer)) {
-        List<PositionDetails> positionDetailsList = List<PositionDetails>.from(
-                positionDetails)
-            .addItem(_getPositionDetailsCapture(nextPosition, board))
-            .addItem(_getPositionDetailsNonCapture(afterNextPosition, board));
+        List<PositionDetails> positionDetailsList =
+            List<PositionDetails>.from(positionDetails)
+                .addItem(PositionDetailsCapture(
+                    getCellDetailsByPosition(nextPosition, board)))
+                .addItem(
+                  PositionDetailsNonCapture(
+                      getCellDetailsByPosition(afterNextPosition, board)),
+                );
         paths.add(PathPawn(positionDetailsList));
       }
     }
@@ -333,24 +339,17 @@ class CheckersBoard {
       Position nextPosition = startPosition.nextPosition(positionDir);
 
       if (_isSimpleMove(startPosition, nextPosition, board, cellTypePlayer)) {
-        PathPawn path = PathPawn(List<PositionDetails>.from(positionDetails)
-            .addItem(_getPositionDetailsNonCapture(nextPosition, board)));
+        PathPawn path =
+            PathPawn(List<PositionDetails>.from(positionDetails).addItem(
+          PositionDetailsNonCapture(
+              getCellDetailsByPosition(nextPosition, board)),
+        ));
         paths.add(path);
       }
     }
   }
 
-  void _clearAllCellColors(List<List<CellDetails>> board) {
-    for (var element in board) {
-      for (var cell in element) {
-        if (cell.tmpColor != cell.color) {
-          cell.clearColor();
-        }
-      }
-    }
-  }
-
-  void _paintCells(List<PathPawn> paths) {
+  void _paintCells(List<PathPawn> paths, bool isClear) {
     for (PathPawn path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
         // Determine the color using a switch-case
@@ -364,17 +363,13 @@ class CheckersBoard {
             break;
         }
 
-        Optional<CellDetails> cellDetails = flatBoard
-            .toList(growable: false)
-            .firstWhereOrAbsent(
-                (element) => element.position == positionDetails.position);
-
-        if (cellDetails.isAbsent) {
-          logDebug("CB _paintCells cellDetails is ABSENT");
-          continue;
+        CellDetails cellDetails = _board[positionDetails.position.row]
+            [positionDetails.position.column];
+        if (isClear) {
+          cellDetails.clearColor();
+        } else {
+          cellDetails.changeColor(color);
         }
-
-        cellDetails.value.changeColor(color);
       }
     }
   }
@@ -407,7 +402,10 @@ class CheckersBoard {
     _fetchAllCapturePathsByDirections(
         paths,
         startPosition,
-        [_getPositionDetailsNonCapture(startPosition, board)],
+        [
+          PositionDetailsNonCapture(
+              getCellDetailsByPosition(startPosition, board)),
+        ],
         directions,
         board,
         cellTypePlayer);
@@ -423,18 +421,6 @@ class CheckersBoard {
       startCellDetails.isKing
           ? getKingDirections()
           : getPieceDirections(cellTypePlayer: cellTypePlayer);
-
-  PositionDetails _getPositionDetailsNonCapture(
-          Position position, List<List<CellDetails>> board) =>
-      _createPositionDetails(position, false, board);
-
-  PositionDetails _getPositionDetailsCapture(
-          Position position, List<List<CellDetails>> board) =>
-      _createPositionDetails(position, true, board);
-
-  PositionDetails _createPositionDetails(
-          Position position, bool isCapture, List<List<CellDetails>> board) =>
-      PositionDetails(isCapture, getCellDetailsByPosition(position, board));
 
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.any((element) => element.isCapture);
@@ -481,7 +467,8 @@ class CheckersBoard {
 
     _performMoveByPosition(
         startPosition, endPosition, path.value.positionDetailsList, board);
-    _clearAllCellColors(board);
+
+    _paintCells(paths, true);
   }
 
   Optional<PathPawn> _getRelevantPath(
@@ -654,9 +641,12 @@ class CheckersBoard {
         canCaptureFurther = true;
 
         List<PositionDetails> newPositionDetails = List.from(positionDetails);
-        newPositionDetails.add(_getPositionDetailsCapture(nextPosition, board));
-        newPositionDetails
-            .add(_getPositionDetailsNonCapture(afterNextPosition, board));
+        newPositionDetails.add(PositionDetailsCapture(
+            getCellDetailsByPosition(nextPosition, board)));
+        newPositionDetails.add(
+          PositionDetailsNonCapture(
+              getCellDetailsByPosition(afterNextPosition, board)),
+        );
 
         _fetchAllCapturePathsKingSimulate(paths, afterNextPosition,
             newPositionDetails, directions, board, cellTypePlayer,
@@ -684,9 +674,12 @@ class CheckersBoard {
           nextPosition, afterNextPosition, board, cellTypePlayer);
       if (isNotCaptureMove) continue;
 
-      positionDetailsTmp.add(_getPositionDetailsCapture(nextPosition, board));
-      positionDetailsTmp
-          .add(_getPositionDetailsNonCapture(afterNextPosition, board));
+      positionDetailsTmp.add(PositionDetailsCapture(
+          getCellDetailsByPosition(nextPosition, board)));
+      positionDetailsTmp.add(
+        PositionDetailsNonCapture(
+            getCellDetailsByPosition(afterNextPosition, board)),
+      );
 
       _fetchAllCapturePathsByDirections(paths, afterNextPosition,
           positionDetailsTmp, directions, board, cellTypePlayer);

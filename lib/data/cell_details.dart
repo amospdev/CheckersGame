@@ -80,6 +80,8 @@ class CellDetails {
 
   bool get isUnValid => cellType == CellType.UNVALID;
 
+  bool get isUndefined => cellType == CellType.UNDEFINED;
+
   void setCellType({required CellType cellType}) {
     this.cellType = cellType;
   }

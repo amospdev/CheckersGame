@@ -6,8 +6,8 @@ import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 
 class Evaluator {
-  int evaluate(
-      bool max, List<List<CellDetails>> board, CheckersBoard checkersBoard) {
+  double evaluate(bool max, List<List<CellDetails>> board,
+      CheckersBoard checkersBoard, CellType cellTypePlayer) {
     final HeuristicData computerData = HeuristicData();
     final HeuristicData humanData = HeuristicData();
 
@@ -31,16 +31,23 @@ class Evaluator {
                 }
               }
 
-              if (isRightVulnerable(board, checkersBoard, row, column)) {
+              if (isRightVulnerable(
+                  board, checkersBoard, row, column, cellTypePlayer)) {
                 humanData.vulnerable += 1;
               }
 
-              if (isLeftVulnerable(board, checkersBoard, row, column)) {
+              if (isLeftVulnerable(
+                  board, checkersBoard, row, column, cellTypePlayer)) {
                 humanData.vulnerable += 1;
               }
+
+              // if (isRightVulnerable(board, checkersBoard, row, column) ||
+              //     isLeftVulnerable(board, checkersBoard, row, column)) {
+              //   humanData.vulnerable += 1;
+              // }
 
               if (isProtected(
-                  row, column, board, cellDetails.cellType, checkersBoard)) {
+                  row, column, board, cellTypePlayer, checkersBoard)) {
                 humanData.protectedPiece += 1;
               }
             }
@@ -61,15 +68,23 @@ class Evaluator {
                 }
               }
 
-              if (isRightVulnerable(board, checkersBoard, row, column)) {
+              if (isRightVulnerable(
+                  board, checkersBoard, row, column, cellTypePlayer)) {
                 computerData.vulnerable += 1;
               }
 
-              if (isLeftVulnerable(board, checkersBoard, row, column)) {
+              if (isLeftVulnerable(
+                  board, checkersBoard, row, column, cellTypePlayer)) {
                 computerData.vulnerable += 1;
               }
+
+              // if (isRightVulnerable(board, checkersBoard, row, column) ||
+              //     isLeftVulnerable(board, checkersBoard, row, column)) {
+              //   computerData.vulnerable += 1;
+              // }
+
               if (isProtected(
-                  row, column, board, cellDetails.cellType, checkersBoard)) {
+                  row, column, board, cellTypePlayer, checkersBoard)) {
                 computerData.protectedPiece += 1;
               }
             }
@@ -80,11 +95,15 @@ class Evaluator {
 
     final sum = computerData.subtract(humanData).sum;
 
-    return (max ? sum : -sum).toInt();
+    return (max ? sum : -sum);
   }
 
   bool isProtected(int row, int col, List<List<CellDetails>> board,
       CellType cellTypePlayer, CheckersBoard checkersBoard) {
+    if (row == 0 || col == 0 || row == 7 || col == 7) {
+      return true;
+    }
+
     List<Position> checkPositions;
 
     if (cellTypePlayer == CellType.WHITE || cellTypePlayer == CellType.BLACK) {
@@ -105,8 +124,7 @@ class Evaluator {
     for (Position pos in checkPositions) {
       CellDetails currCellDetails =
           checkersBoard.getCellDetailsByPosition(pos, board);
-      if (!checkersBoard.isOpponentCell(
-              currCellDetails, board, cellTypePlayer) &&
+      if (!checkersBoard.isOpponentCell(row, col, board, cellTypePlayer) &&
           !currCellDetails.isEmptyCell) {
         return true; // If there is a friendly piece in any of the directions, this piece is protected
       }
@@ -115,18 +133,20 @@ class Evaluator {
   }
 
   bool isLeftVulnerable(List<List<CellDetails>> board,
-      CheckersBoard checkersBoard, int row, int col) {
+      CheckersBoard checkersBoard, int row, int col, CellType cellTypePlayer) {
     CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
     bool isLeftTopVulnerable = false;
     bool isLeftBottomVulnerable = false;
 
-    isLeftTopVulnerable =
-        checkersBoard.getCellDetails(row - 1, col + 1, board).isEmptyCell &&
-            checkersBoard.isOpponentCellAI(row + 1, col - 1, board);
+    isLeftTopVulnerable = checkersBoard
+            .getCellDetails(row - 1, col + 1, board)
+            .isEmptyCell &&
+        checkersBoard.isOpponentCell(row + 1, col - 1, board, cellTypePlayer);
 
-    isLeftBottomVulnerable =
-        checkersBoard.getCellDetails(row + 1, col + 1, board).isEmptyCell &&
-            checkersBoard.isOpponentCellAI(row - 1, col - 1, board);
+    isLeftBottomVulnerable = checkersBoard
+            .getCellDetails(row + 1, col + 1, board)
+            .isEmptyCell &&
+        checkersBoard.isOpponentCell(row - 1, col - 1, board, cellTypePlayer);
 
     if (currCellDetails.isKing) {
       return isLeftTopVulnerable || isLeftBottomVulnerable;
@@ -138,18 +158,20 @@ class Evaluator {
   }
 
   bool isRightVulnerable(List<List<CellDetails>> board,
-      CheckersBoard checkersBoard, int row, int col) {
+      CheckersBoard checkersBoard, int row, int col, CellType cellTypePlayer) {
     CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
     bool isRightTopVulnerable = false;
     bool isRightBottomVulnerable = false;
 
-    isRightTopVulnerable =
-        checkersBoard.getCellDetails(row - 1, col - 1, board).isEmptyCell &&
-            checkersBoard.isOpponentCellAI(row + 1, col + 1, board);
+    isRightTopVulnerable = checkersBoard
+            .getCellDetails(row - 1, col - 1, board)
+            .isEmptyCell &&
+        checkersBoard.isOpponentCell(row + 1, col + 1, board, cellTypePlayer);
 
-    isRightBottomVulnerable =
-        checkersBoard.getCellDetails(row + 1, col - 1, board).isEmptyCell &&
-            checkersBoard.isOpponentCellAI(row - 1, col + 1, board);
+    isRightBottomVulnerable = checkersBoard
+            .getCellDetails(row + 1, col - 1, board)
+            .isEmptyCell &&
+        checkersBoard.isOpponentCell(row - 1, col + 1, board, cellTypePlayer);
 
     if (currCellDetails.isKing) {
       return isRightTopVulnerable || isRightBottomVulnerable;

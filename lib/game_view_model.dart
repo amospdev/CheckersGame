@@ -195,6 +195,9 @@ class GameViewModel extends ChangeNotifier {
     _clearDataNextTurnState();
     _game.nextTurn(_game.board);
     _setCurrentPlayer(_game.player);
+    bool isGameOver = _game.isGameOver(_game.board);
+    print("CB NEXT TURN isGameOver: $isGameOver");
+
   }
 
   bool maybeAI() => currentPlayer == aiType && aiMode;

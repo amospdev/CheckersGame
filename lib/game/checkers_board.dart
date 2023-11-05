@@ -352,22 +352,18 @@ class CheckersBoard {
   void _paintCells(List<PathPawn> paths, bool isClear) {
     for (PathPawn path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
-        // Determine the color using a switch-case
-        Color color;
-        switch (index) {
-          case 0:
-            color = startPositionColor;
-            break;
-          default:
-            color = positionDetails.isCapture ? captureColor : endPositionColor;
-            break;
-        }
-
         CellDetails cellDetails = _board[positionDetails.position.row]
             [positionDetails.position.column];
+
         if (isClear) {
           cellDetails.clearColor();
         } else {
+          Color color = index == 0
+              ? startPositionColor
+              : positionDetails.isCapture
+                  ? captureColor
+                  : endPositionColor;
+
           cellDetails.changeColor(color);
         }
       }
@@ -461,7 +457,7 @@ class CheckersBoard {
     Optional<PathPawn> path =
         _getRelevantPath(paths, startPosition, endPosition);
     if (path.isAbsent) {
-      print("CB performMove PathPawn isAbsent");
+      logDebug("CB performMove PathPawn isAbsent");
       return;
     }
 
@@ -702,41 +698,18 @@ class CheckersBoard {
     return copiedBoard;
   }
 
-  bool isGameOver(List<List<CellDetails>> board) {
-    if (board
-        .where((cellDetailsList) => cellDetailsList
-            .where((element) =>
-                element.cellType == CellType.BLACK ||
-                element.cellType == CellType.BLACK_KING)
-            .isNotEmpty)
-        .isEmpty) {
-      print("CB GM BLACK 0");
-      return true;
-    }
-    if (board
-        .where((cellDetailsList) => cellDetailsList
-            .where((element) =>
-                element.cellType == CellType.WHITE ||
-                element.cellType == CellType.WHITE_KING)
-            .isNotEmpty)
-        .isEmpty) {
-      print("CB GM WHITE 0");
+  bool isGameOver(List<List<CellDetails>> board) =>
+      _isPawnsGameOver(CellType.BLACK, CellType.BLACK_KING) ||
+      _isPawnsGameOver(CellType.WHITE, CellType.WHITE_KING) ||
+      getLegalMoves(CellType.WHITE, board).isEmpty ||
+      getLegalMoves(CellType.BLACK, board).isEmpty;
 
-      return true;
-    }
-    if (getLegalMoves(CellType.WHITE, board).isEmpty) {
-      print("CB GM getLegalMoves WHITE 0");
-
-      return true;
-    }
-    if (getLegalMoves(CellType.BLACK, board).isEmpty) {
-      print("CB GM getLegalMoves BLACK 0");
-
-      return true;
-    }
-
-    return false;
-  }
+  bool _isPawnsGameOver(CellType cellType, CellType cellTypeKing) => board
+      .where((cellDetailsList) => cellDetailsList
+          .where((element) =>
+              element.cellType == cellType || element.cellType == cellTypeKing)
+          .isNotEmpty)
+      .isEmpty;
 
   List<PathPawn> getLegalMoves(
       CellType cellTypePlayer, List<List<CellDetails>> board) {

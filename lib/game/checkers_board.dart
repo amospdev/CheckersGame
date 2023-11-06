@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
@@ -30,8 +29,6 @@ class CheckersBoard {
     }
   }
 
-  final Evaluator evaluator = Evaluator();
-
   List<List<CellDetails>> _board = [];
 
   List<List<CellDetails>> get board => _board;
@@ -39,10 +36,6 @@ class CheckersBoard {
   final List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;
-
-  List<Pawn> get pawnsWithoutKills => _pawns
-      .where((element) => !element.pawnDataNotifier.value.isKilled)
-      .toList();
 
   CellType _player = CellType.BLACK;
 
@@ -83,6 +76,13 @@ class CheckersBoard {
       }
     }
   }
+
+  Pawn _getPawn(Position position) => _pawns
+      .where((element) => !element.pawnDataNotifier.value.isKilled)
+      .toList()
+      .firstWhere(
+          (pawn) => pawn.row == position.row && pawn.column == position.column,
+          orElse: () => Pawn.createEmpty());
 
   List<Position> getPieceDirections({required CellType cellTypePlayer}) => [
         _createPosition(_getRowDirection(cellTypePlayer: cellTypePlayer), 1),
@@ -139,7 +139,7 @@ class CheckersBoard {
           CellType cellTypePlayer) =>
       getCellDetails(row, column, board).isEmptyCell ||
               getCellDetails(row, column, board).isUnValid ||
-              getCellDetails(row, column, board).cellType == CellType.UNDEFINED
+              getCellDetails(row, column, board).isUndefined
           ? false
           : (getCellDetails(row, column, board).getCellTypePlayer() !=
               cellTypePlayer);
@@ -313,12 +313,13 @@ class CheckersBoard {
         List<PositionDetails> positionDetailsList =
             List<PositionDetails>.from(positionDetails)
                 .addItem(PositionDetailsCapture(
-                    getCellDetailsByPosition(nextPosition, board)))
+                    cellDetails: getCellDetailsByPosition(nextPosition, board),
+                    pawnCapture: _getPawn(nextPosition)))
                 .addItem(
                   PositionDetailsNonCapture(
                       getCellDetailsByPosition(afterNextPosition, board)),
                 );
-        paths.add(PathPawn(positionDetailsList));
+        paths.add(PathPawn(positionDetailsList, _getPawn(startPosition)));
       }
     }
   }
@@ -334,12 +335,12 @@ class CheckersBoard {
       Position nextPosition = startPosition.nextPosition(positionDir);
 
       if (_isSimpleMove(startPosition, nextPosition, board, cellTypePlayer)) {
-        PathPawn path =
-            PathPawn(List<PositionDetails>.from(positionDetails).addItem(
+        List<PositionDetails> positionDetailsList =
+            List<PositionDetails>.from(positionDetails).addItem(
           PositionDetailsNonCapture(
               getCellDetailsByPosition(nextPosition, board)),
-        ));
-        paths.add(path);
+        );
+        paths.add(PathPawn(positionDetailsList, _getPawn(startPosition)));
       }
     }
   }
@@ -435,63 +436,26 @@ class CheckersBoard {
           getCellDetailsByPosition(currPosition, board)) &&
       getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
-  CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn path) {
-    Position startPosition = path.positionDetailsList.first.position;
-    Position endPosition = path.positionDetailsList.last.position;
-    tempBoard.performMove(startPosition.row, startPosition.column,
-        endPosition.row, endPosition.column, [path], tempBoard.board);
+  CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn pathPawn) =>
+      tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, true);
 
-    return tempBoard;
-  }
+  void performMove(List<List<CellDetails>> board, List<PathPawn> paths,
+      PathPawn pathPawn, bool isAI) {
+    // Update the end position based on the type of the piece and its final position on the board
+    _updateEndPosition(
+        pathPawn.startPosition, pathPawn.endPosition, board, pathPawn, isAI);
 
-  void performMove(int startRow, int startCol, int endRow, int endCol,
-      List<PathPawn> paths, List<List<CellDetails>> board) {
-    if (_isPathNotValid(paths)) return;
-    Position startPosition = _createPosition(startRow, startCol);
-    Position endPosition = _createPosition(endRow, endCol);
-    Optional<PathPawn> path =
-        _getRelevantPath(paths, startPosition, endPosition);
-    if (path.isAbsent) {
-      logDebug("CB performMove PathPawn isAbsent");
-      return;
-    }
+    // Remove captured pieces
+    _removeCapturedPieces(pathPawn.positionDetailsList, board, isAI);
 
-    _performMoveByPosition(
-        startPosition, endPosition, path.value.positionDetailsList, board);
+    // IMPORTANT: Update the starting position to empty
+    _setCellToEmpty(pathPawn.startPosition, board);
 
     _paintCells(paths, true);
   }
 
-  Optional<PathPawn> _getRelevantPath(
-      List<PathPawn> paths, Position startPosition, Position endPosition) {
-    Optional<PathPawn> path = paths.firstWhereOrAbsent((element) =>
-        element.positionDetailsList.first.position == startPosition &&
-        element.positionDetailsList.last.position == endPosition);
-
-    if (path.isAbsent) {
-      logDebug("CB _getRelevantPath path IS ABSENT");
-      return const Optional.empty();
-    }
-
-    return path;
-  }
-
-  bool _isPathNotValid(List<PathPawn> paths) => paths.isEmpty;
-
-  void _performMoveByPosition(Position startPosition, Position endPosition,
-      List<PositionDetails> positionDetails, List<List<CellDetails>> board) {
-    // Update the end position based on the type of the piece and its final position on the board
-    _updateEndPosition(startPosition, endPosition, board);
-
-    // Remove captured pieces
-    _removeCapturedPieces(positionDetails, board);
-
-    // IMPORTANT: Update the starting position to empty
-    _clearStartPosition(startPosition, board);
-  }
-
   void _updateEndPosition(Position startPosition, Position endPosition,
-      List<List<CellDetails>> board) {
+      List<List<CellDetails>> board, PathPawn pathPawn, bool isAI) {
     bool isBlackCellPlayer =
         getCellDetailsByPosition(startPosition, board).isBlack;
 
@@ -504,26 +468,16 @@ class CheckersBoard {
 
     _setCell(cellType, endPosition, board);
 
-    _updatePawn(startPosition, endPosition, isKing);
+    if (isAI) return;
+    _updatePawn(startPosition, endPosition, isKing, pathPawn);
   }
 
-  void _updatePawn(Position startPosition, Position endPosition, bool isKing) {
-    Optional<Pawn> pawn = pawnsWithoutKills.firstWhereOrAbsent((pawn) =>
-        pawn.row == startPosition.row && pawn.column == startPosition.column);
-
-    if (pawn.isAbsent) {
-      logDebug("CB _updatePawn pawn IS ABSENT");
-      return;
-    }
-
-    pawn.value
-        .setPosition(endPosition.row, endPosition.column)
-        .setIsKing(isKing)
-        .setPawnDataNotifier(
-            offset: Offset(
-                endPosition.column.toDouble(), endPosition.row.toDouble()),
-            isAnimating: false);
-  }
+  void _updatePawn(Position startPosition, Position endPosition, bool isKing,
+          PathPawn pathPawn) =>
+      pathPawn.pawnStartPath
+          .setPosition(endPosition.row, endPosition.column)
+          .setIsKing(isKing)
+          .setPawnDataNotifier(isAnimating: false);
 
   bool _isKingPiece(List<List<CellDetails>> board,
           {required Position startPosition,
@@ -535,44 +489,28 @@ class CheckersBoard {
 
   bool _isKingRow(Position position, int kingRow) => position.row == kingRow;
 
-  void _removeCapturedPieces(
-      List<PositionDetails> positionDetails, List<List<CellDetails>> board) {
-    for (PositionDetails positionDetails in positionDetails) {
-      if (positionDetails.isCapture) {
-        _clearCapturePiece(positionDetails.position, board);
-
-        Optional<Pawn> pawn = pawnsWithoutKills.firstWhereOrAbsent((pawn) =>
-            pawn.row == positionDetails.position.row &&
-            pawn.column == positionDetails.position.column);
-        if (pawn.isAbsent) {
-          logDebug("CB _removeCapturedPieces pawn IS ABSENT");
-
-          continue;
+  void _removeCapturedPieces(List<PositionDetails> positionDetails,
+          List<List<CellDetails>> board, bool isAI) =>
+      positionDetails
+          .whereType<PositionDetailsCapture>()
+          .forEach((positionDetails) {
+        _setCellToEmpty(positionDetails.position, board);
+        if (!isAI) {
+          positionDetails.pawnCapture.setPawnDataNotifier(isKilled: true);
         }
-        pawn.value.setPawnDataNotifier(isKilled: true);
-      }
-    }
-  }
-
-  void _clearCapturePiece(
-          Position piecePosition, List<List<CellDetails>> board) =>
-      _setCellToEmpty(piecePosition, board);
-
-  void _clearStartPosition(
-          Position startPosition, List<List<CellDetails>> board) =>
-      _setCellToEmpty(startPosition, board);
+      });
 
   void _setCellToEmpty(Position position, List<List<CellDetails>> board) =>
       _setCell(CellType.EMPTY, position, board);
 
   CellType _computePieceEndPath(bool isBlackByPosition, bool isKing) =>
-      isBlackByPosition ? _getBlackPiece(isKing) : _getWhitePiece(isKing);
-
-  CellType _getBlackPiece(bool isKing) =>
-      isKing ? CellType.BLACK_KING : CellType.BLACK;
-
-  CellType _getWhitePiece(bool isKing) =>
-      isKing ? CellType.WHITE_KING : CellType.WHITE;
+      isBlackByPosition
+          ? isKing
+              ? CellType.BLACK_KING
+              : CellType.BLACK
+          : isKing
+              ? CellType.WHITE_KING
+              : CellType.WHITE;
 
   void _setCell(CellType cellType, Position position,
           List<List<CellDetails>> board) =>
@@ -605,7 +543,7 @@ class CheckersBoard {
   void _fetchAllCapturePathsKingSimulate(
       List<PathPawn> paths,
       Position startPosition,
-      List<PositionDetails> positionDetails,
+      List<PositionDetails> positionDetailsList,
       List<Position> directions,
       List<List<CellDetails>> board,
       CellType cellTypePlayer,
@@ -623,7 +561,8 @@ class CheckersBoard {
       Position afterNextPosition = nextPosition.nextPosition(positionDir);
 
       //Check if the position already exists
-      if (positionDetails.any((details) => details.position == nextPosition)) {
+      if (positionDetailsList
+          .any((details) => details.position == nextPosition)) {
         continue;
       }
 
@@ -631,13 +570,16 @@ class CheckersBoard {
           nextPosition, afterNextPosition, board, cellTypePlayer)) {
         canCaptureFurther = true;
 
-        List<PositionDetails> newPositionDetails = List.from(positionDetails);
-        newPositionDetails.add(PositionDetailsCapture(
-            getCellDetailsByPosition(nextPosition, board)));
-        newPositionDetails.add(
-          PositionDetailsNonCapture(
-              getCellDetailsByPosition(afterNextPosition, board)),
-        );
+        List<PositionDetails> newPositionDetails =
+            List.from(positionDetailsList);
+        newPositionDetails
+            .addItem(PositionDetailsCapture(
+                cellDetails: getCellDetailsByPosition(nextPosition, board),
+                pawnCapture: _getPawn(nextPosition)))
+            .add(
+              PositionDetailsNonCapture(
+                  getCellDetailsByPosition(afterNextPosition, board)),
+            );
 
         _fetchAllCapturePathsKingSimulate(paths, afterNextPosition,
             newPositionDetails, directions, board, cellTypePlayer,
@@ -646,7 +588,7 @@ class CheckersBoard {
     }
 
     if (!canCaptureFurther) {
-      paths.add(PathPawn(positionDetails));
+      paths.add(PathPawn(positionDetailsList, _getPawn(startPosition)));
     }
   }
 
@@ -666,7 +608,8 @@ class CheckersBoard {
       if (isNotCaptureMove) continue;
 
       positionDetailsTmp.add(PositionDetailsCapture(
-          getCellDetailsByPosition(nextPosition, board)));
+          cellDetails: getCellDetailsByPosition(nextPosition, board),
+          pawnCapture: _getPawn(nextPosition)));
       positionDetailsTmp.add(
         PositionDetailsNonCapture(
             getCellDetailsByPosition(afterNextPosition, board)),
@@ -677,7 +620,7 @@ class CheckersBoard {
       bool isCanCellStartCaptureMovePiece = _isCanCellStartCaptureMovePiece(
           afterNextPosition, directions, board, cellTypePlayer);
       if (isCanCellStartCaptureMovePiece) continue;
-      paths.add(PathPawn(positionDetailsTmp));
+      paths.add(PathPawn(positionDetailsTmp, _getPawn(startPosition)));
     }
   }
 

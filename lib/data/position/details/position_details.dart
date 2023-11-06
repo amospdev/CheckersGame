@@ -1,4 +1,5 @@
 import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position/position_data.dart';
 
 class PositionDetails {
@@ -26,7 +27,10 @@ class PositionDetails {
 }
 
 class PositionDetailsCapture extends PositionDetails {
-  PositionDetailsCapture(CellDetails cellDetails) : super(true, cellDetails);
+  final Pawn pawnCapture;
+
+  PositionDetailsCapture({required CellDetails cellDetails, required this.pawnCapture})
+      : super(true, cellDetails);
 }
 
 class PositionDetailsNonCapture extends PositionDetails {

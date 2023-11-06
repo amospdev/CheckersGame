@@ -127,13 +127,29 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 // logDebug(
                 //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
 
-                return IconButton(
-                    splashRadius: 20,
-                    color: isUndoEnable ? Colors.blue : Colors.grey,
-                    iconSize: 34,
-                    splashColor: Colors.green,
-                    onPressed: isUndoEnable ? () => gameViewModel.undo() : null,
-                    icon: const Icon(Icons.undo));
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    IconButton(
+                        splashRadius: 20,
+                        color: isUndoEnable ? Colors.blue : Colors.grey,
+                        iconSize: 34,
+                        splashColor: Colors.green,
+                        onPressed:
+                            isUndoEnable ? () => gameViewModel.undo() : null,
+                        icon: const Icon(Icons.undo)),
+                    IconButton(
+                        splashRadius: 20,
+                        color: isUndoEnable ? Colors.red : Colors.grey,
+                        iconSize: 34,
+                        splashColor: Colors.green,
+                        onPressed: isUndoEnable
+                            ? () => gameViewModel.resetGame()
+                            : null,
+                        icon: const Icon(Icons.refresh))
+                  ],
+                );
               },
             )
           ],

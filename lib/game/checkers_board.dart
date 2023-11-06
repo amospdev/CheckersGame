@@ -453,6 +453,32 @@ class CheckersBoard {
   void notifyHistoryPathPawn() =>
       _hasHistory.value = _historyPathPawn.isNotEmpty;
 
+  void resetBoard() {
+    print("CB resetBoard");
+    while (_historyPathPawn.isNotEmpty) {
+      popLastStep();
+      print("CB resetBoard ITERATION");
+    }
+    print("CB resetBoard end");
+    _player = CellType.BLACK;
+
+    int black = board
+        .expand((element) => element)
+        .where((element) =>
+            element.cellType == CellType.BLACK ||
+            element.cellType == CellType.BLACK_KING)
+        .length;
+
+    int white = board
+        .expand((element) => element)
+        .where((element) =>
+            element.cellType == CellType.WHITE ||
+            element.cellType == CellType.WHITE_KING)
+        .length;
+
+    print("CB resetBoard black: $black, white: $white");
+  }
+
   void popLastStep() {
     if (_historyPathPawn.isEmpty) return;
     PathPawn oldPathPawn = _historyPathPawn.removeLast();
@@ -481,6 +507,26 @@ class CheckersBoard {
     }
 
     _switchPlayer();
+
+    int black = board
+        .expand((element) => element)
+        .where((element) =>
+            element.cellType == CellType.BLACK ||
+            element.cellType == CellType.BLACK_KING)
+        .length;
+
+    int white = board
+        .expand((element) => element)
+        .where((element) =>
+            element.cellType == CellType.WHITE ||
+            element.cellType == CellType.WHITE_KING)
+        .length;
+
+    print("CB poop black: $black, white: $white");
+
+    // if(oldPathPawn.isContinuePath){
+    //   popLastStep();
+    // }
   }
 
   void performMove(

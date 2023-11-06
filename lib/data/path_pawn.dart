@@ -50,6 +50,7 @@ class PathPawn {
 
   PathPawn copy() {
     return PathPawn(List.from(positionDetailsList.map((e) => e.copy())),
-        pawnStartPath.copy());
+        pawnStartPath.copy())
+      ..isContinuePath = isContinuePath;
   }
 }

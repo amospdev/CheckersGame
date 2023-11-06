@@ -180,6 +180,20 @@ class GameViewModel extends ChangeNotifier {
     _checkersBoard.popLastStep();
 
     _setCurrentPlayer(_checkersBoard.player);
+    // _checkersBoard.printBoard(_checkersBoard.board);
+  }
+
+  void resetGame() {
+    if(!isUndoEnable.value) return;
+    _clearDataPreNextTurnState();
+
+    _clearDataNextTurnState();
+
+    _checkersBoard.resetBoard();
+
+    _setCurrentPlayer(_checkersBoard.player);
     _checkersBoard.printBoard(_checkersBoard.board);
+
+
   }
 }

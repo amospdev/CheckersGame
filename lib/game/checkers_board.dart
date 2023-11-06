@@ -70,6 +70,7 @@ class CheckersBoard {
           _pawns.add(Pawn(
               id: id + 100,
               row: row,
+              cellTypePlayer: tmpCellType,
               index: _pawns.length,
               column: column,
               color: tmpCellType == CellType.WHITE ? Colors.white : Colors.grey,
@@ -216,8 +217,8 @@ class CheckersBoard {
 
     CellDetails startCellDetails =
         getCellDetailsByPosition(_createPosition(row, column), board);
-    List<Position> directions = _getDirectionsByType(
-        startCellDetails.position, board, cellTypePlayer, startCellDetails);
+    List<Position> directions =
+        _getDirectionsByType(cellTypePlayer, startCellDetails);
 
     List<PathPawn> paths = isContinuePath
         ? _getPossibleContinuePaths(
@@ -413,10 +414,7 @@ class CheckersBoard {
   }
 
   List<Position> _getDirectionsByType(
-          Position startPosition,
-          List<List<CellDetails>> board,
-          CellType cellTypePlayer,
-          CellDetails startCellDetails) =>
+          CellType cellTypePlayer, CellDetails startCellDetails) =>
       startCellDetails.isKing
           ? getKingDirections()
           : getPieceDirections(cellTypePlayer: cellTypePlayer);
@@ -524,8 +522,11 @@ class CheckersBoard {
 
     print("CB poop black: $black, white: $white");
 
-    // if(oldPathPawn.isContinuePath){
-    //   popLastStep();
+    // if (_historyPathPawn.isNotEmpty) {
+    //   if (_historyPathPawn.last.isContinuePath) {
+    //     await Future.delayed(const Duration(milliseconds: 500));
+    //     popLastStep().then((value) => _switchPlayer());
+    //   }
     // }
   }
 

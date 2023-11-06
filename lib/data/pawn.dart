@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/cell_type.dart';
 
 class Pawn {
   Color color;
@@ -8,6 +9,7 @@ class Pawn {
   int row;
   int column;
   final int index;
+  final CellType cellTypePlayer;
 
   final ValueNotifier<PawnData> _pawnDataValueNotifier =
       ValueNotifier<PawnData>(PawnData.createEmpty());
@@ -17,6 +19,7 @@ class Pawn {
   Pawn(
       {required this.id,
       required this.index,
+      required this.cellTypePlayer,
       required this.row,
       required this.column,
       required this.color,
@@ -34,15 +37,15 @@ class Pawn {
       row: pawn?.row ?? row,
       column: pawn?.column ?? column,
       color: pawn?.color ?? color,
-      // Assuming Color is immutable, which it is in Dart.
       isKing: pawn?.isKing ?? isKing,
-      // ... (copy any other properties) ...
+      cellTypePlayer: pawn?.cellTypePlayer ?? cellTypePlayer,
     );
   }
 
   static Pawn createEmpty() => Pawn(
       id: -1,
       index: -1,
+      cellTypePlayer: CellType.UNDEFINED,
       row: -1,
       column: -1,
       color: Colors.tealAccent,
@@ -64,6 +67,14 @@ class Pawn {
 
     return this;
   }
+
+  bool get isBlack => cellTypePlayer == CellType.BLACK;
+
+  bool get isBlackKing => isBlack && isKing;
+
+  bool get isWhite => cellTypePlayer == CellType.WHITE;
+
+  bool get isWhiteKing => isWhite && isKing;
 
   Pawn setIsKing(bool isKing) {
     this.isKing = isKing;

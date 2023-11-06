@@ -111,7 +111,7 @@ class GameViewModel extends ChangeNotifier {
   Future<bool> onPawnMoveAnimationFinish() async {
     _checkersBoard.performMove(_checkersBoard.board, _paths, _pathPawn,
         isAI: false);
-    _clearDataPreNextTurnState();
+    _endProcess();
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
     await Future.delayed(const Duration(milliseconds: 500));
@@ -147,9 +147,7 @@ class GameViewModel extends ChangeNotifier {
     return path;
   }
 
-  void _clearDataPreNextTurnState() {
-    _isInProcess = false;
-  }
+  void _endProcess() => _isInProcess = false;
 
   void _clearDataNextTurnState() {
     _paths.clear();
@@ -171,29 +169,25 @@ class GameViewModel extends ChangeNotifier {
         isAnimating: true);
   }
 
-  void undo() {
-    if(!isUndoEnable.value) return;
-    _clearDataPreNextTurnState();
+  void undo() async {
+    if (!isUndoEnable.value) return;
+    _isInProcess = true;
 
     _clearDataNextTurnState();
 
     _checkersBoard.popLastStep();
-
     _setCurrentPlayer(_checkersBoard.player);
-    // _checkersBoard.printBoard(_checkersBoard.board);
+    _endProcess();
   }
 
   void resetGame() {
-    if(!isUndoEnable.value) return;
-    _clearDataPreNextTurnState();
+    if (!isUndoEnable.value) return;
+    _isInProcess = true;
 
     _clearDataNextTurnState();
 
     _checkersBoard.resetBoard();
-
     _setCurrentPlayer(_checkersBoard.player);
-    _checkersBoard.printBoard(_checkersBoard.board);
-
-
+    _endProcess();
   }
 }

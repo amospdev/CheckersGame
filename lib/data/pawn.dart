@@ -27,15 +27,15 @@ class Pawn {
         isAnimating: false);
   }
 
-  Pawn copy() {
+  Pawn copy({Pawn? pawn}) {
     return Pawn(
-      id: id,
-      index: index,
-      row: row,
-      column: column,
-      color: color,
+      id: pawn?.id ?? id,
+      index: pawn?.index ?? index,
+      row: pawn?.row ?? row,
+      column: pawn?.column ?? column,
+      color: pawn?.color ?? color,
       // Assuming Color is immutable, which it is in Dart.
-      isKing: isKing,
+      isKing: pawn?.isKing ?? isKing,
       // ... (copy any other properties) ...
     );
   }
@@ -93,4 +93,13 @@ class Pawn {
       row.hashCode ^
       column.hashCode ^
       isKing.hashCode;
+
+  void setValues(Pawn oldPawn) {
+    setPosition(oldPawn.row, oldPawn.column)
+        .setIsKing(oldPawn.isKing)
+        .setPawnDataNotifier(
+            isKilled: oldPawn.pawnDataNotifier.value.isKilled,
+            offset: oldPawn.pawnDataNotifier.value.offset,
+            isAnimating: oldPawn.pawnDataNotifier.value.isAnimating);
+  }
 }

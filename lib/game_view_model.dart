@@ -16,6 +16,8 @@ class GameViewModel extends ChangeNotifier {
 
   bool aiMode = SettingsRepository().isAIMode;
 
+  ValueNotifier<bool> get isUndoEnable => _checkersBoard.hasHistory;
+
   int get pathSize => _pathPawn.positionDetailsList.length;
 
   PathPawn _pathPawn = PathPawn.createEmpty();
@@ -169,12 +171,13 @@ class GameViewModel extends ChangeNotifier {
         isAnimating: true);
   }
 
-  undo() {
+  void undo() {
+    if(!isUndoEnable.value) return;
     _clearDataPreNextTurnState();
 
     _clearDataNextTurnState();
 
-    _checkersBoard.undo();
+    _checkersBoard.popLastStep();
 
     _setCurrentPlayer(_checkersBoard.player);
     _checkersBoard.printBoard(_checkersBoard.board);

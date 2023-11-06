@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
@@ -31,7 +33,7 @@ class CheckersBoard {
 
   List<List<CellDetails>> _board = [];
 
-  final List<PathPawn> _historyPathPawn = [];
+  final Queue<PathPawn> _historyPathPawn = Queue<PathPawn>();
 
   List<List<CellDetails>> get board => _board;
 
@@ -444,52 +446,41 @@ class CheckersBoard {
   CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
-  int undoIndex = 0;
+  final ValueNotifier<bool> _hasHistory = ValueNotifier<bool>(false);
 
-  void undo() {
-    PathPawn oldPathPawn =
-        _historyPathPawn[_historyPathPawn.length - 1 - undoIndex];
+  ValueNotifier<bool> get hasHistory => _hasHistory;
+
+  void notifyHistoryPathPawn() =>
+      _hasHistory.value = _historyPathPawn.isNotEmpty;
+
+  void popLastStep() {
+    if (_historyPathPawn.isEmpty) return;
+    PathPawn oldPathPawn = _historyPathPawn.removeLast();
+    notifyHistoryPathPawn();
     //Board
     _board[oldPathPawn.startCell.row][oldPathPawn.startCell.column]
-        .setCellType(cellType: oldPathPawn.startCell.cellType)
-        .clearColor();
+        .setValues(oldPathPawn.startCell);
 
     _board[oldPathPawn.endCell.row][oldPathPawn.endCell.column]
-        .setCellType(cellType: oldPathPawn.endCell.cellType)
-        .clearColor();
+        .setValues(oldPathPawn.endCell);
 
     CellDetails? oldCaptureCell = oldPathPawn.captureCell;
     if (oldCaptureCell != null) {
       _board[oldCaptureCell.position.row][oldCaptureCell.position.column]
-          .setCellType(cellType: oldCaptureCell.cellType)
-          .clearColor();
+          .setValues(oldCaptureCell);
     }
 
     //Pawn
     Pawn oldPawn = oldPathPawn.pawnStartPath;
-    _pawns[oldPawn.index]
-        .setPosition(oldPawn.row, oldPawn.column)
-        .setIsKing(oldPawn.isKing)
-        .setPawnDataNotifier(
-            isKilled: oldPawn.pawnDataNotifier.value.isKilled,
-            offset: oldPawn.pawnDataNotifier.value.offset,
-            isAnimating: false);
+    _pawns[oldPawn.index].setValues(oldPawn);
 
     Pawn? oldCapturePawn = oldPathPawn.capturePawn;
     print("CB UNDO capturePawn: $oldCapturePawn");
     if (oldCapturePawn != null) {
-      _pawns[oldCapturePawn.index]
-          .setPosition(oldCapturePawn.row, oldCapturePawn.column)
-          .setIsKing(oldCapturePawn.isKing)
-          .setPawnDataNotifier(
-              isKilled: false,
-              offset: oldCapturePawn.pawnDataNotifier.value.offset,
-              isAnimating: false);
+      _pawns[oldCapturePawn.index].setValues(oldCapturePawn);
     }
 
     _switchPlayer();
-
-    undoIndex++;
   }
 
   void performMove(
@@ -497,6 +488,7 @@ class CheckersBoard {
       {required bool isAI}) {
     if (!isAI) {
       _historyPathPawn.add(pathPawn.copy());
+      notifyHistoryPathPawn();
     }
     // Update the end position based on the type of the piece and its final position on the board
     _updateEndPosition(board, pathPawn, isAI);
@@ -573,7 +565,6 @@ class CheckersBoard {
     _clearPrevData();
     printBoard(board);
     _switchPlayer();
-    undoIndex = 0;
   }
 
   void _clearPrevData() {}

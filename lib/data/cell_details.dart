@@ -16,8 +16,7 @@ class CellDetails {
   final ValueNotifier<CellDetailsData> _cellDetailsDataValueNotifier =
       ValueNotifier<CellDetailsData>(CellDetailsData.createEmpty());
 
-  CellDetails(
-      this.cellType, this.id, this.color, this.row, this.column) {
+  CellDetails(this.cellType, this.id, this.color, this.row, this.column) {
     _cellDetailsDataValueNotifier.value = CellDetailsData(tmpColor: color);
     _position = Position(row, column);
   }
@@ -95,5 +94,10 @@ class CellDetails {
   @override
   String toString() {
     return 'CellDetails{cellType: $cellType, id: $id, row: $row, column: $column}';
+  }
+
+  void setValues(CellDetails oldCellDetails) {
+    setCellType(cellType: oldCellDetails.cellType)
+        .changeColor(oldCellDetails.color);
   }
 }

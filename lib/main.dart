@@ -121,13 +121,21 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 )
               ],
             ),
-            IconButton(
-                splashRadius: 20,
-                color: Colors.blue,
-                iconSize: 34,
-                splashColor: Colors.green,
-                onPressed: () => gameViewModel.undo(),
-                icon: const Icon(Icons.undo))
+            ValueListenableBuilder<bool>(
+              valueListenable: gameViewModel.isUndoEnable,
+              builder: (ctx, isUndoEnable, _) {
+                // logDebug(
+                //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
+
+                return IconButton(
+                    splashRadius: 20,
+                    color: isUndoEnable ? Colors.blue : Colors.grey,
+                    iconSize: 34,
+                    splashColor: Colors.green,
+                    onPressed: isUndoEnable ? () => gameViewModel.undo() : null,
+                    icon: const Icon(Icons.undo));
+              },
+            )
           ],
         ),
       ),

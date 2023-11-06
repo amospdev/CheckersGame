@@ -82,8 +82,9 @@ class CellDetails {
 
   bool get isUndefined => cellType == CellType.UNDEFINED;
 
-  void setCellType({required CellType cellType}) {
+  CellDetails setCellType({required CellType cellType}) {
     this.cellType = cellType;
+    return this;
   }
 
   void changeColor(Color color) =>

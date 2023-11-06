@@ -98,24 +98,36 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget build(BuildContext context) => _mainBoard(context);
 
   Widget _mainBoard(BuildContext context) {
-    logDebug("MAIN WIDGET REBUILD _mainBoard");
+    // logDebug("MAIN WIDGET REBUILD _mainBoard");
     final cellSize = (MediaQuery.of(context).sizeByOrientation - 10) /
         CheckersBoard.sizeBoard; // For an 8x8 board
 
     return Scaffold(
       body: Center(
-        child: Stack(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const MainGameBorder(),
-            Container(
-              margin: const EdgeInsets.only(left: 5, top: 5),
-              width: CheckersBoard.sizeBoard * cellSize,
-              // Increased size to account for the border and prevent cut-off
-              height: CheckersBoard.sizeBoard * cellSize,
-              child: Stack(
-                children: [..._getCells(cellSize), ..._getPawns(cellSize)],
-              ),
-            )
+            Stack(
+              children: [
+                const MainGameBorder(),
+                Container(
+                  margin: const EdgeInsets.only(left: 5, top: 5),
+                  width: CheckersBoard.sizeBoard * cellSize,
+                  // Increased size to account for the border and prevent cut-off
+                  height: CheckersBoard.sizeBoard * cellSize,
+                  child: Stack(
+                    children: [..._getCells(cellSize), ..._getPawns(cellSize)],
+                  ),
+                )
+              ],
+            ),
+            IconButton(
+                splashRadius: 20,
+                color: Colors.blue,
+                iconSize: 34,
+                splashColor: Colors.green,
+                onPressed: () => gameViewModel.undo(),
+                icon: const Icon(Icons.undo))
           ],
         ),
       ),
@@ -125,10 +137,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   void handleCellTap(CellDetails cell) => movePlayerTo(cell.row, cell.column);
 
   List<Widget> _getCells(double cellSize) {
-    logDebug("MAIN WIDGET _getCells");
+    // logDebug("MAIN WIDGET _getCells");
 
     return gameViewModel.boardCells.map((cell) {
-      logDebug("MAIN WIDGET ***REBUILD*** Positioned START");
+      // logDebug("MAIN WIDGET ***REBUILD*** Positioned START");
 
       return Positioned(
         left: cell.offset.dx * cellSize,
@@ -144,8 +156,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           child: ValueListenableBuilder<CellDetailsData>(
             valueListenable: cell.cellDetailsData,
             builder: (ctx, cellDetailsData, _) {
-              logDebug(
-                  "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
+              // logDebug(
+              //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
 
               return Stack(
                 alignment: Alignment.center,
@@ -177,8 +189,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                logDebug(
-                    "MAIN WIDGET ***REBUILD*** _getPawns ValueListenableBuilder $pawn");
+                // logDebug(
+                //     "MAIN WIDGET ***REBUILD*** _getPawns ValueListenableBuilder $pawn");
 
                 return AnimatedPositioned(
                   duration: _pawnMoveController.duration ??

@@ -47,9 +47,6 @@ class GameViewModel extends ChangeNotifier {
 
   _setPaths(List<PathPawn> paths) => _paths = paths;
 
-  void _performMove() => _checkersBoard.performMove(
-      _checkersBoard.board, _paths, _pathPawn, false);
-
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>
       _pathPawn.isContinuePath
           ? onTapBoardGame(endRow, endColumn)
@@ -110,7 +107,8 @@ class GameViewModel extends ChangeNotifier {
   }
 
   Future<bool> onPawnMoveAnimationFinish() async {
-    _performMove();
+    _checkersBoard.performMove(_checkersBoard.board, _paths, _pathPawn,
+        isAI: false);
     _clearDataPreNextTurnState();
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
@@ -169,5 +167,16 @@ class GameViewModel extends ChangeNotifier {
         offset: Offset(_pathPawn.endPosition.column.toDouble(),
             _pathPawn.endPosition.row.toDouble()),
         isAnimating: true);
+  }
+
+  undo() {
+    _clearDataPreNextTurnState();
+
+    _clearDataNextTurnState();
+
+    _checkersBoard.undo();
+
+    _setCurrentPlayer(_checkersBoard.player);
+    _checkersBoard.printBoard(_checkersBoard.board);
   }
 }

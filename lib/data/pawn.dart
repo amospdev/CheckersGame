@@ -7,6 +7,7 @@ class Pawn {
   int id;
   int row;
   int column;
+  final int index;
 
   final ValueNotifier<PawnData> _pawnDataValueNotifier =
       ValueNotifier<PawnData>(PawnData.createEmpty());
@@ -15,6 +16,7 @@ class Pawn {
 
   Pawn(
       {required this.id,
+      required this.index,
       required this.row,
       required this.column,
       required this.color,
@@ -28,6 +30,7 @@ class Pawn {
   Pawn copy() {
     return Pawn(
       id: id,
+      index: index,
       row: row,
       column: column,
       color: color,
@@ -38,7 +41,12 @@ class Pawn {
   }
 
   static Pawn createEmpty() => Pawn(
-      id: -1, row: -1, column: -1, color: Colors.tealAccent, isKing: false);
+      id: -1,
+      index: -1,
+      row: -1,
+      column: -1,
+      color: Colors.tealAccent,
+      isKing: false);
 
   ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
 

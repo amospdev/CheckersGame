@@ -143,12 +143,10 @@ class CheckersBoard {
 
   bool isOpponentCell(int row, int column, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
-      getCellDetails(row, column, board).isEmptyCell ||
-              getCellDetails(row, column, board).isUnValid ||
-              getCellDetails(row, column, board).isUndefined
-          ? false
-          : (getCellDetails(row, column, board).getCellTypePlayer() !=
-              cellTypePlayer);
+      getCellDetails(row, column, board).isSomePawn
+          ? (getCellDetails(row, column, board).cellTypePlayer !=
+              cellTypePlayer)
+          : false;
 
   CellDetails getCellDetails(
           int row, int column, List<List<CellDetails>> board) =>

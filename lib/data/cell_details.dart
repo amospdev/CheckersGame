@@ -35,7 +35,7 @@ class CellDetails {
     );
   }
 
-  CellType getCellTypePlayer() {
+  CellType get cellTypePlayer {
     if (cellType == CellType.BLACK || cellType == CellType.BLACK_KING) {
       return CellType.BLACK;
     } else if (cellType == CellType.WHITE || cellType == CellType.WHITE_KING) {
@@ -80,6 +80,8 @@ class CellDetails {
   bool get isUnValid => cellType == CellType.UNVALID;
 
   bool get isUndefined => cellType == CellType.UNDEFINED;
+
+  bool get isSomePawn => !isEmptyCell && !isUnValid && !isUndefined;
 
   CellDetails setCellType({required CellType cellType}) {
     this.cellType = cellType;

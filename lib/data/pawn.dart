@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 class Pawn {
@@ -75,6 +76,8 @@ class Pawn {
   bool get isWhite => cellTypePlayer == CellType.WHITE;
 
   bool get isWhiteKing => isWhite && isKing;
+
+  Position get position => Position(row, column);
 
   Pawn setIsKing(bool isKing) {
     this.isKing = isKing;

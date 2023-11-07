@@ -85,9 +85,7 @@ class CheckersBoard {
 
   Pawn _getPawnWithoutKills(Position position) => _pawns
       .where((element) => !element.pawnDataNotifier.value.isKilled)
-      .toList()
-      .firstWhere(
-          (pawn) => pawn.row == position.row && pawn.column == position.column,
+      .firstWhere((pawn) => pawn.position == position,
           orElse: () => Pawn.createEmpty());
 
   List<Position> getPieceDirections({required CellType cellTypePlayer}) => [
@@ -442,17 +440,17 @@ class CheckersBoard {
   CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
-  final ValueNotifier<bool> _hasHistory = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _isHistoryEnable = ValueNotifier<bool>(false);
 
-  ValueNotifier<bool> get hasHistory => _hasHistory;
+  ValueNotifier<bool> get isHistoryEnable => _isHistoryEnable;
 
   void notifyHistoryPathPawn() =>
-      _hasHistory.value = _historyPathPawn.isNotEmpty;
+      setHistoryAvailability(_historyPathPawn.isNotEmpty);
 
-  void resetBoard() {
+  void resetBoard(List<PathPawn> paths) {
     print("CB resetBoard");
     while (_historyPathPawn.isNotEmpty) {
-      popLastStep();
+      popLastStep(paths);
       print("CB resetBoard ITERATION");
     }
     print("CB resetBoard end");
@@ -475,8 +473,12 @@ class CheckersBoard {
     print("CB resetBoard black: $black, white: $white");
   }
 
-  void popLastStep() {
+  void popLastStep(List<PathPawn> paths) {
     if (_historyPathPawn.isEmpty) return;
+    if (paths.isNotEmpty) {
+      _paintCells(paths, true);
+    }
+
     PathPawn oldPathPawn = _historyPathPawn.removeLast();
     notifyHistoryPathPawn();
     //Board
@@ -608,7 +610,7 @@ class CheckersBoard {
 
   void nextTurn(List<List<CellDetails>> board) {
     _clearPrevData();
-    printBoard(board);
+    // printBoard(board);
     _switchPlayer();
   }
 
@@ -773,4 +775,7 @@ class CheckersBoard {
 
     return isMandatoryCapture ? resultPaths : paths;
   }
+
+  void setHistoryAvailability(bool isAvailability) =>
+      _isHistoryEnable.value = isAvailability;
 }

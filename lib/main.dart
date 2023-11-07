@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details.dart';
@@ -43,10 +45,11 @@ class GameBoard extends StatefulWidget {
 }
 
 class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
-  late AnimationController _pawnMoveController;
+  late final AnimationController _pawnMoveController;
 
-  static const int _pawnMoveDuration = 150;
+  static const int _pawnMoveDuration = 280;
   late final GameViewModel gameViewModel;
+  StreamSubscription<bool>? _streamAiTurn;
 
   @override
   void initState() {
@@ -55,41 +58,46 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
-    )..addStatusListener((status) async {
+    )..addStatusListener((status) {
         if (_pawnMoveController.isCompleted) {
-          gameViewModel.onPawnMoveAnimationFinish().then((value) async {
-            bool isAI = gameViewModel.maybeAI();
-
-            if (isAI) {
-              await Future.delayed(const Duration(milliseconds: 50));
-              PathPawn? path = gameViewModel.aIMove();
-              if (path == null) return;
-              gameViewModel.onClickPawn(
-                  path.positionDetailsList.first.position.row,
-                  path.positionDetailsList.first.position.column);
-
-              await Future.delayed(const Duration(milliseconds: 300));
-
-              TapOnBoard tapOnBoardEnd = gameViewModel.onTapBoardGame(
-                  path.positionDetailsList.last.position.row,
-                  path.positionDetailsList.last.position.column);
-
-              if (tapOnBoardEnd == TapOnBoard.END) {
-                movePlayerTo(path.positionDetailsList.last.position.row,
-                    path.positionDetailsList.last.position.column);
-              }
-            }
-          });
+          gameViewModel.onPawnMoveAnimationFinish();
         }
       });
+
+    _streamAiTurn =
+        gameViewModel.isAITurnStream.where((isAI) => isAI).listen(_aiTurn);
+  }
+
+  Future _delayedBeforeClick(int duration) =>
+      Future.delayed(Duration(milliseconds: duration));
+
+  Future<void> _aiTurn(bool isAI) async {
+    await _delayedBeforeClick(200);
+    PathPawn? path = gameViewModel.aIMove();
+    if (path == null) return;
+    gameViewModel.onClickPawn(path.positionDetailsList.first.position.row,
+        path.positionDetailsList.first.position.column);
+
+    await _delayedBeforeClick(50);
+
+    TapOnBoard tapOnBoardEnd = gameViewModel.onTapBoardGame(
+        path.positionDetailsList.last.position.row,
+        path.positionDetailsList.last.position.column);
+
+    if (tapOnBoardEnd == TapOnBoard.END) {
+      movePlayerTo(path.positionDetailsList.last.position.row,
+          path.positionDetailsList.last.position.column);
+    }
   }
 
   void _startPawnMoveAnimation() => _pawnMoveController.forward(from: 0.0);
 
   void movePlayerTo(int row, int column) {
     gameViewModel.onPawnMoveAnimationStart();
-    _pawnMoveController.duration =
-        Duration(milliseconds: (gameViewModel.pathSize * _pawnMoveDuration));
+    _pawnMoveController.duration = Duration(
+        milliseconds: (gameViewModel.pathSize > 2
+            ? (_pawnMoveDuration * 1.6).toInt()
+            : _pawnMoveDuration));
 
     _startPawnMoveAnimation();
   }
@@ -242,6 +250,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   @override
   void dispose() {
     _pawnMoveController.dispose();
+    _streamAiTurn?.cancel();
     super.dispose();
   }
 }

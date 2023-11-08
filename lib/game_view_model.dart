@@ -8,7 +8,6 @@ import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
-import 'package:untitled/extensions/cg_optional.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/settings_repo.dart';
 
@@ -26,7 +25,7 @@ class GameViewModel extends ChangeNotifier {
 
   PathPawn _pathPawn = PathPawn.createEmpty();
 
-  List<PathPawn> _paths = [];
+  List<PathPawn> _pawnPaths = [];
   bool _isInProcess = false;
 
   final List<CellDetails> _boardCells = [];
@@ -73,47 +72,45 @@ class GameViewModel extends ChangeNotifier {
 
   bool _isNotEqualEndPathContinueCaptureState(int row, int column) =>
       _pathPawn.isContinuePath &&
-      _paths.every((element) =>
+      _pawnPaths.every((element) =>
           element.positionDetailsList.last.position != Position(row, column));
 
-  TapOnBoard onTapBoardGame(int rowStartOrEnd, int columnStartOrEnd) {
-    if (!_isValidTap(rowStartOrEnd, columnStartOrEnd)) {
+  TapOnBoard onTapBoardGame(int row, int column) {
+    if (!_isValidTap(row, column)) {
       return TapOnBoard.UNVALID;
     }
-
-    if (_checkersBoard.isValidStartCellSelected(rowStartOrEnd, columnStartOrEnd,
-        _checkersBoard.board, _checkersBoard.player)) {
-      return _handleStartCellTap(rowStartOrEnd, columnStartOrEnd);
+    List<PathPawn> pawnPaths = _checkersBoard.getPathsByStartCellSelected(
+        row, column, _checkersBoard.board, _checkersBoard.player, false);
+    if (pawnPaths.isNotEmpty) {
+      return _handleStartCellTap(row, column, pawnPaths);
     }
 
-    if (_checkersBoard.isValidEndCellSelected(
-        rowStartOrEnd, columnStartOrEnd, _paths)) {
-      return _handleDestinationCellTap(rowStartOrEnd, columnStartOrEnd);
+    PathPawn pathPawn =
+        _checkersBoard.getPathByEndCellSelected(row, column, _pawnPaths);
+    if (pathPawn.isValidPath) {
+      return _handleDestinationCellTap(row, column, pathPawn);
     }
 
     return TapOnBoard.UNVALID;
   }
 
-  TapOnBoard _handleStartCellTap(int row, int column) {
-    _paths = _checkersBoard.getPossiblePathsByPosition(row, column,
-        _pathPawn.isContinuePath, _checkersBoard.board, _checkersBoard.player,
-        isAIMode: false, currPaths: _paths);
+  TapOnBoard _handleStartCellTap(
+      int row, int column, List<PathPawn> pawnPaths) {
+    _pawnPaths = pawnPaths;
+    _checkersBoard.paintColorsCells(_pawnPaths);
     return TapOnBoard.START;
   }
 
-  TapOnBoard _handleDestinationCellTap(int destinationRow, int destinationCol) {
-    Optional<PathPawn> optionalPath = _checkersBoard.getPathByEndPosition(
-        destinationRow, destinationCol, _paths);
-
-    if (optionalPath.isAbsent) return TapOnBoard.UNVALID;
+  TapOnBoard _handleDestinationCellTap(
+      int destinationRow, int destinationCol, PathPawn pathPawn) {
     _startProcess();
     _checkersBoard.setHistoryAvailability(false);
-    _pathPawn = optionalPath.value;
+    _pathPawn = pathPawn;
     return TapOnBoard.END;
   }
 
   Future<void> onPawnMoveAnimationFinish() async {
-    _checkersBoard.performMove(_checkersBoard.board, _paths, _pathPawn,
+    _checkersBoard.performMove(_checkersBoard.board, _pawnPaths, _pathPawn,
         isAI: false);
     _endProcess();
     _continueNextIterationOrTurn(
@@ -136,7 +133,7 @@ class GameViewModel extends ChangeNotifier {
     _clearDataNextTurnState();
     _checkersBoard.nextTurn(_checkersBoard.board);
     _setCurrentPlayer(_checkersBoard.player);
-    bool isGameOver = _checkersBoard.isGameOver(_checkersBoard.board);
+    bool isGameOver = _checkersBoard.isGameOver(_checkersBoard.board, false);
     print("CB NEXT TURN isGameOver: $isGameOver");
     _isAITurnController.add(_isAITurn());
     _checkersBoard.setHistoryAvailability(true);
@@ -156,7 +153,7 @@ class GameViewModel extends ChangeNotifier {
   void _startProcess() => _isInProcess = true;
 
   void _clearDataNextTurnState() {
-    _paths.clear();
+    _pawnPaths.clear();
     _pathPawn = PathPawn.createEmpty();
   }
 
@@ -174,17 +171,15 @@ class GameViewModel extends ChangeNotifier {
         isAnimating: true);
   }
 
-  void undo() =>
-      _undoOrReset((paths) => _checkersBoard.popLastStep(paths), true);
+  void undo() => _undoOrReset(() => _checkersBoard.popLastStep(), true);
 
-  void resetGame() =>
-      _undoOrReset((paths) => _checkersBoard.resetBoard(paths), false);
+  void resetGame() => _undoOrReset(() => _checkersBoard.resetBoard(), false);
 
-  void _undoOrReset(Function(List<PathPawn> paths) action, bool isUndo) {
+  void _undoOrReset(Function() action, bool isUndo) {
     if (_isInProcess || !isUndoEnable.value) return;
     _startProcess();
 
-    action(_paths);
+    action();
 
     _clearDataNextTurnState();
     _setCurrentPlayer(_checkersBoard.player);

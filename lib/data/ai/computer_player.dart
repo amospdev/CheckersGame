@@ -29,8 +29,9 @@ class ComputerPlayer {
   ComputerPlayer(this.depth);
 
   final Evaluator evaluator = Evaluator();
-  String treeData = "";
-  Set<double> depthSet = {};
+
+  // String treeData = "";
+  // Set<double> depthSet = {};
 
   double minimax(
       CheckersBoard checkersBoard,
@@ -51,7 +52,7 @@ class ComputerPlayer {
       return evaluate;
     }
 
-    if (checkersBoard.isGameOver(checkersBoard.board)) {
+    if (checkersBoard.isGameOver(checkersBoard.board, true)) {
       double? evaluateMemory =
           transpositionTable.get(checkersBoard.board.toString());
       if (evaluateMemory != null) return evaluateMemory;
@@ -65,8 +66,7 @@ class ComputerPlayer {
     if (isMaximizing) {
       double maxEval = -9999;
 
-      List<PathPawn> allPaths =
-          checkersBoard.getLegalMoves(aiType, checkersBoard.board);
+      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
@@ -80,14 +80,13 @@ class ComputerPlayer {
         if (beta <= alpha) break;
       }
 
-      printMinimaxTree(depth, "Max", maxEval);
+      // printMinimaxTree(depth, "Max", maxEval);
 
       return maxEval;
     } else {
       double minEval = 9999;
 
-      List<PathPawn> allPaths =
-          checkersBoard.getLegalMoves(humanType, checkersBoard.board);
+      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
@@ -99,52 +98,55 @@ class ComputerPlayer {
         beta = min(beta, eval);
         if (beta <= alpha) break;
       }
-      printMinimaxTree(depth, "Min", minEval);
+      // printMinimaxTree(depth, "Min", minEval);
 
       return minEval;
     }
   }
 
   void printMinimaxTree(int depth, String label, double value) {
-    bool isContainDepth = depthSet.contains(depth);
-    String indentation = '';
-
-    indentation += ''.padLeft(depth * 12);
-    if (!isContainDepth) {
-      treeData += '\n${indentation}D: $depth';
-    }
-    treeData += '\n$indentation$label: $value';
-    depthSet.add(value);
+    // bool isContainDepth = depthSet.contains(depth);
+    // String indentation = '';
+    //
+    // indentation += ''.padLeft(depth * 12);
+    // if (!isContainDepth) {
+    //   treeData += '\n${indentation}D: $depth';
+    // }
+    // treeData += '\n$indentation$label: $value';
+    // depthSet.add(value);
   }
 
   PathPawn? getBestMoveForAI(CheckersBoard checkersBoard) {
     TranspositionTable transpositionTable = TranspositionTable();
-    final PathPawn? bestMove = getMove(checkersBoard, transpositionTable);
-    return bestMove;
+    return getMove(checkersBoard, transpositionTable);
   }
 
   PathPawn? getMove(
       CheckersBoard checkersBoard, TranspositionTable transpositionTable) {
     double bestValue = -9999;
     PathPawn? bestMove;
-
+    checkersBoard.printBoard(checkersBoard.board);
     // Get all possible moves for AI
-    List<PathPawn> allPossibleMoves = checkersBoard.getLegalMoves(aiType,
-        checkersBoard.board); // Fill this up with actual possible moves for AI
+    List<PathPawn> allPossibleMoves = _getAllValidMoves(
+        checkersBoard); // Fill this up with actual possible moves for AI
 
-    for (PathPawn move in allPossibleMoves) {
+    for (PathPawn pathPawn in allPossibleMoves) {
       CheckersBoard tempCheckersBoard = checkersBoard.copy();
-      tempCheckersBoard.performMoveAI(tempCheckersBoard, move);
+      tempCheckersBoard.performMoveAI(tempCheckersBoard, pathPawn);
       double boardValue = minimax(tempCheckersBoard, depth, false, -9999, 9999,
           transpositionTable, humanType);
 
       if (boardValue > bestValue) {
         bestValue = boardValue;
-        bestMove = move;
+        bestMove = pathPawn;
       }
     }
     // debugPrint(treeData);
-    print("THE RTESULT IS: $bestValue");
+    print("THE RESULT IS bestValue: $bestValue");
+    print("THE RESULT IS bestMove: $bestMove");
     return bestMove;
   }
+
+  List<PathPawn> _getAllValidMoves(CheckersBoard checkersBoard) =>
+      checkersBoard.getLegalMoves(aiType, checkersBoard.board, true);
 }

@@ -9,7 +9,6 @@ import 'package:untitled/data/position/details/position_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
-import 'package:untitled/extensions/cg_optional.dart';
 
 // Define the colors as constants at the top of your file for better clarity
 const startPositionColor = Colors.green;
@@ -81,6 +80,55 @@ class CheckersBoard {
             CellDetails(tmpCellType, id, cellColor, row, column);
       }
     }
+  }
+
+  void createBoardTest() {
+    _board = List.generate(sizeBoard,
+        (i) => List<CellDetails>.filled(sizeBoard, CellDetails.createEmpty()));
+    for (int row = 0; row < sizeBoard; row++) {
+      for (int column = 0; column < sizeBoard; column++) {
+        CellType tmpCellType = CellType.EMPTY;
+        int id = (sizeBoard * row) + column;
+
+        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
+        if ((row + column) % 2 == 0) {
+          tmpCellType = CellType.UNVALID;
+        } else {
+          if (row < (sizeBoard / 2) - 1) {
+            if (column % 2 == 0) {
+              tmpCellType = CellType.BLACK_KING;
+            }
+          } else if (row > (sizeBoard / 2)) {
+            if (column % 2 != 0) {
+              tmpCellType = CellType.WHITE_KING;
+            }
+          } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {
+            tmpCellType = CellType.EMPTY;
+          }
+        }
+
+        if (tmpCellType == CellType.WHITE ||
+            tmpCellType == CellType.BLACK ||
+            tmpCellType == CellType.WHITE_KING ||
+            tmpCellType == CellType.BLACK_KING) {
+          _pawns.add(Pawn(
+              id: id + 100,
+              row: row,
+              column: column,
+              cellTypePlayer: tmpCellType,
+              index: _pawns.length,
+              color: tmpCellType == CellType.WHITE_KING
+                  ? Colors.white
+                  : Colors.grey,
+              isKing: true));
+        }
+
+        _board[row][column] =
+            CellDetails(tmpCellType, id, cellColor, row, column);
+      }
+    }
+
+    printBoard(board);
   }
 
   Pawn _getPawnWithoutKills(Position position) => _pawns
@@ -167,18 +215,21 @@ class CheckersBoard {
       (cellDetails.isWhite && _isWhitePlayerTurn(cellTypePlayer)) ||
       (cellDetails.isBlack && _isBlackPlayerTurn(cellTypePlayer));
 
-  bool isValidStartCellSelected(int row, int column,
-          List<List<CellDetails>> board, CellType cellTypePlayer) =>
-      getLegalMoves(cellTypePlayer, board)
-          .where((pathPawn) =>
-              pathPawn.positionDetailsList.first.position ==
-              _createPosition(row, column))
-          .isNotEmpty;
+  List<PathPawn> getPathsByStartCellSelected(
+          int row,
+          int column,
+          List<List<CellDetails>> board,
+          CellType cellTypePlayer,
+          bool isAIMode) =>
+      getPossiblePathsByPosition(row, column, false, board, cellTypePlayer,
+          isAIMode: isAIMode);
 
-  bool isValidEndCellSelected(
+  PathPawn getPathByEndCellSelected(
           int endRow, int endColumn, List<PathPawn> paths) =>
-      getPathByEndPosition(endRow, endColumn, paths)
-          .condition((path) => path.isPresent && path.value.isValidPath());
+      paths.firstWhere(
+          (element) =>
+              element.endPosition == _createPosition(endRow, endColumn),
+          orElse: () => PathPawn.createEmpty());
 
   bool _isCanCellStartCaptureMovePiece(
       Position startPosition,
@@ -193,23 +244,14 @@ class CheckersBoard {
     });
   }
 
-  List<PathPawn> _getPossiblePathsByPosition(int row, int column,
-      List<List<CellDetails>> board, CellType cellTypePlayer) {
-    return getPossiblePathsByPosition(row, column, false, board, cellTypePlayer,
-        isAIMode: true);
-  }
-
   List<PathPawn> getPossiblePathsByPosition(
       int row,
       int column,
       bool isContinuePath,
       List<List<CellDetails>> board,
       CellType cellTypePlayer,
-      {required bool isAIMode,
-      List<PathPawn>? currPaths}) {
-    if (currPaths != null) {
-      _paintCells(currPaths, true);
-    }
+      {required bool isAIMode}) {
+    clearColorsCells();
 
     CellDetails startCellDetails =
         getCellDetailsByPosition(_createPosition(row, column), board);
@@ -235,7 +277,10 @@ class CheckersBoard {
           cellTypePlayer);
     }
 
-    _paintCells(paths, false);
+    print("2 TOTAL PATHS: ${paths.length}");
+    print(
+        "2 TOTAL PATHS SIZE: ${paths.length}, DETAILS: ${paths.map((e) => e.positionDetailsList.map((e) => e.position))}");
+
     return paths;
   }
 
@@ -248,7 +293,6 @@ class CheckersBoard {
       CellDetails startCellDetails) {
     Position startPosition = startCellDetails.position;
 
-    // Combine conditions to exit early
     if (startCellDetails.isEmptyCell ||
         startCellDetails.isUnValid ||
         !_isSamePlayer(board, cellTypePlayer, startCellDetails)) {
@@ -349,23 +393,27 @@ class CheckersBoard {
     }
   }
 
-  void _paintCells(List<PathPawn> paths, bool isClear) {
+  void clearColorsCells() {
+    for (var elementList in _board) {
+      for (var element in elementList) {
+        element.clearColor();
+      }
+    }
+  }
+
+  void paintColorsCells(List<PathPawn> paths) {
     for (PathPawn path in paths) {
       for (final (index, positionDetails) in path.positionDetailsList.indexed) {
         CellDetails cellDetails = _board[positionDetails.position.row]
             [positionDetails.position.column];
 
-        if (isClear) {
-          cellDetails.clearColor();
-        } else {
-          Color color = index == 0
-              ? startPositionColor
-              : positionDetails.isCapture
-                  ? captureColor
-                  : endPositionColor;
+        Color color = index == 0
+            ? startPositionColor
+            : positionDetails.isCapture
+                ? captureColor
+                : endPositionColor;
 
-          cellDetails.changeColor(color);
-        }
+        cellDetails.changeColor(color);
       }
     }
   }
@@ -447,13 +495,11 @@ class CheckersBoard {
   void notifyHistoryPathPawn() =>
       setHistoryAvailability(_historyPathPawn.isNotEmpty);
 
-  void resetBoard(List<PathPawn> paths) {
-    print("CB resetBoard");
+  void resetBoard() {
     while (_historyPathPawn.isNotEmpty) {
-      popLastStep(paths);
-      print("CB resetBoard ITERATION");
+      popLastStep();
     }
-    print("CB resetBoard end");
+    logDebug("CB resetBoard end");
     _player = CellType.BLACK;
 
     int black = board
@@ -470,14 +516,12 @@ class CheckersBoard {
             element.cellType == CellType.WHITE_KING)
         .length;
 
-    print("CB resetBoard black: $black, white: $white");
+    logDebug("CB resetBoard black: $black, white: $white");
   }
 
-  void popLastStep(List<PathPawn> paths) {
+  void popLastStep() {
     if (_historyPathPawn.isEmpty) return;
-    if (paths.isNotEmpty) {
-      _paintCells(paths, true);
-    }
+    clearColorsCells();
 
     PathPawn oldPathPawn = _historyPathPawn.removeLast();
     notifyHistoryPathPawn();
@@ -499,7 +543,6 @@ class CheckersBoard {
     _pawns[oldPawn.index].setValues(oldPawn);
 
     Pawn? oldCapturePawn = oldPathPawn.capturePawn;
-    print("CB UNDO capturePawn: $oldCapturePawn");
     if (oldCapturePawn != null) {
       _pawns[oldCapturePawn.index].setValues(oldCapturePawn);
     }
@@ -520,23 +563,19 @@ class CheckersBoard {
             element.cellType == CellType.WHITE_KING)
         .length;
 
-    print("CB poop black: $black, white: $white");
+    logDebug("CB poop black: $black, white: $white");
+  }
 
-    // if (_historyPathPawn.isNotEmpty) {
-    //   if (_historyPathPawn.last.isContinuePath) {
-    //     await Future.delayed(const Duration(milliseconds: 500));
-    //     popLastStep().then((value) => _switchPlayer());
-    //   }
-    // }
+  void _updateHistory(PathPawn pathPawn) {
+    _historyPathPawn.add(pathPawn.copy());
+    notifyHistoryPathPawn();
   }
 
   void performMove(
       List<List<CellDetails>> board, List<PathPawn> paths, PathPawn pathPawn,
       {required bool isAI}) {
-    if (!isAI) {
-      _historyPathPawn.add(pathPawn.copy());
-      notifyHistoryPathPawn();
-    }
+    if (!isAI) _updateHistory(pathPawn.copy());
+
     // Update the end position based on the type of the piece and its final position on the board
     _updateEndPosition(board, pathPawn, isAI);
 
@@ -546,7 +585,7 @@ class CheckersBoard {
     // IMPORTANT: Update the starting position to empty
     _setCellToEmpty(pathPawn.startPosition, board);
 
-    _paintCells(paths, true);
+    clearColorsCells();
   }
 
   void _updateEndPosition(
@@ -616,22 +655,6 @@ class CheckersBoard {
 
   void _clearPrevData() {}
 
-  Optional<PathPawn> getPathByEndPosition(
-      int endRow, int endColumn, List<PathPawn> paths) {
-    Optional<PathPawn> path = paths.firstWhereOrAbsent((element) =>
-        element.positionDetailsList.last.position ==
-        _createPosition(endRow, endColumn));
-
-    if (path.isAbsent) {
-      logDebug(
-          "CB getPathByEndPosition pawn IS ABSENT endRow: $endRow, endColumn: $endColumn, paths: ${paths.length}, paths: $paths");
-
-      return const Optional.empty();
-    }
-
-    return path;
-  }
-
   void _fetchAllCapturePathsKingSimulate(
       List<PathPawn> paths,
       Position startPosition,
@@ -679,7 +702,7 @@ class CheckersBoard {
       }
     }
 
-    if (!canCaptureFurther) {
+    if (!canCaptureFurther && positionDetailsList.length > 1) {
       paths.add(
           PathPawn(positionDetailsList, _getPawnWithoutKills(startPosition)));
     }
@@ -713,8 +736,10 @@ class CheckersBoard {
       bool isCanCellStartCaptureMovePiece = _isCanCellStartCaptureMovePiece(
           afterNextPosition, directions, board, cellTypePlayer);
       if (isCanCellStartCaptureMovePiece) continue;
-      paths.add(
-          PathPawn(positionDetailsTmp, _getPawnWithoutKills(startPosition)));
+      if (positionDetailsTmp.length > 1) {
+        paths.add(
+            PathPawn(positionDetailsTmp, _getPawnWithoutKills(startPosition)));
+      }
     }
   }
 
@@ -730,11 +755,11 @@ class CheckersBoard {
     return copiedBoard;
   }
 
-  bool isGameOver(List<List<CellDetails>> board) =>
+  bool isGameOver(List<List<CellDetails>> board, bool isAIMode) =>
       _isPawnsGameOver(CellType.BLACK, CellType.BLACK_KING) ||
       _isPawnsGameOver(CellType.WHITE, CellType.WHITE_KING) ||
-      getLegalMoves(CellType.WHITE, board).isEmpty ||
-      getLegalMoves(CellType.BLACK, board).isEmpty;
+      getLegalMoves(CellType.WHITE, board, isAIMode).isEmpty ||
+      getLegalMoves(CellType.BLACK, board, isAIMode).isEmpty;
 
   bool _isPawnsGameOver(CellType cellType, CellType cellTypeKing) => board
       .where((cellDetailsList) => cellDetailsList
@@ -744,13 +769,14 @@ class CheckersBoard {
       .isEmpty;
 
   List<PathPawn> getLegalMoves(
-      CellType cellTypePlayer, List<List<CellDetails>> board) {
+      CellType cellTypePlayer, List<List<CellDetails>> board, bool isAIMode) {
     List<PathPawn> paths = [];
     for (List<CellDetails> cellTypeList in board) {
       for (CellDetails cellDetails in cellTypeList) {
         if (_isSamePlayer(board, cellTypePlayer, cellDetails)) {
-          List<PathPawn> currPaths = _getPossiblePathsByPosition(
-              cellDetails.row, cellDetails.column, board, cellTypePlayer);
+          List<PathPawn> currPaths = getPossiblePathsByPosition(
+              cellDetails.row, cellDetails.column, false, board, cellTypePlayer,
+              isAIMode: isAIMode);
           paths.addAll(currPaths);
         }
       }

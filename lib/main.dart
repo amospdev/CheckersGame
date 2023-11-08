@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
@@ -72,21 +71,21 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       Future.delayed(Duration(milliseconds: duration));
 
   Future<void> _aiTurn(bool isAI) async {
-    await _delayedBeforeClick(200);
-    PathPawn? path = gameViewModel.aIMove();
-    if (path == null) return;
-    gameViewModel.onClickPawn(path.positionDetailsList.first.position.row,
-        path.positionDetailsList.first.position.column);
+    logDebug("MAIN WIDGET _aiTurn: $isAI");
+    PathPawn? pathPawn = gameViewModel.aIMove();
+    if (pathPawn == null) return;
+    gameViewModel.onTapBoardGame(
+        pathPawn.startPosition.row, pathPawn.startPosition.column);
 
-    await _delayedBeforeClick(50);
+    await _delayedBeforeClick(300);
 
     TapOnBoard tapOnBoardEnd = gameViewModel.onTapBoardGame(
-        path.positionDetailsList.last.position.row,
-        path.positionDetailsList.last.position.column);
+        pathPawn.endPosition.row, pathPawn.endPosition.column);
+
+    await _delayedBeforeClick(100);
 
     if (tapOnBoardEnd == TapOnBoard.END) {
-      movePlayerTo(path.positionDetailsList.last.position.row,
-          path.positionDetailsList.last.position.column);
+      movePlayerTo(pathPawn.endPosition.row, pathPawn.endPosition.column);
     }
   }
 
@@ -166,8 +165,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  void handleCellTap(CellDetails cell) => movePlayerTo(cell.row, cell.column);
-
   List<Widget> _getCells(double cellSize) {
     // logDebug("MAIN WIDGET _getCells");
 
@@ -182,7 +179,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             TapOnBoard tapOnBoard =
                 gameViewModel.onTapBoardGame(cell.row, cell.column);
             if (tapOnBoard == TapOnBoard.END) {
-              handleCellTap(cell);
+              movePlayerTo(cell.row, cell.column);
             }
           },
           child: ValueListenableBuilder<CellDetailsData>(

@@ -29,7 +29,7 @@ class PathPawn {
 
   static PathPawn createEmpty() => PathPawn([], Pawn.createEmpty());
 
-  bool isValidPath() => positionDetailsList.isNotEmpty;
+  bool get isValidPath => positionDetailsList.isNotEmpty;
 
   Position get startPosition => positionDetailsList.first.position;
 

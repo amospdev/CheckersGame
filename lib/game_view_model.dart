@@ -10,10 +10,10 @@ import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/settings_repo.dart';
-
+//TODO force capture
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();
-  final Set<int> _markedKings = {};
+  final Set<String> _markedKings = {};
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -45,6 +45,7 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _initializeGame(CheckersBoard checkersBoard) {
+    checkersBoard.init();
     _setCheckersBoard(checkersBoard.board);
     _setCurrentPlayer(checkersBoard.player);
     _pawns.addAll(checkersBoard.pawns);
@@ -162,7 +163,7 @@ class GameViewModel extends ChangeNotifier {
     _markedKings.add(pawn.id);
   }
 
-  bool isAlreadyMarkedKing(int id) => _markedKings.contains(id);
+  bool isAlreadyMarkedKing(String id) => _markedKings.contains(id);
 
   void onPawnMoveAnimationStart() {
     _pathPawn.pawnStartPath.setPawnDataNotifier(

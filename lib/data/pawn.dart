@@ -6,7 +6,7 @@ import 'package:untitled/enum/cell_type.dart';
 class Pawn {
   Color color;
 
-  int id;
+  String id;
   int row;
   int column;
   final int index;
@@ -44,7 +44,7 @@ class Pawn {
   }
 
   static Pawn createEmpty() => Pawn(
-      id: -1,
+      id: "",
       index: -1,
       cellTypePlayer: CellType.UNDEFINED,
       row: -1,

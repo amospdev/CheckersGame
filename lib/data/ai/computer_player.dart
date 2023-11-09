@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/enum/cell_type.dart';
-import 'package:untitled/game/checkers_board.dart'; // Required for using the `max` and `min` functions.
+import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/game/checkers_printer.dart'; // Required for using the `max` and `min` functions.
 
 CellType aiType = CellType.WHITE;
 CellType humanType = aiType == CellType.WHITE ? CellType.BLACK : CellType.WHITE;
@@ -125,7 +126,7 @@ class ComputerPlayer {
       CheckersBoard checkersBoard, TranspositionTable transpositionTable) {
     double bestValue = -9999;
     PathPawn? bestMove;
-    checkersBoard.printBoard(checkersBoard.board);
+    CheckersPrinter().printBoard(checkersBoard.board, CheckersBoard.sizeBoard);
     // Get all possible moves for AI
     List<PathPawn> allPossibleMoves = _getAllValidMoves(checkersBoard,
         aiType); // Fill this up with actual possible moves for AI

@@ -9,6 +9,8 @@ import 'package:untitled/data/position/details/position_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
+import 'package:untitled/game/checkers_creator.dart';
+import 'package:untitled/game/pawns_creator.dart';
 
 // Define the colors as constants at the top of your file for better clarity
 const startPositionColor = Colors.green;
@@ -22,13 +24,25 @@ class CheckersBoard {
 
   bool isMandatoryCapture = true;
 
-  CheckersBoard({List<List<CellDetails>>? board}) {
+  CheckersBoard();
+
+  void init() {
+    _initBoard();
+    _initPawns();
+  }
+
+  void _initBoard({List<List<CellDetails>>? board}) {
     if (board == null) {
-      createBoard();
-    } else {
-      _board.addAll(board);
+      _board = BoardGameFactory.createBoard(BoardType.real);
     }
   }
+
+  void _initPawns() {
+    _pawns = _pawnsCreator.create(_board);
+  }
+
+  // final CheckersPrinter _checkersPrinter = CheckersPrinter();
+  final PawnsCreator _pawnsCreator = PawnsCreator();
 
   List<List<CellDetails>> _board = [];
 
@@ -36,100 +50,13 @@ class CheckersBoard {
 
   List<List<CellDetails>> get board => _board;
 
-  final List<Pawn> _pawns = [];
+  List<Pawn> _pawns = [];
 
   List<Pawn> get pawns => _pawns;
 
   CellType _player = CellType.BLACK;
 
   CellType get player => _player;
-
-  void createBoard() {
-    _board = List.generate(sizeBoard,
-        (i) => List<CellDetails>.filled(sizeBoard, CellDetails.createEmpty()));
-    for (int row = 0; row < sizeBoard; row++) {
-      for (int column = 0; column < sizeBoard; column++) {
-        CellType tmpCellType = CellType.UNDEFINED;
-        int id = (sizeBoard * row) + column;
-
-        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
-        if ((row + column) % 2 == 0) {
-          tmpCellType = CellType.UNVALID;
-        } else {
-          if (row < (sizeBoard / 2) - 1) {
-            tmpCellType = CellType.BLACK;
-          } else if (row > (sizeBoard / 2)) {
-            tmpCellType = CellType.WHITE;
-          } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {
-            tmpCellType = CellType.EMPTY;
-          }
-        }
-
-        if (tmpCellType == CellType.WHITE || tmpCellType == CellType.BLACK) {
-          _pawns.add(Pawn(
-              id: id + 100,
-              row: row,
-              cellTypePlayer: tmpCellType,
-              index: _pawns.length,
-              column: column,
-              color: tmpCellType == CellType.WHITE ? Colors.white : Colors.grey,
-              isKing: false));
-        }
-
-        _board[row][column] =
-            CellDetails(tmpCellType, id, cellColor, row, column);
-      }
-    }
-  }
-
-  void createBoardTest() {
-    _board = List.generate(sizeBoard,
-        (i) => List<CellDetails>.filled(sizeBoard, CellDetails.createEmpty()));
-    for (int row = 0; row < sizeBoard; row++) {
-      for (int column = 0; column < sizeBoard; column++) {
-        CellType tmpCellType = CellType.EMPTY;
-        int id = (sizeBoard * row) + column;
-
-        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
-        if ((row + column) % 2 == 0) {
-          tmpCellType = CellType.UNVALID;
-        } else {
-          if (row < (sizeBoard / 2) - 1) {
-            if (column % 2 == 0) {
-              tmpCellType = CellType.BLACK_KING;
-            }
-          } else if (row > (sizeBoard / 2)) {
-            if (column % 2 != 0) {
-              tmpCellType = CellType.WHITE_KING;
-            }
-          } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {
-            tmpCellType = CellType.EMPTY;
-          }
-        }
-
-        if (tmpCellType == CellType.WHITE ||
-            tmpCellType == CellType.BLACK ||
-            tmpCellType == CellType.WHITE_KING ||
-            tmpCellType == CellType.BLACK_KING) {
-          _pawns.add(Pawn(
-              id: id + 100,
-              row: row,
-              column: column,
-              cellTypePlayer: tmpCellType,
-              index: _pawns.length,
-              color: tmpCellType == CellType.WHITE_KING
-                  ? Colors.white
-                  : Colors.grey,
-              isKing: true));
-        }
-
-        _board[row][column] =
-            CellDetails(tmpCellType, id, cellColor, row, column);
-      }
-    }
-
-    printBoard(board);
-  }
 
   Pawn _getPawnWithoutKills(Position position) => _pawns
       .where((element) => !element.pawnDataNotifier.value.isKilled)
@@ -150,42 +77,6 @@ class CheckersBoard {
 
   void _switchPlayer() =>
       _player = (_player == CellType.BLACK) ? CellType.WHITE : CellType.BLACK;
-
-  void printBoard(List<List<CellDetails>> board) {
-    logDebug("\n\n**********************************");
-
-    String horizontalLine =
-        "${"+---" * sizeBoard}+"; // creates +---+---+... for 8 times
-
-    for (int i = 0; i < sizeBoard; i++) {
-      String row = "|"; // starts the row with |
-      for (int j = 0; j < sizeBoard; j++) {
-        CellType cellType = board[i][j].cellType;
-        if (cellType == CellType.UNVALID) {
-          row += " ⊠ |"; // adds the cell value and |
-        } else if (cellType == CellType.EMPTY) {
-          row += "   |"; // adds the cell value and |
-        } else if (cellType == CellType.BLACK) {
-          row += " ● |"; // adds the cell value and |
-        } else if (cellType == CellType.WHITE) {
-          row += " ○ |"; // adds the cell value and |
-        } else if (cellType == CellType.BLACK_KING) {
-          row += " 👑 |"; // adds the cell value and |
-        } else if (cellType == CellType.WHITE_KING) {
-          row += " ♔ |"; // adds the cell value and |
-        } else {
-          row += " ${cellType.index} |"; // adds the cell value and |
-        }
-      }
-
-      logDebug(horizontalLine);
-      logDebug(row);
-    }
-
-    logDebug(horizontalLine); // closing line
-
-    logDebug("**********************************\n\n");
-  }
 
   bool isOpponentCell(int row, int column, List<List<CellDetails>> board,
           CellType cellTypePlayer) =>
@@ -747,7 +638,7 @@ class CheckersBoard {
     List<List<CellDetails>> newBoard = List.generate(board.length,
         (i) => List.generate(board[i].length, (j) => board[i][j].copy()));
 
-    CheckersBoard copiedBoard = CheckersBoard(board: newBoard);
+    CheckersBoard copiedBoard = CheckersBoard();
     copiedBoard._board = newBoard;
 
     copiedBoard._player = _player;

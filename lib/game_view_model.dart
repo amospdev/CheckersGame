@@ -10,7 +10,7 @@ import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/settings_repo.dart';
-//TODO force capture
+
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();
   final Set<String> _markedKings = {};
@@ -134,7 +134,7 @@ class GameViewModel extends ChangeNotifier {
     _clearDataNextTurnState();
     _checkersBoard.nextTurn(_checkersBoard.board);
     _setCurrentPlayer(_checkersBoard.player);
-    bool isGameOver = _checkersBoard.isGameOver(_checkersBoard.board, false);
+    bool isGameOver = _checkersBoard.isGameOver(false);
     print("CB NEXT TURN isGameOver: $isGameOver");
     _isAITurnController.add(_isAITurn());
     _checkersBoard.setHistoryAvailability(true);

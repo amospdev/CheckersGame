@@ -53,7 +53,7 @@ class ComputerPlayer {
       return evaluate;
     }
 
-    if (checkersBoard.isGameOver(checkersBoard.board, true)) {
+    if (checkersBoard.isGameOver(true)) {
       double? evaluateMemory =
           transpositionTable.get(checkersBoard.board.toString());
       if (evaluateMemory != null) return evaluateMemory;

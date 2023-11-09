@@ -10,6 +10,6 @@ class Logger {
 
 void logDebug(String log) {
   if (kDebugMode) {
-    // print(log);
+    print(log);
   }
 }

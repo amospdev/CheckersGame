@@ -66,7 +66,7 @@ class ComputerPlayer {
     if (isMaximizing) {
       double maxEval = -9999;
 
-      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard);
+      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, aiType);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
@@ -86,7 +86,7 @@ class ComputerPlayer {
     } else {
       double minEval = 9999;
 
-      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard);
+      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, humanType);
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
@@ -127,8 +127,8 @@ class ComputerPlayer {
     PathPawn? bestMove;
     checkersBoard.printBoard(checkersBoard.board);
     // Get all possible moves for AI
-    List<PathPawn> allPossibleMoves = _getAllValidMoves(
-        checkersBoard); // Fill this up with actual possible moves for AI
+    List<PathPawn> allPossibleMoves = _getAllValidMoves(checkersBoard,
+        aiType); // Fill this up with actual possible moves for AI
 
     for (PathPawn pathPawn in allPossibleMoves) {
       CheckersBoard tempCheckersBoard = checkersBoard.copy();
@@ -147,6 +147,7 @@ class ComputerPlayer {
     return bestMove;
   }
 
-  List<PathPawn> _getAllValidMoves(CheckersBoard checkersBoard) =>
-      checkersBoard.getLegalMoves(aiType, checkersBoard.board, true);
+  List<PathPawn> _getAllValidMoves(
+          CheckersBoard checkersBoard, CellType cellTypePlayer) =>
+      checkersBoard.getLegalMoves(cellTypePlayer, checkersBoard.board, true);
 }

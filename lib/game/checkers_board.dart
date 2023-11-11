@@ -397,39 +397,40 @@ class CheckersBoard {
   void performMove(
       List<List<CellDetails>> board, List<PathPawn> paths, PathPawn pathPawn,
       {required bool isAI}) {
-    // Update the end position based on the type of the piece and its final position on the board
-    _updateEndPosition(board, pathPawn, isAI);
-
-    // Remove captured pieces
-    _removeCapturedPieces(pathPawn, isAI, board);
-
-    // IMPORTANT: Update the starting position to empty
-    _setCellToEmpty(pathPawn.startPosition, board);
-
-    clearColorsCells();
-  }
-
-  void _updateEndPosition(
-      List<List<CellDetails>> board, PathPawn pathPawn, bool isAI) {
-    bool isBlackCellPlayer = pathPawn.startCell.isBlack;
-
     bool isKing = _isKingPiece(
         startCellDetails: pathPawn.startCell,
         endPosition: pathPawn.endPosition);
 
-    CellType cellType = _computePieceEndPath(isBlackCellPlayer, isKing);
+    // Update the end position based on the type of the piece and its final position on the board
+    _updateEndPosition(board, pathPawn, isKing);
 
-    _setCell(cellType, pathPawn.endPosition, board);
+    // Remove captured pieces
+    _removeCapturedPieces(pathPawn, board);
 
-    if (isAI) return;
-    _updatePawn(pathPawn.endPosition, isKing, pathPawn);
+    // IMPORTANT: Update the starting position to empty
+    _setCellToEmpty(pathPawn.startPosition, board);
+
+    if (!isAI) _updatePawns(pathPawn, isKing);
   }
 
-  void _updatePawn(Position endPosition, bool isKing, PathPawn pathPawn) =>
-      pathPawn.pawnStartPath
-          .setPosition(endPosition.row, endPosition.column)
-          .setIsKing(isKing)
-          .setPawnDataNotifier(isAnimating: false);
+  void _updateEndPosition(
+      List<List<CellDetails>> board, PathPawn pathPawn, bool isKing) {
+    CellType cellType =
+        _computePieceEndPath(pathPawn.startCell.isBlack, isKing);
+
+    _setCell(cellType, pathPawn.endPosition, board);
+  }
+
+  void _updatePawns(PathPawn pathPawn, bool isKing) {
+    _updatePawn(isKing, pathPawn);
+
+    pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
+  }
+
+  void _updatePawn(bool isKing, PathPawn pathPawn) => pathPawn.pawnStartPath
+      .setPosition(pathPawn.endPosition.row, pathPawn.endPosition.column)
+      .setIsKing(isKing)
+      .setPawnDataNotifier(isAnimating: false);
 
   //CHECKED
   bool _isKingPiece(
@@ -443,12 +444,11 @@ class CheckersBoard {
       endPosition.row == (isBlack ? _blackKingRow : _whiteKingRow);
 
   void _removeCapturedPieces(
-      PathPawn pathPawn, bool isAI, List<List<CellDetails>> board) {
-    _setCellToEmpty(pathPawn.captureCell?.position, board);
-    if (!isAI) {
-      pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
-    }
-  }
+          PathPawn pathPawn, List<List<CellDetails>> board) =>
+      pathPawn.positionDetailsList
+          .where((element) => element.isCapture)
+          .map((positionDetails) => positionDetails.position)
+          .forEach((position) => _setCellToEmpty(position, board));
 
   void _setCellToEmpty(Position? position, List<List<CellDetails>> board) =>
       position != null

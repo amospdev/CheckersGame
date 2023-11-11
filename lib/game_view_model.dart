@@ -111,6 +111,7 @@ class GameViewModel extends ChangeNotifier {
   }
 
   Future<void> onPawnMoveAnimationFinish() async {
+    _checkersBoard.updateHistory(_pathPawn);
     _checkersBoard.performMove(_checkersBoard.board, _pawnPaths, _pathPawn,
         isAI: false);
     _endProcess();

@@ -376,9 +376,6 @@ class CheckersBoard {
           getCellDetailsByPosition(currPosition, board)) &&
       getCellDetailsByPosition(nextPosition, board).isEmptyCell;
 
-  CheckersBoard performMoveAI(CheckersBoard tempBoard, PathPawn pathPawn) =>
-      tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
-
   void resetBoard() {
     _checkersBoardFeatures.resetBoard(pawns, board);
     _initPlayer();
@@ -394,11 +391,12 @@ class CheckersBoard {
     _pawnsOperation.pawnsSummarize(board);
   }
 
+  void updateHistory(PathPawn pathPawn) =>
+      _checkersBoardFeatures.updateHistory(pathPawn.copy());
+
   void performMove(
       List<List<CellDetails>> board, List<PathPawn> paths, PathPawn pathPawn,
       {required bool isAI}) {
-    if (!isAI) _checkersBoardFeatures.updateHistory(pathPawn.copy());
-
     // Update the end position based on the type of the piece and its final position on the board
     _updateEndPosition(board, pathPawn, isAI);
 
@@ -415,10 +413,9 @@ class CheckersBoard {
       List<List<CellDetails>> board, PathPawn pathPawn, bool isAI) {
     bool isBlackCellPlayer = pathPawn.startCell.isBlack;
 
-    bool isKing = _isKingPiece(board,
-        startPosition: pathPawn.startPosition,
-        endPosition: pathPawn.endPosition,
-        isBlackCellPlayer: isBlackCellPlayer);
+    bool isKing = _isKingPiece(
+        startCellDetails: pathPawn.startCell,
+        endPosition: pathPawn.endPosition);
 
     CellType cellType = _computePieceEndPath(isBlackCellPlayer, isKing);
 
@@ -434,15 +431,16 @@ class CheckersBoard {
           .setIsKing(isKing)
           .setPawnDataNotifier(isAnimating: false);
 
-  bool _isKingPiece(List<List<CellDetails>> board,
-          {required Position startPosition,
-          required Position endPosition,
-          required bool isBlackCellPlayer}) =>
-      getCellDetailsByPosition(startPosition, board).isKing ||
-      _isKingRow(
-          endPosition, isBlackCellPlayer ? _blackKingRow : _whiteKingRow);
+  //CHECKED
+  bool _isKingPiece(
+          {required CellDetails startCellDetails,
+          required Position endPosition}) =>
+      startCellDetails.isKing ||
+      _isWillKing(endPosition, startCellDetails.isBlack);
 
-  bool _isKingRow(Position position, int kingRow) => position.row == kingRow;
+  //CHECKED
+  bool _isWillKing(Position endPosition, bool isBlack) =>
+      endPosition.row == (isBlack ? _blackKingRow : _whiteKingRow);
 
   void _removeCapturedPieces(
       PathPawn pathPawn, bool isAI, List<List<CellDetails>> board) {

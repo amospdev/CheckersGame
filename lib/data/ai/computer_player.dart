@@ -71,8 +71,8 @@ class ComputerPlayer {
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
-        performMove(newBoard, path);
-
+        _performMove(newBoard, path);
+        _nextTurn(newBoard);
         double eval = minimax(newBoard, depth - 1, false, alpha, beta,
             transpositionTable, humanType);
 
@@ -91,7 +91,8 @@ class ComputerPlayer {
 
       for (PathPawn path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
-        performMove(newBoard, path);
+        _performMove(newBoard, path);
+        _nextTurn(newBoard);
         double eval = minimax(
             newBoard, depth - 1, true, alpha, beta, transpositionTable, aiType);
 
@@ -133,7 +134,8 @@ class ComputerPlayer {
 
     for (PathPawn pathPawn in allPossibleMoves) {
       CheckersBoard tempCheckersBoard = checkersBoard.copy();
-      performMove(tempCheckersBoard, pathPawn);
+      _performMove(tempCheckersBoard, pathPawn);
+      _nextTurn(tempCheckersBoard);
       double boardValue = minimax(tempCheckersBoard, depth, false, -9999, 9999,
           transpositionTable, humanType);
 
@@ -152,7 +154,9 @@ class ComputerPlayer {
           CheckersBoard checkersBoard, CellType cellTypePlayer) =>
       checkersBoard.getLegalMoves(cellTypePlayer, checkersBoard.board, true);
 
-  CheckersBoard performMove(CheckersBoard tempBoard, PathPawn pathPawn) =>
+  CheckersBoard _performMove(CheckersBoard tempBoard, PathPawn pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
+  void _nextTurn(CheckersBoard checkersBoard) =>
+      checkersBoard.nextTurn(checkersBoard.board);
 }

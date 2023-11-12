@@ -80,8 +80,10 @@ class GameViewModel extends ChangeNotifier {
     if (!_isValidTap(row, column)) {
       return TapOnBoard.UNVALID;
     }
-    List<PathPawn> pawnPaths = _checkersBoard.getPathsByStartCellSelected(
-        row, column, _checkersBoard.board, _checkersBoard.player, false);
+    List<PathPawn> pawnPaths = _checkersBoard
+        .getLegalMoves(_checkersBoard.player, _checkersBoard.board, false)
+        .where((element) => element.startPosition == Position(row, column))
+        .toList();
     if (pawnPaths.isNotEmpty) {
       return _handleStartCellTap(row, column, pawnPaths);
     }
@@ -96,8 +98,8 @@ class GameViewModel extends ChangeNotifier {
   }
 
   TapOnBoard _handleStartCellTap(
-      int row, int column, List<PathPawn> pawnPaths) {
-    _pawnPaths = pawnPaths;
+      int row, int column, Iterable<PathPawn> pawnPaths) {
+    _pawnPaths = pawnPaths.toList();
     _checkersBoard.paintColorsCells(_pawnPaths);
     return TapOnBoard.START;
   }

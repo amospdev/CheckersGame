@@ -71,6 +71,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       Future.delayed(Duration(milliseconds: duration));
 
   Future<void> _aiTurn(bool isAI) async {
+    await _delayedBeforeClick(300);
+
     logDebug("MAIN WIDGET _aiTurn: $isAI");
     PathPawn? pathPawn = gameViewModel.aIMove();
     if (pathPawn == null) return;

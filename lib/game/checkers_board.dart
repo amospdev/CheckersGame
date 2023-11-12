@@ -116,8 +116,7 @@ class CheckersBoard {
           List<List<CellDetails>> board,
           CellType cellTypePlayer,
           bool isAIMode) =>
-      getPossiblePathsByPosition(row, column, false, board, cellTypePlayer,
-          isAIMode: isAIMode);
+      getLegalMoves(cellTypePlayer, board, isAIMode);
 
   PathPawn getPathByEndCellSelected(
           int endRow, int endColumn, List<PathPawn> paths) =>

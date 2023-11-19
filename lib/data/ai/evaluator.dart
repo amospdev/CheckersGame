@@ -1,184 +1,235 @@
 import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/ai/heuristic_data.dart';
 import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/path_pawn.dart';
+import 'package:untitled/data/position/details/position_details.dart';
 import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 
 class Evaluator {
+  HeuristicData computerData = HeuristicData();
+  HeuristicData humanData = HeuristicData();
+
   double evaluate(bool max, List<List<CellDetails>> board,
-      CheckersBoard checkersBoard, CellType cellTypePlayer) {
-    final HeuristicData computerData = HeuristicData();
-    final HeuristicData humanData = HeuristicData();
+      CheckersBoard checkersBoard, CellType cellTypePlayerTurn) {
+    computerData = HeuristicData();
+    humanData = HeuristicData();
 
     for (int row = 0; row < CheckersBoard.sizeBoard; row++) {
       for (int column = 0; column < CheckersBoard.sizeBoard; column++) {
-        CellDetails cellDetails = board[row][column];
-        if (cellDetails.cellType != CellType.EMPTY &&
-            cellDetails.cellType != CellType.UNVALID) {
-          if (cellDetails.isBlack) {
-            cellDetails.isKing ? humanData.king += 1 : humanData.pawn += 1;
+        CellDetails currCellDetails = board[row][column];
+        if (currCellDetails.isNotSomePawn) continue;
 
-            if (row == 0) {
-              humanData.backRowPiece += 1;
-              humanData.protectedPiece += 1;
-            } else {
-              if (row == 3 || row == 4) {
-                if (column >= 2 && column <= 5) {
-                  humanData.middleBoxPiece += 1;
-                } else {
-                  humanData.middleRowPiece += 1;
-                }
-              }
+        bool isMiddleBox = getScoreType(row, column) == ScoreType.MIDDLE_BOX;
+        bool isMiddleRow = getScoreType(row, column) == ScoreType.MIDDLE_ROW;
 
-              if (isRightVulnerable(
-                  board, checkersBoard, row, column, cellTypePlayer)) {
-                humanData.vulnerable += 1;
-              }
+        bool isPawnProtected =
+            isProtected(row, column, board, currCellDetails.cellTypePlayer);
 
-              if (isLeftVulnerable(
-                  board, checkersBoard, row, column, cellTypePlayer)) {
-                humanData.vulnerable += 1;
-              }
+        if (currCellDetails.isBlack) {
+          if (currCellDetails.isKing) humanData.king += 1;
 
-              // if (isRightVulnerable(board, checkersBoard, row, column) ||
-              //     isLeftVulnerable(board, checkersBoard, row, column)) {
-              //   humanData.vulnerable += 1;
-              // }
+          if (currCellDetails.isPawn) humanData.pawn += 1;
 
-              if (isProtected(
-                  row, column, board, cellTypePlayer, checkersBoard)) {
-                humanData.protectedPiece += 1;
-              }
-            }
-          } else if (cellDetails.isWhite) {
-            cellDetails.isKing
-                ? computerData.king += 1
-                : computerData.pawn += 1;
+          if (isPawnProtected) humanData.protectedPiece += 1;
 
-            if (row == 7) {
-              computerData.backRowPiece += 1;
-              computerData.protectedPiece += 1;
-            } else {
-              if (row == 3 || row == 4) {
-                if (column >= 2 && column <= 5) {
-                  computerData.middleBoxPiece += 1;
-                } else {
-                  computerData.middleRowPiece += 1;
-                }
-              }
+          if (isMiddleBox) humanData.middleBoxPiece += 1;
 
-              if (isRightVulnerable(
-                  board, checkersBoard, row, column, cellTypePlayer)) {
-                computerData.vulnerable += 1;
-              }
+          if (isMiddleRow) humanData.middleRowPiece += 1;
 
-              if (isLeftVulnerable(
-                  board, checkersBoard, row, column, cellTypePlayer)) {
-                computerData.vulnerable += 1;
-              }
+          bool isBackRowBlackPosition = row == 0;
+          if (isBackRowBlackPosition) humanData.backRowPiece += 1;
+        } else if (currCellDetails.isWhite) {
+          if (currCellDetails.isKing) computerData.king += 1;
 
-              // if (isRightVulnerable(board, checkersBoard, row, column) ||
-              //     isLeftVulnerable(board, checkersBoard, row, column)) {
-              //   computerData.vulnerable += 1;
-              // }
+          if (currCellDetails.isPawn) computerData.pawn += 1;
 
-              if (isProtected(
-                  row, column, board, cellTypePlayer, checkersBoard)) {
-                computerData.protectedPiece += 1;
-              }
-            }
+          if (isPawnProtected) computerData.protectedPiece += 1;
+
+          if (isMiddleBox) computerData.middleBoxPiece += 1;
+
+          if (isMiddleRow) computerData.middleRowPiece += 1;
+
+          bool isBackRowWhitePosition = row == CheckersBoard.sizeBoard - 1;
+          if (isBackRowWhitePosition) {
+            computerData.backRowPiece += 1;
           }
         }
+
+        vulnerablePawns(cellTypePlayerTurn, checkersBoard, currCellDetails,
+            board, computerData, humanData);
       }
     }
+
+    print(
+        "EVAL final computerScore: ${computerData.sum}, humanScore: ${humanData.sum}");
 
     final sum = computerData.subtract(humanData).sum;
 
-    return (max ? sum : -sum);
+    final result = (max ? sum : -sum);
+
+    return result;
   }
 
-  bool isProtected(int row, int col, List<List<CellDetails>> board,
-      CellType cellTypePlayer, CheckersBoard checkersBoard) {
-    if (row == 0 || col == 0 || row == 7 || col == 7) {
+  bool hasEmptyCellsOnPromotionLine(int row) {
+    return row == 0 || row == CheckersBoard.sizeBoard - 1;
+  }
+
+  int distanceToPromotion(CellType cellTypePlayer, int row) {
+    int promotionLineRow =
+        cellTypePlayer == humanType ? CheckersBoard.sizeBoard - 1 : 0;
+    return (row - promotionLineRow).abs();
+  }
+
+  bool isEmpty(Position position, List<List<CellDetails>> board) {
+    return position.isInBounds &&
+        board[position.row][position.column].isEmptyCell;
+  }
+
+  bool containsOpponentKing(
+    Position position,
+    List<List<CellDetails>> board,
+    CellType cellTypePlayer,
+  ) {
+    if (position.isNotInBounds) return false;
+
+    if (board[position.row][position.column].isNotKing) return false;
+
+    return board[position.row][position.column].cellTypePlayer !=
+        cellTypePlayer;
+  }
+
+  bool containsBuddy(Position position, List<List<CellDetails>> board,
+      CellType cellTypePlayer) {
+    return position.isInBounds &&
+        board[position.row][position.column].cellTypePlayer == cellTypePlayer;
+  }
+
+  bool isProtected(int row, int column, List<List<CellDetails>> board,
+      CellType cellTypePlayer) {
+    if (isSafePosition(Position(row, column))) {
       return true;
     }
 
-    List<Position> checkPositions;
-
-    if (cellTypePlayer == CellType.WHITE || cellTypePlayer == CellType.BLACK) {
-      checkPositions = checkersBoard
-          .getPieceDirections(cellTypePlayer: cellTypePlayer)
-          .map((pos) => Position(row + pos.row, col + pos.column))
-          .toList();
-    } else if (cellTypePlayer == CellType.WHITE_KING ||
-        cellTypePlayer == CellType.BLACK_KING) {
-      checkPositions = checkersBoard
-          .getKingDirections()
-          .map((pos) => Position(row + pos.row, col + pos.column))
-          .toList();
-    } else {
-      return false; // Return false if the cellType is not a piece or king.
+    if (cellTypePlayer == humanType) {
+      bool leftProtected =
+          containsBuddy(Position(row - 1, column - 1), board, cellTypePlayer) &&
+              !containsOpponentKing(
+                  Position(row - 1, column - 1), board, cellTypePlayer);
+      bool rightProtected =
+          containsBuddy(Position(row - 1, column + 1), board, cellTypePlayer) &&
+              !containsOpponentKing(
+                  Position(row - 1, column + 1), board, cellTypePlayer);
+      return leftProtected && rightProtected;
     }
 
-    for (Position pos in checkPositions) {
-      CellDetails currCellDetails =
-          checkersBoard.getCellDetailsByPosition(pos, board);
-      if (!checkersBoard.isOpponentCell(row, col, board, cellTypePlayer) &&
-          !currCellDetails.isEmptyCell) {
-        return true; // If there is a friendly piece in any of the directions, this piece is protected
+    // AI type
+    bool leftProtected =
+        containsBuddy(Position(row + 1, column - 1), board, cellTypePlayer) &&
+            !containsOpponentKing(
+                Position(row + 1, column - 1), board, cellTypePlayer);
+
+    bool rightProtected =
+        containsBuddy(Position(row + 1, column + 1), board, cellTypePlayer) &&
+            !containsOpponentKing(
+                Position(row + 1, column + 1), board, cellTypePlayer);
+    leftProtected && rightProtected;
+
+    return leftProtected && rightProtected;
+  }
+
+  bool isSafePosition(Position position) {
+    // Check if the position is adjacent to the edge of the board
+    return position.row == 0 ||
+        position.row == CheckersBoard.sizeBoard - 1 ||
+        position.column == 0 ||
+        position.column == CheckersBoard.sizeBoard - 1;
+  }
+
+  bool isBackRowPosition(CellType cellTypePlayer, int cellRow) {
+    // Check if the position is adjacent to the edge of the board
+    return cellTypePlayer == aiType && cellRow == CheckersBoard.sizeBoard - 1 ||
+        cellTypePlayer == humanType && cellRow == 0;
+  }
+
+  ScoreType getScoreType(int row, int column) {
+    if (row == 3 || row == 4) {
+      // Check for middle rows
+      if (column >= 2 && column <= 5) {
+        return ScoreType.MIDDLE_BOX;
+      } else {
+        // Non-box
+        return ScoreType.MIDDLE_ROW;
       }
     }
-    return false;
+    return ScoreType.NONE;
   }
 
-  bool isLeftVulnerable(List<List<CellDetails>> board,
-      CheckersBoard checkersBoard, int row, int col, CellType cellTypePlayer) {
-    CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
-    bool isLeftTopVulnerable = false;
-    bool isLeftBottomVulnerable = false;
-
-    isLeftTopVulnerable = checkersBoard
-            .getCellDetails(row - 1, col + 1, board)
-            .isEmptyCell &&
-        checkersBoard.isOpponentCell(row + 1, col - 1, board, cellTypePlayer);
-
-    isLeftBottomVulnerable = checkersBoard
-            .getCellDetails(row + 1, col + 1, board)
-            .isEmptyCell &&
-        checkersBoard.isOpponentCell(row - 1, col - 1, board, cellTypePlayer);
-
-    if (currCellDetails.isKing) {
-      return isLeftTopVulnerable || isLeftBottomVulnerable;
-    } else if (currCellDetails.cellType == humanType) {
-      return isLeftTopVulnerable;
-    } else {
-      return isLeftBottomVulnerable;
-    }
+  void vulnerablePawns(
+      CellType cellTypePlayerTurn,
+      CheckersBoard checkersBoard,
+      CellDetails currCellDetailsAttack,
+      List<List<CellDetails>> board,
+      HeuristicData computerData,
+      HeuristicData humanData) {
+    if (currCellDetailsAttack.isNotSomePawn) return;
+    if (currCellDetailsAttack.cellTypePlayer == cellTypePlayerTurn) return;
+    _getVulnerablePawns(checkersBoard, currCellDetailsAttack, board)
+        .forEach((cellDetailsCaptured) {
+      if (cellDetailsCaptured.cellTypePlayer == aiType) {
+        computerData.vulnerable += 1;
+      } else {
+        humanData.vulnerable += 1;
+      }
+    });
   }
 
-  bool isRightVulnerable(List<List<CellDetails>> board,
-      CheckersBoard checkersBoard, int row, int col, CellType cellTypePlayer) {
-    CellDetails currCellDetails = checkersBoard.getCellDetails(row, col, board);
-    bool isRightTopVulnerable = false;
-    bool isRightBottomVulnerable = false;
-
-    isRightTopVulnerable = checkersBoard
-            .getCellDetails(row - 1, col - 1, board)
-            .isEmptyCell &&
-        checkersBoard.isOpponentCell(row + 1, col + 1, board, cellTypePlayer);
-
-    isRightBottomVulnerable = checkersBoard
-            .getCellDetails(row + 1, col - 1, board)
-            .isEmptyCell &&
-        checkersBoard.isOpponentCell(row - 1, col + 1, board, cellTypePlayer);
-
-    if (currCellDetails.isKing) {
-      return isRightTopVulnerable || isRightBottomVulnerable;
-    } else if (currCellDetails.cellType == humanType) {
-      return isRightTopVulnerable;
+  PathPawn fetchKills(
+      CheckersBoard checkersBoard, CellDetails currCellDetailsAttack) {
+    List<PathPawn> paths = [];
+    if (currCellDetailsAttack.isKing) {
+      checkersBoard.fetchAllCapturePathsKingSimulate(
+          paths,
+          currCellDetailsAttack.position,
+          [PositionDetailsNonCapture(currCellDetailsAttack)],
+          checkersBoard.getKingDirections(),
+          checkersBoard.board,
+          currCellDetailsAttack.cellTypePlayer);
     } else {
-      return isRightBottomVulnerable;
+      checkersBoard.fetchAllCapturePathsPieceSimulate(
+          paths,
+          currCellDetailsAttack.position,
+          [PositionDetailsNonCapture(currCellDetailsAttack)],
+          checkersBoard.getPieceDirections(
+              cellTypePlayer: currCellDetailsAttack.cellTypePlayer),
+          checkersBoard.board,
+          currCellDetailsAttack.cellTypePlayer);
     }
+
+    if (checkersBoard.hasCapturePaths(paths)) {
+      return paths.reduce((a, b) =>
+          a.positionDetailsList.length > b.positionDetailsList.length ? a : b);
+    }
+
+    return PathPawn.createEmpty();
+  }
+
+  List<CellDetails> _getVulnerablePawns(CheckersBoard checkersBoard,
+      CellDetails currCellDetailsAttack, List<List<CellDetails>> board) {
+    //Find the vulnerable pawns
+    PathPawn newPathPawn = fetchKills(checkersBoard, currCellDetailsAttack);
+    List<CellDetails> capturedList = [];
+    for (PositionDetails positionDetails in newPathPawn.positionDetailsList) {
+      if (positionDetails.isCapture) {
+        CellDetails cellDetailsCaptured = board[positionDetails.position.row]
+            [positionDetails.position.column];
+        capturedList.add(cellDetailsCaptured);
+      }
+    }
+
+    return capturedList;
   }
 }
+
+enum ScoreType { MIDDLE_BOX, MIDDLE_ROW, NONE }

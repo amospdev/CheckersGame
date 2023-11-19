@@ -214,10 +214,10 @@ class CheckersBoard {
       CellType cellTypePlayer) {
     if (isAIMode) {
       if (isKing) {
-        _fetchAllCapturePathsKingSimulate(paths, startPosition,
+        fetchAllCapturePathsKingSimulate(paths, startPosition,
             [startPositionPath], directions, board, cellTypePlayer);
       } else {
-        _fetchAllCapturePathsPieceSimulate(paths, startPosition,
+        fetchAllCapturePathsPieceSimulate(paths, startPosition,
             [startPositionPath], directions, board, cellTypePlayer);
       }
     } else {
@@ -225,7 +225,7 @@ class CheckersBoard {
           [startPositionPath], directions, board, cellTypePlayer);
     }
 
-    if (_hasCapturePaths(paths)) return paths;
+    if (hasCapturePaths(paths)) return paths;
 
     _fetchAllSimplePathsByDirections(paths, startPosition, [startPositionPath],
         directions, board, cellTypePlayer);
@@ -356,7 +356,7 @@ class CheckersBoard {
   bool _hasCapturePositionDetails(List<PositionDetails> positionDetails) =>
       positionDetails.any((element) => element.isCapture);
 
-  bool _hasCapturePaths(List<PathPawn> paths) => paths.any(
+  bool hasCapturePaths(List<PathPawn> paths) => paths.any(
       (element) => _hasCapturePositionDetails(element.positionDetailsList));
 
   bool _isPointsCaptureMove(Position currPosition, Position nextPosition,
@@ -393,7 +393,7 @@ class CheckersBoard {
   void updateHistory(PathPawn pathPawn) =>
       _checkersBoardFeatures.updateHistory(pathPawn.copy());
 
-  void performMove(
+  CheckersBoard performMove(
       List<List<CellDetails>> board, List<PathPawn> paths, PathPawn pathPawn,
       {required bool isAI}) {
     bool isKing = _isKingPiece(
@@ -410,6 +410,8 @@ class CheckersBoard {
     _setCellToEmpty(pathPawn.startPosition, board);
 
     if (!isAI) _updatePawns(pathPawn, isKing);
+
+    return this;
   }
 
   void _updateEndPosition(
@@ -467,7 +469,7 @@ class CheckersBoard {
           List<List<CellDetails>> board) =>
       board[position.row][position.column].setCellType(cellType: cellType);
 
-  void nextTurn(List<List<CellDetails>> board) {
+  void nextTurn() {
     _clearPrevData();
     // printBoard(board);
     _switchPlayer();
@@ -475,7 +477,7 @@ class CheckersBoard {
 
   void _clearPrevData() {}
 
-  void _fetchAllCapturePathsKingSimulate(
+  void fetchAllCapturePathsKingSimulate(
       List<PathPawn> paths,
       Position startPosition,
       List<PositionDetails> positionDetailsList,
@@ -516,7 +518,7 @@ class CheckersBoard {
                   getCellDetailsByPosition(afterNextPosition, board)),
             );
 
-        _fetchAllCapturePathsKingSimulate(paths, afterNextPosition,
+        fetchAllCapturePathsKingSimulate(paths, afterNextPosition,
             newPositionDetails, directions, board, cellTypePlayer,
             lastDirection: positionDir);
       }
@@ -528,7 +530,7 @@ class CheckersBoard {
     }
   }
 
-  void _fetchAllCapturePathsPieceSimulate(
+  void fetchAllCapturePathsPieceSimulate(
       List<PathPawn> paths,
       Position startPosition,
       List<PositionDetails> positionDetails,

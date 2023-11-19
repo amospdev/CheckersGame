@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:untitled/data/ai/computer_player.dart';
+import 'package:untitled/data/ai/cp_2.dart';
+import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
@@ -9,11 +11,14 @@ import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/settings_repo.dart';
 
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();
   final Set<String> _markedKings = {};
+
+  ValueNotifier<String> pawnsStatus = ValueNotifier("");
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -116,6 +121,7 @@ class GameViewModel extends ChangeNotifier {
     _checkersBoard
       ..updateHistory(_pathPawn)
       ..performMove(_checkersBoard.board, _pawnPaths, _pathPawn, isAI: false);
+    _updatePawnsStatus();
     _endProcess();
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
@@ -133,12 +139,21 @@ class GameViewModel extends ChangeNotifier {
       _currentPlayer = currentPlayer;
 
   void _nextTurn() {
-    print("CB NEXT TURN");
+    // bool protectedColumnArea =
+    //     Evaluator().protectedColumnArea(_pathPawn.endCell.column);
+
+    double value = Evaluator().evaluate(_checkersBoard.player == CellType.WHITE,
+        _checkersBoard.board, _checkersBoard, _checkersBoard.player);
+    bool isProtected =
+        Evaluator().isProtected(3, 4, _checkersBoard.board, CellType.WHITE);
+
+    print("VM NEXT TURN isProtected: $isProtected");
+    print("VM NEXT TURN value: $value");
     _clearDataNextTurnState();
-    _checkersBoard.nextTurn(_checkersBoard.board);
+    _checkersBoard.nextTurn();
     _setCurrentPlayer(_checkersBoard.player);
     bool isGameOver = _checkersBoard.isGameOver(false);
-    print("CB NEXT TURN isGameOver: $isGameOver");
+    print("VM NEXT TURN isGameOver: $isGameOver");
     _isAITurnController.add(_isAITurn());
     _checkersBoard.setHistoryAvailability(true);
   }
@@ -146,10 +161,11 @@ class GameViewModel extends ChangeNotifier {
   bool _isAITurn() => currentPlayer == aiType && SettingsRepository().isAIMode;
 
   PathPawn? aIMove() {
-    ComputerPlayer aiPlayer = ComputerPlayer(SettingsRepository().depthLevel);
-    PathPawn? path = aiPlayer.getBestMoveForAI(_checkersBoard);
 
-    return path;
+    // ComputerPlayer aiPlayer = ComputerPlayer(SettingsRepository().depthLevel);
+    // PathPawn? path = aiPlayer.getBestMoveForAI(_checkersBoard);
+
+    return  ComputerPlayerPro().makeMove(_checkersBoard);
   }
 
   void _endProcess() => _isInProcess = false;
@@ -196,5 +212,14 @@ class GameViewModel extends ChangeNotifier {
   void dispose() {
     _isAITurnController.close();
     super.dispose();
+  }
+
+  void _updatePawnsStatus() {
+    SummarizerPawns summarizerPawns =
+        PawnsOperation().pawnsSummarize(_checkersBoard.board);
+    String summarize =
+        "BLACK PAWNS ${summarizerPawns.totalBlackPawns}, KINGS: ${summarizerPawns.totalBlackKings}\n"
+        "WHITE PAWNS ${summarizerPawns.totalWithePawns}, KINGS: ${summarizerPawns.totalWitheKings}";
+    pawnsStatus.value = summarize;
   }
 }

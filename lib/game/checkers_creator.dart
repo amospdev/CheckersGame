@@ -47,17 +47,6 @@ class RealBoardGame extends BoardGameFactory {
           }
         }
 
-        if (tmpCellType == CellType.WHITE || tmpCellType == CellType.BLACK) {
-          // _pawns.add(Pawn(
-          //     id: id + 100,
-          //     row: row,
-          //     cellTypePlayer: tmpCellType,
-          //     index: _pawns.length,
-          //     column: column,
-          //     color: tmpCellType == CellType.WHITE ? Colors.white : Colors.grey,
-          //     isKing: false));
-        }
-
         board[row][column] =
             CellDetails(tmpCellType, id, cellColor, row, column);
       }
@@ -84,32 +73,16 @@ class TestBoardGame extends BoardGameFactory {
           tmpCellType = CellType.UNVALID;
         } else {
           if (row < (sizeBoard / 2) - 1) {
-            if (column % 2 == 0) {
-              tmpCellType = CellType.BLACK_KING;
+            if (row == 0) {
+              tmpCellType = CellType.BLACK;
             }
           } else if (row > (sizeBoard / 2)) {
-            if (column % 2 != 0) {
-              tmpCellType = CellType.WHITE_KING;
+            if (row == sizeBoard - 1) {
+              tmpCellType = CellType.WHITE;
             }
           } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {
             tmpCellType = CellType.EMPTY;
           }
-        }
-
-        if (tmpCellType == CellType.WHITE ||
-            tmpCellType == CellType.BLACK ||
-            tmpCellType == CellType.WHITE_KING ||
-            tmpCellType == CellType.BLACK_KING) {
-          // _pawns.add(Pawn(
-          //     id: id + 100,
-          //     row: row,
-          //     column: column,
-          //     cellTypePlayer: tmpCellType,
-          //     index: _pawns.length,
-          //     color: tmpCellType == CellType.WHITE_KING
-          //         ? Colors.white
-          //         : Colors.grey,
-          //     isKing: true));
         }
 
         board[row][column] =

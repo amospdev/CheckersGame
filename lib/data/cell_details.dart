@@ -68,6 +68,8 @@ class CellDetails {
 
   bool get isWhiteKing => cellType == CellType.WHITE_KING;
 
+  bool get isNotKing => !isKing;
+
   bool get isKing =>
       cellType == CellType.WHITE_KING || cellType == CellType.BLACK_KING;
 
@@ -82,6 +84,8 @@ class CellDetails {
   bool get isUndefined => cellType == CellType.UNDEFINED;
 
   bool get isSomePawn => !isEmptyCell && !isUnValid && !isUndefined;
+
+  bool get isNotSomePawn => !isSomePawn;
 
   CellDetails setCellType({required CellType cellType}) {
     this.cellType = cellType;

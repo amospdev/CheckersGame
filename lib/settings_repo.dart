@@ -5,7 +5,7 @@ class SettingsRepository {
 
   GameMode get gameMode => _gameMode;
 
-  int _depthLevel = 5;
+  int _depthLevel = 3;
 
   int get depthLevel => _depthLevel;
 

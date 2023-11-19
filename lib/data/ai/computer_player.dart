@@ -158,5 +158,5 @@ class ComputerPlayer {
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
   void _nextTurn(CheckersBoard checkersBoard) =>
-      checkersBoard.nextTurn(checkersBoard.board);
+      checkersBoard.nextTurn();
 }

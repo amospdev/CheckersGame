@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
-import 'package:untitled/extensions/cg_log.dart';
 
 class PawnsOperation {
   static const prefixPawnId = "pawn_id_";
@@ -47,7 +46,7 @@ class PawnsOperation {
       }
     }
 
-    logDebug("$this pawnsSummarize: $summarizerPawns");
+    // logDebug("$this pawnsSummarize: $summarizerPawns");
 
     return summarizerPawns;
   }

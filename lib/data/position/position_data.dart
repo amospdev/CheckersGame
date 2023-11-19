@@ -12,6 +12,8 @@ class Position {
     return other is Position && other.row == row && other.column == column;
   }
 
+  bool get isNotInBounds => !isInBounds;
+
   bool get isInBounds =>
       row >= 0 &&
       row < CheckersBoard.sizeBoard &&

@@ -7,13 +7,18 @@ class HeuristicData {
   int vulnerable; // Number of pieces that can be taken by opponent on the next turn
   int protectedPiece; // Number of pieces that cannot be taken until pieces behind it (or itself) are moved
 
-  static const double PAWN_WEIGHT = 5/2;
+  static const double PAWN_WEIGHT = 2.5;
   static const double KING_WEIGHT = 7.75;
   static const double BACK_ROW_PIECE_WEIGHT = 4;
-  static const double MIDDLE_BOX_PIECE_WEIGHT = 2.5;
-  static const double MIDDLE_ROW_PIECE_WEIGHT = 0.5;
   static const double VULNERABLE_WEIGHT = -3;
   static const double PROTECTED_PIECE_WEIGHT = 3;
+  static const double MIDDLE_BOX_PIECE_WEIGHT = 2.5;
+  static const double MIDDLE_ROW_PIECE_WEIGHT = 0.5;
+
+
+  static const double DISTANCE_PROMOTION_LINE = 0.5;
+  static const double UNOCCUPIED_PROMOTION_LINE = 1;
+
 
   HeuristicData({
     this.pawn = 0,

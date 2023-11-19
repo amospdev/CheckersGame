@@ -160,6 +160,12 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                   ],
                 );
               },
+            ),
+            ValueListenableBuilder<String>(
+              valueListenable: gameViewModel.pawnsStatus,
+              builder: (ctx, pawnsStatus, _) {
+                return Text(pawnsStatus);
+              },
             )
           ],
         ),

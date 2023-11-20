@@ -7,15 +7,17 @@ import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 
 class ComputerPlayerPro {
-  ComputerPlayerPro();
+  final int depth;
 
-  PathPawn? makeMove(CheckersBoard board) {
-    LegalMoveState? resultMove = minimax(LegalMoveState(board, null), 3,
+  ComputerPlayerPro(this.depth);
+
+  PathPawn? getBestMoveForAI(CheckersBoard board) {
+    LegalMoveState? resultMove = minimax(LegalMoveState(board, null), depth,
         double.negativeInfinity, double.infinity, true);
     return resultMove?.pathPawn;
   }
 
-  LegalMoveState? minimax(LegalMoveState currState, double depth, double alpha,
+  LegalMoveState? minimax(LegalMoveState currState, int depth, double alpha,
       double beta, bool maxPlayer) {
     if (depth == 0 || currState.checkersBoard.isGameOver(true)) {
       return currState;
@@ -27,8 +29,6 @@ class ComputerPlayerPro {
           in getLegalMoveStates(currState.checkersBoard, aiType)) {
         LegalMoveState? newLegalMoveState =
             minimax(state, depth - 1, alpha, beta, false);
-        print(
-            "1111111 RESULT RESULT  RESULT  RESULT  RESULT: $newLegalMoveState");
         if (newLegalMoveState != null) {
           double evaluation = Evaluator().evaluate(
               maxPlayer,

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:untitled/data/ai/computer_player.dart';
-import 'package:untitled/data/ai/cp_2.dart';
 import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
@@ -161,11 +160,13 @@ class GameViewModel extends ChangeNotifier {
   bool _isAITurn() => currentPlayer == aiType && SettingsRepository().isAIMode;
 
   PathPawn? aIMove() {
+    PathPawn? path = ComputerPlayer(SettingsRepository().depthLevel)
+        .getBestMoveForAI(_checkersBoard);
 
-    // ComputerPlayer aiPlayer = ComputerPlayer(SettingsRepository().depthLevel);
-    // PathPawn? path = aiPlayer.getBestMoveForAI(_checkersBoard);
+    // PathPawn? path = ComputerPlayerPro(SettingsRepository().depthLevel)
+    //     .getBestMoveForAI(_checkersBoard);
 
-    return  ComputerPlayerPro().makeMove(_checkersBoard);
+    return path;
   }
 
   void _endProcess() => _isInProcess = false;

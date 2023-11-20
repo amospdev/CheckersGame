@@ -185,7 +185,7 @@ class Evaluator {
     });
   }
 
-  PathPawn fetchKills(
+  List<PathPawn> fetchKills(
       CheckersBoard checkersBoard, CellDetails currCellDetailsAttack) {
     List<PathPawn> paths = [];
     if (currCellDetailsAttack.isKing) {
@@ -207,24 +207,24 @@ class Evaluator {
           currCellDetailsAttack.cellTypePlayer);
     }
 
-    if (checkersBoard.hasCapturePaths(paths)) {
-      return paths.reduce((a, b) =>
-          a.positionDetailsList.length > b.positionDetailsList.length ? a : b);
-    }
-
-    return PathPawn.createEmpty();
+    return paths;
   }
 
   List<CellDetails> _getVulnerablePawns(CheckersBoard checkersBoard,
       CellDetails currCellDetailsAttack, List<List<CellDetails>> board) {
     //Find the vulnerable pawns
-    PathPawn newPathPawn = fetchKills(checkersBoard, currCellDetailsAttack);
+    List<PathPawn> newPathsPawn =
+        fetchKills(checkersBoard, currCellDetailsAttack);
     List<CellDetails> capturedList = [];
-    for (PositionDetails positionDetails in newPathPawn.positionDetailsList) {
-      if (positionDetails.isCapture) {
-        CellDetails cellDetailsCaptured = board[positionDetails.position.row]
-            [positionDetails.position.column];
-        capturedList.add(cellDetailsCaptured);
+    for (PathPawn pathPawn in newPathsPawn) {
+      for (PositionDetails positionDetails in pathPawn.positionDetailsList) {
+        if (positionDetails.isCapture) {
+          CellDetails cellDetailsCaptured = board[positionDetails.position.row]
+              [positionDetails.position.column];
+          if(!capturedList.map((e) => e.position).contains(cellDetailsCaptured.position)){
+            capturedList.add(cellDetailsCaptured);
+          }
+        }
       }
     }
 

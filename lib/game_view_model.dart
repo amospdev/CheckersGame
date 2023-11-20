@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:untitled/data/ai/computer_player.dart';
-import 'package:untitled/data/ai/evaluator.dart';
+import 'package:untitled/data/ai/cp_2.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
@@ -141,13 +141,13 @@ class GameViewModel extends ChangeNotifier {
     // bool protectedColumnArea =
     //     Evaluator().protectedColumnArea(_pathPawn.endCell.column);
 
-    double value = Evaluator().evaluate(_checkersBoard.player == CellType.WHITE,
-        _checkersBoard.board, _checkersBoard, _checkersBoard.player);
-    bool isProtected =
-        Evaluator().isProtected(3, 4, _checkersBoard.board, CellType.WHITE);
+    // double value = Evaluator().evaluate(_checkersBoard.player == CellType.WHITE,
+    //     _checkersBoard.board, _checkersBoard, _checkersBoard.player);
+    // bool isProtected =
+    //     Evaluator().vulnerablePawns(_checkersBoard.player, );
 
-    print("VM NEXT TURN isProtected: $isProtected");
-    print("VM NEXT TURN value: $value");
+    // print("VM NEXT TURN isProtected: $isProtected");
+    // print("VM NEXT TURN value: $value");
     _clearDataNextTurnState();
     _checkersBoard.nextTurn();
     _setCurrentPlayer(_checkersBoard.player);
@@ -160,11 +160,11 @@ class GameViewModel extends ChangeNotifier {
   bool _isAITurn() => currentPlayer == aiType && SettingsRepository().isAIMode;
 
   PathPawn? aIMove() {
-    PathPawn? path = ComputerPlayer(SettingsRepository().depthLevel)
-        .getBestMoveForAI(_checkersBoard);
-
-    // PathPawn? path = ComputerPlayerPro(SettingsRepository().depthLevel)
+    // PathPawn? path = ComputerPlayer(SettingsRepository().depthLevel)
     //     .getBestMoveForAI(_checkersBoard);
+    //
+    PathPawn? path = ComputerPlayerPro(SettingsRepository().depthLevel)
+        .getBestMoveForAI(_checkersBoard);
 
     return path;
   }

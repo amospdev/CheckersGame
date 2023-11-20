@@ -20,9 +20,12 @@ class ComputerPlayerPro {
   LegalMoveState? minimax(LegalMoveState currState, int depth, double alpha,
       double beta, bool maxPlayer) {
     if (depth == 0 || currState.checkersBoard.isGameOver(true)) {
+      print("minimax depth == 0 maxPlayer: $maxPlayer");
       return currState;
     }
     if (maxPlayer) {
+      print("1 minimax maxPlayer: $maxPlayer");
+
       double maxEvaluation = double.negativeInfinity;
       LegalMoveState? bestState;
       for (LegalMoveState state
@@ -30,15 +33,20 @@ class ComputerPlayerPro {
         LegalMoveState? newLegalMoveState =
             minimax(state, depth - 1, alpha, beta, false);
         if (newLegalMoveState != null) {
+
           double evaluation = Evaluator().evaluate(
               maxPlayer,
               newLegalMoveState.checkersBoard.board,
               newLegalMoveState.checkersBoard,
-              aiType);
+              newLegalMoveState.checkersBoard.player);
+          print("11 minimax maxPlayer: $maxPlayer Evaluator: $evaluation}");
+
           if (evaluation > maxEvaluation) {
             maxEvaluation = evaluation;
             bestState = state;
           }
+          print("111 minimax maxPlayer: $maxPlayer maxEvaluation: $maxEvaluation}");
+
           alpha = max(alpha, evaluation);
           if (beta <= alpha) {
             break;
@@ -47,25 +55,29 @@ class ComputerPlayerPro {
       }
       return bestState;
     } else {
+      print("2 minimax maxPlayer: $maxPlayer");
+
       double minEvaluation = double.infinity;
       LegalMoveState? bestState;
       for (LegalMoveState state
           in getLegalMoveStates(currState.checkersBoard, humanType)) {
         LegalMoveState? newLegalMoveState =
             minimax(state, depth - 1, alpha, beta, true);
-        print(
-            "2222222 RESULT RESULT  RESULT  RESULT  RESULT: $newLegalMoveState");
 
         if (newLegalMoveState != null) {
           double evaluation = Evaluator().evaluate(
               maxPlayer,
               newLegalMoveState.checkersBoard.board,
               newLegalMoveState.checkersBoard,
-              humanType);
+              newLegalMoveState.checkersBoard.player);
+          print("22 minimax maxPlayer: $maxPlayer Evaluator: $evaluation}");
+
           if (evaluation < minEvaluation) {
             minEvaluation = evaluation;
             bestState = state;
           }
+          print("222 minimax maxPlayer: $maxPlayer minEvaluation: $minEvaluation}");
+
           beta = min(beta, evaluation);
           if (beta <= alpha) {
             break;

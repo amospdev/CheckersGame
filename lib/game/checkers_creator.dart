@@ -73,11 +73,11 @@ class TestBoardGame extends BoardGameFactory {
           tmpCellType = CellType.UNVALID;
         } else {
           if (row < (sizeBoard / 2) - 1) {
-            if (row == 0) {
+            if (row == 0 && column == 7) {
               tmpCellType = CellType.BLACK;
             }
           } else if (row > (sizeBoard / 2)) {
-            if (row == sizeBoard - 1) {
+            if (row == 7 && column == 0) {
               tmpCellType = CellType.WHITE;
             }
           } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {

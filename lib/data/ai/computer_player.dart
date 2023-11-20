@@ -4,7 +4,7 @@ import 'package:untitled/data/ai/evaluator.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
-import 'package:untitled/game/checkers_printer.dart'; // Required for using the `max` and `min` functions.
+// Required for using the `max` and `min` functions.
 
 CellType aiType = CellType.WHITE;
 CellType humanType = aiType == CellType.WHITE ? CellType.BLACK : CellType.WHITE;
@@ -65,7 +65,7 @@ class ComputerPlayer {
     }
 
     if (isMaximizing) {
-      double maxEval = -9999;
+      double maxEval = double.negativeInfinity;
 
       List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, aiType);
 
@@ -85,7 +85,7 @@ class ComputerPlayer {
 
       return maxEval;
     } else {
-      double minEval = 9999;
+      double minEval = double.infinity;
 
       List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, humanType);
 
@@ -125,9 +125,9 @@ class ComputerPlayer {
 
   PathPawn? getMove(
       CheckersBoard checkersBoard, TranspositionTable transpositionTable) {
-    double bestValue = -9999;
+    double bestValue = double.negativeInfinity;
     PathPawn? bestMove;
-    CheckersPrinter().printBoard(checkersBoard.board, CheckersBoard.sizeBoard);
+
     // Get all possible moves for AI
     List<PathPawn> allPossibleMoves = _getAllValidMoves(checkersBoard,
         aiType); // Fill this up with actual possible moves for AI
@@ -136,8 +136,14 @@ class ComputerPlayer {
       CheckersBoard tempCheckersBoard = checkersBoard.copy();
       _performMove(tempCheckersBoard, pathPawn);
       _nextTurn(tempCheckersBoard);
-      double boardValue = minimax(tempCheckersBoard, depth, false, -9999, 9999,
-          transpositionTable, humanType);
+      double boardValue = minimax(
+          tempCheckersBoard,
+          depth,
+          false,
+          double.negativeInfinity,
+          double.maxFinite,
+          transpositionTable,
+          humanType);
 
       if (boardValue > bestValue) {
         bestValue = boardValue;
@@ -157,6 +163,5 @@ class ComputerPlayer {
   CheckersBoard _performMove(CheckersBoard tempBoard, PathPawn pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
-  void _nextTurn(CheckersBoard checkersBoard) =>
-      checkersBoard.nextTurn();
+  void _nextTurn(CheckersBoard checkersBoard) => checkersBoard.nextTurn();
 }

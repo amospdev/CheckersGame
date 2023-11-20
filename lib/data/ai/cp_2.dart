@@ -61,7 +61,7 @@ class ComputerPlayerPro {
               maxPlayer,
               newLegalMoveState.checkersBoard.board,
               newLegalMoveState.checkersBoard,
-              aiType);
+              humanType);
           if (evaluation < minEvaluation) {
             minEvaluation = evaluation;
             bestState = state;

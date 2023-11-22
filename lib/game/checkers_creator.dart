@@ -77,7 +77,7 @@ class TestBoardGame extends BoardGameFactory {
               tmpCellType = CellType.BLACK;
             }
           } else if (row > (sizeBoard / 2)) {
-            if (row == 7 && column == 0) {
+            if (row == 7 && column == 2) {
               tmpCellType = CellType.WHITE;
             }
           } else if (row == (sizeBoard / 2) - 1 || row == (sizeBoard / 2)) {

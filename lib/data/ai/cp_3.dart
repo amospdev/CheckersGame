@@ -4,7 +4,9 @@ import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/position/details/position_details.dart';
+import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
+import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/game/checkers_board.dart';
 
 class Computer {
@@ -91,10 +93,28 @@ class Computer {
     int cntOppPieces = 0;
     int cntOppKings = 0;
     int cntVulnerablePawns = 0;
+    int cntVulnerableKings = 0;
+
+    // Set the captured pawns
+    Set<Position> capturedPawns = checkersBoard.board
+        .expand((element) => element)
+        .where((currCellDetailsAttack) => currCellDetailsAttack.isSomePawn)
+        .where((currCellDetailsAttack) => currCellDetailsAttack.isBlack)
+        .map((currCellDetailsAttack) => getVulnerablePawns(
+            checkersBoard, currCellDetailsAttack, checkersBoard.board))
+        .expand((list) => list)
+        .doOnItem((capturedPawn) => capturedPawn.isWhite
+            ? cntVulnerablePawns += 1
+            : cntVulnerableKings += 1)
+        .map((capturedPawn) => capturedPawn.position)
+        .toSet();
 
     for (int i = 0; i < numRows; i++) {
       for (int j = 0; j < numCols; j++) {
         CellDetails cellDetails = checkersBoard.board[i][j];
+
+        if (capturedPawns.contains(cellDetails.position)) continue;
+
         if (cellDetails.isWhitePawn) {
           cntAllyPieces++;
           boardVal += numDefendingNeighbors(i, j, checkersBoard.board) * 50 +
@@ -114,9 +134,6 @@ class Computer {
           cntOppKings++;
           boardVal -= middleBonus(i, j);
         }
-
-        vulnerablePawns(checkersBoard, cellDetails, checkersBoard.board,
-            cntVulnerablePawns);
       }
     }
 
@@ -136,7 +153,8 @@ class Computer {
         1000 * cntAllyKings -
         600 * cntOppPieces -
         1000 * cntOppKings -
-        800 * cntVulnerablePawns;
+        800 * cntVulnerablePawns -
+        1200 * cntVulnerableKings;
 
     if (numOppPieces + numOppKings < 6 || numAllyPieces + numAllyKings < 6) {
       List<PathPawn> player1Moves =
@@ -168,19 +186,16 @@ class Computer {
     return boardVal;
   }
 
-  void vulnerablePawns(
-      CheckersBoard checkersBoard,
-      CellDetails currCellDetailsAttack,
-      List<List<CellDetails>> board,
-      int cntVulnerablePawns) {
-    if (currCellDetailsAttack.isNotSomePawn) return;
-    if (currCellDetailsAttack.isWhite) return;
+  List<CellDetails> getVulnerablePawns(CheckersBoard checkersBoard,
+      CellDetails currCellDetailsAttack, List<List<CellDetails>> board) {
+    List<CellDetails> vulnerablePawns = [];
     _getVulnerablePawns(checkersBoard, currCellDetailsAttack, board)
         .forEach((cellDetailsCaptured) {
-      if (cellDetailsCaptured.isBlack) {
-        cntVulnerablePawns += 1;
+      if (cellDetailsCaptured.isWhitePawn) {
+        vulnerablePawns.add(cellDetailsCaptured);
       }
     });
+    return vulnerablePawns;
   }
 
   List<PathPawn> fetchKills(
@@ -287,97 +302,102 @@ class Computer {
     return v;
   }
 
-  int numDefendingNeighbors(int row, int col, List<List<CellDetails>> board) {
+  int numDefendingNeighbors(
+      int row, int column, List<List<CellDetails>> board) {
     int defense = 0;
-    CellDetails currentCell = board[row][col];
+    CellDetails currentCell = board[row][column];
+    Position rightTop = Position(row - 1, column + 1);
+    Position leftTop = Position(row - 1, column - 1);
+    Position rightBottom = Position(row + 1, column + 1);
+    Position leftBottom = Position(row + 1, column - 1);
 
-    if (currentCell.cellType == CellType.BLACK ||
-        currentCell.cellType == CellType.WHITE) {
-      if (row + 1 < board.length && col + 1 < board[0].length) {
-        if ((board[row + 1][col + 1].cellType.index & 1) == 1) {
+    if (currentCell.isPawn) {
+      if (rightBottom.isInBounds) {
+        //V
+        if ((board[row + 1][column + 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row + 1 < board.length && col - 1 >= 0) {
-        if ((board[row + 1][col - 1].cellType.index & 1) == 1) {
+      if (leftBottom.isInBounds) {
+        //V
+        if ((board[row + 1][column - 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-    } else if (currentCell.cellType == CellType.BLACK_KING ||
-        currentCell.cellType == CellType.WHITE_KING) {
-      if (row + 1 < board.length && col + 1 < board[0].length) {
-        if ((board[row + 1][col + 1].cellType.index & 1) == 1) {
+    } else if (currentCell.isKing) {
+      if (rightBottom.isInBounds) {
+        //V
+        if ((board[row + 1][column + 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row + 1 < board.length && col - 1 >= 0) {
-        if ((board[row + 1][col - 1].cellType.index & 1) == 1) {
+      if (leftBottom.isInBounds) {
+        if ((board[row + 1][column - 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col + 1 < board[0].length) {
-        if ((board[row - 1][col + 1].cellType.index & 1) == 1) {
+      if (rightTop.isInBounds) {
+        if ((board[row - 1][column + 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col - 1 >= 0) {
-        if ((board[row - 1][col - 1].cellType.index & 1) == 1) {
+      if (leftTop.isInBounds) {
+        if ((board[row - 1][column - 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-    } else if (currentCell.cellType == CellType.BLACK ||
-        currentCell.cellType == CellType.WHITE) {
-      if (row - 1 >= 0 && col + 1 < board[0].length) {
-        if ((board[row - 1][col + 1].cellType.index & 1) == 0) {
+    } else if (currentCell.isPawn) {
+      if (rightTop.isInBounds) {
+        if ((board[row - 1][column + 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col - 1 >= 0) {
-        if ((board[row - 1][col - 1].cellType.index & 1) == 0) {
+      if (leftTop.isInBounds) {
+        if ((board[row - 1][column - 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }
-    } else if (currentCell.cellType == CellType.WHITE ||
-        currentCell.cellType == CellType.BLACK) {
-      if (row + 1 < board.length && col + 1 < board[0].length) {
-        if ((board[row + 1][col + 1].cellType.index & 1) == 1) {
+    } else if (currentCell.isPawn) {
+      if (rightBottom.isInBounds) {
+        //V
+        if ((board[row + 1][column + 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row + 1 < board.length && col - 1 >= 0) {
-        if ((board[row + 1][col - 1].cellType.index & 1) == 1) {
+      if (leftBottom.isInBounds) {
+        if ((board[row + 1][column - 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col + 1 < board[0].length) {
-        if ((board[row - 1][col + 1].cellType.index & 1) == 1) {
+      if (rightTop.isInBounds) {
+        if ((board[row - 1][column + 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col - 1 >= 0) {
-        if ((board[row - 1][col - 1].cellType.index & 1) == 1) {
+      if (leftTop.isInBounds) {
+        //V
+        if ((board[row - 1][column - 1].cellType.index & 1) == 1) {
           defense += 1;
         }
       }
-    } else if (currentCell.cellType == CellType.BLACK_KING ||
-        currentCell.cellType == CellType.WHITE_KING) {
-      if (row + 1 < board.length && col + 1 < board[0].length) {
-        if ((board[row + 1][col + 1].cellType.index & 1) == 0) {
+    } else if (currentCell.isBlackKing) {
+      if (rightBottom.isInBounds) {
+        if ((board[row + 1][column + 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }
-      if (row + 1 < board.length && col - 1 >= 0) {
-        if ((board[row + 1][col - 1].cellType.index & 1) == 0) {
+      if (leftBottom.isInBounds) {
+        if ((board[row + 1][column - 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col + 1 < board[0].length) {
-        if ((board[row - 1][col + 1].cellType.index & 1) == 0) {
+      if (rightTop.isInBounds) {
+        if ((board[row - 1][column + 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }
-      if (row - 1 >= 0 && col - 1 >= 0) {
-        if ((board[row - 1][col - 1].cellType.index & 1) == 0) {
+      if (leftTop.isInBounds) {
+        if ((board[row - 1][column - 1].cellType.index & 1) == 0) {
           defense += 1;
         }
       }

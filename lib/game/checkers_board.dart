@@ -36,7 +36,7 @@ class CheckersBoard {
   }
 
   void _initBoard({List<List<CellDetails>>? board}) => board == null
-      ? _board = BoardGameFactory.createBoard(BoardType.real)
+      ? _board = BoardGameFactory.createBoard(MockBoard())
       : _board = board;
 
   void _initPawns() => _pawns = _pawnsOperation.create(_board);

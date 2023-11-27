@@ -1,7 +1,7 @@
 import 'package:untitled/extensions/cg_optional.dart';
 
-extension IterableExtensions<T> on Iterable<T> {
-  T? firstWhereOrNull(bool Function(T) predicate) {
+extension IterableExtensions<E> on Iterable<E> {
+  E? firstWhereOrNull(bool Function(E) predicate) {
     try {
       return firstWhere(predicate);
     } catch (e) {
@@ -9,20 +9,25 @@ extension IterableExtensions<T> on Iterable<T> {
     }
   }
 
-  Iterable<T> doOnItem(void Function(T) action) {
+  Iterable<E> doOnItem(void Function(E) action) {
     for (var item in this) {
       action(item);
     }
     return this;
   }
 
-  Optional<T> firstWhereOrAbsent(bool Function(T) test) {
+  Optional<E> firstWhereOrAbsent(bool Function(E) test) {
     for (var element in this) {
       if (test(element)) {
         return Optional.of(element);
       }
     }
-    return Optional<T>.empty();
+    return Optional<E>.empty();
+  }
+
+  Iterable<T> mapIndexed<T>(T Function(E e, int i) f) {
+    var i = 0;
+    return map((e) => f(e, i++));
   }
 }
 

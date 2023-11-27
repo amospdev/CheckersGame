@@ -50,6 +50,9 @@ class CheckersBoard {
   ValueNotifier<bool> get isHistoryEnable =>
       _checkersBoardFeatures.isHistoryEnable;
 
+  SummarizerKilledPawns get summarizerKilledPawns =>
+      _pawnsOperation.summarizerKilledPawns;
+
   List<List<CellDetails>> _board = [];
 
   List<List<CellDetails>> get board => _board;
@@ -426,6 +429,9 @@ class CheckersBoard {
     _updatePawn(isKing, pathPawn);
 
     pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
+
+    _pawnsOperation.pawnKilled(pathPawn.capturePawn);
+
   }
 
   void _updatePawn(bool isKing, PathPawn pathPawn) => pathPawn.pawnStartPath

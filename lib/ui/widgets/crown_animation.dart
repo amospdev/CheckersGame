@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled/data/pawn.dart';
 import 'package:untitled/game_view_model.dart';
 
 class CrownAnimation extends StatefulWidget {
-  final Pawn pawn;
+  final String pawnId;
+  final bool isKing;
 
-  const CrownAnimation(this.pawn, {super.key});
+  const CrownAnimation({required this.pawnId, required this.isKing, super.key});
 
   @override
   CrownAnimationState createState() => CrownAnimationState();
@@ -33,7 +33,7 @@ class CrownAnimationState extends State<CrownAnimation>
       if (mounted) {
         _lottieController.forward(
             from: Provider.of<GameViewModel>(context, listen: false)
-                    .isAlreadyMarkedKing(widget.pawn.id)
+                    .isAlreadyMarkedKing(widget.pawnId)
                 ? composition.endFrame
                 : 0);
       }
@@ -42,7 +42,7 @@ class CrownAnimationState extends State<CrownAnimation>
     _lottieController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Provider.of<GameViewModel>(context, listen: false)
-            .onFinishAnimateCrown(widget.pawn);
+            .onFinishAnimateCrown(widget.pawnId, widget.isKing);
       }
     });
   }

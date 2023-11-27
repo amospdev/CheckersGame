@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class PawnPainter extends CustomPainter {
-  final Color color;
+  final Color pawnColor;
 
-  PawnPainter(this.color);
+  PawnPainter(this.pawnColor);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -13,18 +13,18 @@ class PawnPainter extends CustomPainter {
     // הצל
     const shadowOffset = 3.0;
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      ..color = Colors.black.withOpacity(0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
     canvas.drawCircle(center + const Offset(shadowOffset, shadowOffset),
         mainRadius, shadowPaint);
 
-    // השחקן הראשי
-    final mainCirclePaint = Paint()..color = color;
+    //Main circle
+    final mainCirclePaint = Paint()..color = pawnColor;
     canvas.drawCircle(center, mainRadius, mainCirclePaint);
 
-    // העיגולים הפנימיים של השחקן
+    //Inner circles
     final innerCirclePaint = Paint()
-      ..color = color.darker()
+      ..color = pawnColor.darker()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
 
@@ -66,7 +66,7 @@ class PawnPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant PawnPainter oldDelegate) {
-    return color != oldDelegate.color;
+    return pawnColor != oldDelegate.pawnColor;
   }
 }
 

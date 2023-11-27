@@ -18,6 +18,8 @@ class GameViewModel extends ChangeNotifier {
   final Set<String> _markedKings = {};
 
   ValueNotifier<String> pawnsStatus = ValueNotifier("");
+  ValueNotifier<List<Pawn>> blackPawnsKilled = ValueNotifier(List.empty(growable: true));
+  ValueNotifier<List<Pawn>> withePawnsKilled = ValueNotifier(List.empty(growable: true));
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -178,9 +180,9 @@ class GameViewModel extends ChangeNotifier {
     _pathPawn = PathPawn.createEmpty();
   }
 
-  void onFinishAnimateCrown(Pawn pawn) {
-    if (pawn.isKing) return;
-    _markedKings.add(pawn.id);
+  void onFinishAnimateCrown(String pawnId, bool isKingPawn) {
+    if (isKingPawn) return;
+    _markedKings.add(pawnId);
   }
 
   bool isAlreadyMarkedKing(String id) => _markedKings.contains(id);
@@ -221,6 +223,12 @@ class GameViewModel extends ChangeNotifier {
     String summarize =
         "BLACK PAWNS ${summarizerPawns.totalBlackPawns}, KINGS: ${summarizerPawns.totalBlackKings}\n"
         "WHITE PAWNS ${summarizerPawns.totalWithePawns}, KINGS: ${summarizerPawns.totalWitheKings}";
+
     pawnsStatus.value = summarize;
+
+    print(
+        "VM summarizerKilledPawns.blackPawns: ${_checkersBoard.summarizerKilledPawns.blackPawns}");
+    blackPawnsKilled.value = [..._checkersBoard.summarizerKilledPawns.blackPawns];
+    withePawnsKilled.value = [..._checkersBoard.summarizerKilledPawns.withePawns];
   }
 }

@@ -8,12 +8,14 @@ import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
+import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
-import 'package:untitled/ui/widgets/pawn_piece.dart';
+import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
+import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 
 void main() => runApp(
       ChangeNotifierProvider(
@@ -116,60 +118,139 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            _withePawnsKilled(cellSize: cellSize),
             Stack(
               children: [
-                const MainGameBorder(),
                 Container(
-                  margin: const EdgeInsets.only(left: 5, top: 5),
-                  width: CheckersBoard.sizeBoard * cellSize,
-                  // Increased size to account for the border and prevent cut-off
-                  height: CheckersBoard.sizeBoard * cellSize,
-                  child: Stack(
-                    children: [..._getCells(cellSize), ..._getPawns(cellSize)],
+                  decoration: BoxDecoration(
+                    color: Colors.brown.shade300,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        spreadRadius: 5,
+                        blurRadius: 7,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  width: CheckersBoard.sizeBoard * cellSize + 10,
+                  height:
+                      CheckersBoard.sizeBoard * cellSize + (cellSize * 2) + 10,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Stack(
+                        children: [
+                          const MainGameBorder(),
+                          ..._getCells(cellSize),
+                          ..._getPawns(cellSize)
+                        ],
+                      ),
+                    ],
                   ),
                 )
               ],
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: gameViewModel.isUndoEnable,
-              builder: (ctx, isUndoEnable, _) {
-                // logDebug(
-                //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    IconButton(
-                        splashRadius: 20,
-                        color: isUndoEnable ? Colors.blue : Colors.grey,
-                        iconSize: 34,
-                        splashColor: Colors.green,
-                        onPressed:
-                            isUndoEnable ? () => gameViewModel.undo() : null,
-                        icon: const Icon(Icons.undo)),
-                    IconButton(
-                        splashRadius: 20,
-                        color: isUndoEnable ? Colors.red : Colors.grey,
-                        iconSize: 34,
-                        splashColor: Colors.green,
-                        onPressed: isUndoEnable
-                            ? () => gameViewModel.resetGame()
-                            : null,
-                        icon: const Icon(Icons.refresh))
-                  ],
-                );
-              },
-            ),
-            ValueListenableBuilder<String>(
-              valueListenable: gameViewModel.pawnsStatus,
-              builder: (ctx, pawnsStatus, _) {
-                return Text(pawnsStatus);
-              },
-            )
+            _blackPawnsKilled(cellSize: cellSize),
+            _features(),
+            // _pawnsStatus()
           ],
         ),
       ),
+    );
+  }
+
+  Widget _withePawnsKilled({required double cellSize}) {
+    return ValueListenableBuilder<List<Pawn>>(
+      valueListenable: gameViewModel.withePawnsKilled,
+      builder: (ctx, pawnsStatus, _) {
+        print("MAIN WIDGET  _withePawnsKilled pawnsStatus: $pawnsStatus ");
+
+        return Row(
+          children: [
+            ...pawnsStatus.mapIndexed((pawn, index) => Positioned(
+                  left: index * cellSize,
+                  top: index * cellSize,
+                  child: PawnPiece(
+                    size: (cellSize * 0.95),
+                    pawnId: pawn.id,
+                    isKing: pawn.isKing,
+                    pawnColor: pawn.color,
+                  ),
+                )),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _blackPawnsKilled({required double cellSize}) {
+    return ValueListenableBuilder<List<Pawn>>(
+      valueListenable: gameViewModel.blackPawnsKilled,
+      builder: (ctx, pawnsStatus, _) {
+        print("MAIN WIDGET  _blackPawnsKilled pawnsStatus: $pawnsStatus ");
+
+        return Row(
+          children: [
+            Stack(
+              children: [
+                ...pawnsStatus.mapIndexed((pawn, index) => Positioned(
+                      left: index * cellSize,
+                      top: index * cellSize,
+                      child: PawnPiece(
+                        size: (cellSize * 0.95),
+                        pawnId: pawn.id,
+                        isKing: pawn.isKing,
+                        pawnColor: pawn.color,
+                      ),
+                    ))
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _pawnsStatus() {
+    return ValueListenableBuilder<String>(
+      valueListenable: gameViewModel.pawnsStatus,
+      builder: (ctx, pawnsStatus, _) {
+        return Text(pawnsStatus);
+      },
+    );
+  }
+
+  Widget _features() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: gameViewModel.isUndoEnable,
+      builder: (ctx, isUndoEnable, _) {
+        // logDebug(
+        //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            IconButton(
+                splashRadius: 20,
+                color: isUndoEnable ? Colors.blue : Colors.grey,
+                iconSize: 34,
+                splashColor: Colors.green,
+                onPressed: isUndoEnable ? () => gameViewModel.undo() : null,
+                icon: const Icon(Icons.undo)),
+            IconButton(
+                splashRadius: 20,
+                color: isUndoEnable ? Colors.red : Colors.grey,
+                iconSize: 34,
+                splashColor: Colors.green,
+                onPressed:
+                    isUndoEnable ? () => gameViewModel.resetGame() : null,
+                icon: const Icon(Icons.refresh))
+          ],
+        );
+      },
     );
   }
 
@@ -180,8 +261,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       // logDebug("MAIN WIDGET ***REBUILD*** Positioned START");
 
       return Positioned(
-        left: cell.offset.dx * cellSize,
-        top: cell.offset.dy * cellSize,
+        left: (cell.offset.dx + 0.1) * cellSize,
+        top: (cell.offset.dy + 0.1) * cellSize,
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
@@ -232,8 +313,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 return AnimatedPositioned(
                   duration: _pawnMoveController.duration ??
                       const Duration(milliseconds: 200),
-                  left: pawnData.offset.dx * cellSize,
-                  top: pawnData.offset.dy * cellSize,
+                  left: (pawnData.offset.dx + 0.1) * cellSize,
+                  top: (pawnData.offset.dy + 0.1) * cellSize,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: pawnData.isKilled
@@ -249,7 +330,15 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
-      PawnPiece(pawn, isAnimatingPawn, cellSize, _pawnMoveController,
+      PawnPieceAnimate(
+          isAnimatingPawn: isAnimatingPawn,
+          pawnMoveController: _pawnMoveController,
+          size: cellSize,
+          pawnColor: pawn.color,
+          isKing: pawn.isKing,
+          pawnId: pawn.id,
+          row: pawn.row,
+          column: pawn.column,
           key: ValueKey('pawn_${pawn.id}PawnPiece'));
 
   @override

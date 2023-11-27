@@ -41,7 +41,7 @@ class RealBoardGame extends BoardGameFactory {
         CellType currCellType = CellType.UNDEFINED;
         int id = (sizeBoard * row) + column;
 
-        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
+        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown.shade100;
         if ((row + column) % 2 == 0) {
           currCellType = CellType.UNVALID;
         } else {
@@ -118,7 +118,7 @@ class MockBoardGame extends BoardGameFactory {
         CellType currCellType = CellType.UNDEFINED;
         int id = (sizeBoard * row) + column;
 
-        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown;
+        Color cellColor = (row + column) % 2 == 0 ? Colors.white : Colors.brown.shade300;
         if ((row + column) % 2 == 0) {
           currCellType = CellType.UNVALID;
         } else {

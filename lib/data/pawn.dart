@@ -69,13 +69,13 @@ class Pawn {
     return this;
   }
 
-  bool get isBlack => cellTypePlayer == CellType.BLACK;
+  bool get isBlack => cellTypePlayer == CellType.BLACK && !isKing;
 
-  bool get isBlackKing => isBlack && isKing;
+  bool get isBlackKing => cellTypePlayer == CellType.BLACK && isKing;
 
-  bool get isWhite => cellTypePlayer == CellType.WHITE;
+  bool get isWhite => cellTypePlayer == CellType.WHITE && !isKing;
 
-  bool get isWhiteKing => isWhite && isKing;
+  bool get isWhiteKing => cellTypePlayer == CellType.WHITE && isKing;
 
   Position get position => Position(row, column);
 

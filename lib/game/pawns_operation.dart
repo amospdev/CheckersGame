@@ -4,6 +4,7 @@ import 'package:untitled/data/pawn.dart';
 
 class PawnsOperation {
   static const prefixPawnId = "pawn_id_";
+  SummarizerKilledPawns summarizerKilledPawns = SummarizerKilledPawns();
 
   List<Pawn> create(List<List<CellDetails>> board) {
     List<Pawn> pawns = [];
@@ -23,6 +24,20 @@ class PawnsOperation {
     }
 
     return pawns;
+  }
+
+  void pawnKilled(Pawn? capturePawn) {
+    print("PawnsOperation pawnKilled capturePawn: $capturePawn");
+    if(capturePawn == null) return;
+    if (capturePawn.isBlack) {
+      summarizerKilledPawns.blackPawns.add(capturePawn);
+    } else if (capturePawn.isBlackKing) {
+      summarizerKilledPawns.blackPawns.add(capturePawn);
+    } else if (capturePawn.isWhite) {
+      summarizerKilledPawns.withePawns.add(capturePawn);
+    } else if (capturePawn.isWhiteKing) {
+      summarizerKilledPawns.withePawns.add(capturePawn);
+    }
   }
 
   SummarizerPawns pawnsSummarize(List<List<CellDetails>> board) {
@@ -46,10 +61,13 @@ class PawnsOperation {
       }
     }
 
-    // logDebug("$this pawnsSummarize: $summarizerPawns");
-
     return summarizerPawns;
   }
+}
+
+class SummarizerKilledPawns {
+  List<Pawn> blackPawns = [];
+  List<Pawn> withePawns = [];
 }
 
 class SummarizerPawns {

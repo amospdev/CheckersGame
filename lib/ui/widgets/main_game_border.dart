@@ -15,7 +15,7 @@ class MainGameBorder extends StatelessWidget {
       height: CheckersBoard.sizeBoard * cellSize + 10,
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.brown.shade200,
+          color: Colors.brown.shade700,
           width: 10.0,
         ),
         boxShadow: [
@@ -23,7 +23,7 @@ class MainGameBorder extends StatelessWidget {
             color: Colors.black.withOpacity(0.5),
             spreadRadius: 5,
             blurRadius: 7,
-            offset: const Offset(5, 5),
+            offset: const Offset(0, 0),
           ),
         ],
       ));

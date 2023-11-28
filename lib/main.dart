@@ -15,6 +15,7 @@ import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
+import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 
 void main() => runApp(
@@ -282,9 +283,17 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     : pawnData.indexKilled * (cellSize * 0.65);
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;
 
+                double distancePoints = (Offset(leftNotKilled, topNotKilled) -
+                        Offset(leftKilled,
+                            pawn.isSomeWhite ? topKilledWhite : topKilledBlack))
+                    .distance;
+
                 return AnimatedPositioned(
+                  curve: pawnData.isKilled
+                      ? Curves.easeOutQuint
+                      : Curves.easeInOut,
                   duration: pawnData.isKilled
-                      ? const Duration(milliseconds: 800)
+                      ? Duration(milliseconds: (distancePoints * 5).toInt())
                       : _pawnMoveController.duration ??
                           const Duration(milliseconds: 200),
                   left: left,
@@ -293,12 +302,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                       ? Animate(
                           effects: [
                             ScaleEffect(
-                              curve: Curves.easeOutQuad,
-                                end: Offset(0.75, 0.75),
-                                duration: Duration(milliseconds: 800)),
+                                curve: Curves.fastEaseInToSlowEaseOut,
+                                end: const Offset(0.75, 0.75),
+                                duration: Duration(
+                                    milliseconds:
+                                        (distancePoints * 5).toInt())),
                           ],
-                          child: _buildPawnWidget(
-                              pawn, cellSize, pawnData.isAnimating),
+                          child: PawnPiece(
+                            size: cellSize,
+                            pawnId: pawn.id,
+                            isKing: pawn.isKing,
+                            pawnColor: pawn.color,
+                          ),
                         )
                       : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
                 );

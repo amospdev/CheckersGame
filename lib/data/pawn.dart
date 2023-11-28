@@ -11,6 +11,7 @@ class Pawn {
   int column;
   final int index;
   final CellType cellTypePlayer;
+  int indexPawnKilled = -1;
 
   final ValueNotifier<PawnData> _pawnDataValueNotifier =
       ValueNotifier<PawnData>(PawnData.createEmpty());
@@ -28,7 +29,8 @@ class Pawn {
     _pawnDataValueNotifier.value = PawnData(
         offset: Offset(column.toDouble(), row.toDouble()),
         isKilled: false,
-        isAnimating: false);
+        isAnimating: false,
+        indexKilled: -1);
   }
 
   Pawn copy({Pawn? pawn}) {
@@ -55,11 +57,12 @@ class Pawn {
   ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
 
   void setPawnDataNotifier(
-      {bool? isKilled, Offset? offset, bool? isAnimating}) {
+      {bool? isKilled, Offset? offset, bool? isAnimating, int? indexKilled}) {
     _pawnDataValueNotifier.value = PawnData(
         isAnimating: isAnimating ?? _pawnDataValueNotifier.value.isAnimating,
         offset: offset ?? Offset(column.toDouble(), row.toDouble()),
-        isKilled: isKilled ?? _pawnDataValueNotifier.value.isKilled);
+        isKilled: isKilled ?? _pawnDataValueNotifier.value.isKilled,
+        indexKilled: indexKilled ?? _pawnDataValueNotifier.value.indexKilled);
   }
 
   Pawn setPosition(int row, int column) {
@@ -74,6 +77,10 @@ class Pawn {
   bool get isBlackKing => cellTypePlayer == CellType.BLACK && isKing;
 
   bool get isWhite => cellTypePlayer == CellType.WHITE && !isKing;
+
+  bool get isSomeWhite => cellTypePlayer == CellType.WHITE;
+
+  bool get isSomeBlack => cellTypePlayer == CellType.BLACK;
 
   bool get isWhiteKing => cellTypePlayer == CellType.WHITE && isKing;
 

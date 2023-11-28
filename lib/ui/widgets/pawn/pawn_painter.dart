@@ -10,12 +10,11 @@ class PawnPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     double mainRadius = ((size.width / 2) * 0.75);
 
-    // הצל
-    const shadowOffset = 3.0;
+    // Shadow
     final shadowPaint = Paint()
       ..color = Colors.black.withOpacity(0.5)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-    canvas.drawCircle(center + const Offset(shadowOffset, shadowOffset),
+    canvas.drawCircle(center + const Offset(4, 6),
         mainRadius, shadowPaint);
 
     //Main circle

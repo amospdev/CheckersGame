@@ -36,7 +36,7 @@ class CheckersBoard {
   }
 
   void _initBoard({List<List<CellDetails>>? board}) => board == null
-      ? _board = BoardGameFactory.createBoard(MockBoard())
+      ? _board = BoardGameFactory.createBoard(RealBoard())
       : _board = board;
 
   void _initPawns() => _pawns = _pawnsOperation.create(_board);
@@ -428,10 +428,26 @@ class CheckersBoard {
   void _updatePawns(PathPawn pathPawn, bool isKing) {
     _updatePawn(isKing, pathPawn);
 
-    pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
-
     _pawnsOperation.pawnKilled(pathPawn.capturePawn);
 
+    // _pawnsOperation.
+    pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
+
+    int killedLength = _pawns
+        .where((element) =>
+            element.cellTypePlayer == pathPawn.capturePawn?.cellTypePlayer)
+        .where((element) => element.pawnDataNotifier.value.isKilled)
+        .length;
+    print(
+        "killedLength: $killedLength, pathPawn.capturePawn?.cellTypePlayer: ${pathPawn.capturePawn?.cellTypePlayer}");
+    pathPawn.capturePawn?.setPawnDataNotifier(indexKilled: killedLength - 1);
+
+    /*forEach((element) {
+      // if(element.pawnDataNotifier.value.isKilled){
+      print("_pawns.forEach: ${element}");
+      // }
+    });
+*/
   }
 
   void _updatePawn(bool isKing, PathPawn pathPawn) => pathPawn.pawnStartPath

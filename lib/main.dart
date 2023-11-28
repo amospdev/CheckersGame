@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
-import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
@@ -14,7 +15,6 @@ import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
-import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 
 void main() => runApp(
@@ -48,7 +48,7 @@ class GameBoard extends StatefulWidget {
 class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late final AnimationController _pawnMoveController;
 
-  static const int _pawnMoveDuration = 280;
+  static const int _pawnMoveDuration = 350;
   late final GameViewModel gameViewModel;
   StreamSubscription<bool>? _streamAiTurn;
 
@@ -118,33 +118,19 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _withePawnsKilled(cellSize: cellSize),
             Stack(
               children: [
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.brown.shade300,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  width: CheckersBoard.sizeBoard * cellSize + 10,
-                  height:
-                      CheckersBoard.sizeBoard * cellSize + (cellSize * 2) + 10,
+                  color: Colors.brown.shade500,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Stack(
+                        alignment: Alignment.center,
                         children: [
                           const MainGameBorder(),
                           ..._getCells(cellSize),
-                          ..._getPawns(cellSize)
+                          _getPawns(cellSize),
                         ],
                       ),
                     ],
@@ -152,64 +138,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 )
               ],
             ),
-            _blackPawnsKilled(cellSize: cellSize),
             _features(),
             // _pawnsStatus()
           ],
         ),
       ),
-    );
-  }
-
-  Widget _withePawnsKilled({required double cellSize}) {
-    return ValueListenableBuilder<List<Pawn>>(
-      valueListenable: gameViewModel.withePawnsKilled,
-      builder: (ctx, pawnsStatus, _) {
-        print("MAIN WIDGET  _withePawnsKilled pawnsStatus: $pawnsStatus ");
-
-        return Row(
-          children: [
-            ...pawnsStatus.mapIndexed((pawn, index) => Positioned(
-                  left: index * cellSize,
-                  top: index * cellSize,
-                  child: PawnPiece(
-                    size: (cellSize * 0.95),
-                    pawnId: pawn.id,
-                    isKing: pawn.isKing,
-                    pawnColor: pawn.color,
-                  ),
-                )),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _blackPawnsKilled({required double cellSize}) {
-    return ValueListenableBuilder<List<Pawn>>(
-      valueListenable: gameViewModel.blackPawnsKilled,
-      builder: (ctx, pawnsStatus, _) {
-        print("MAIN WIDGET  _blackPawnsKilled pawnsStatus: $pawnsStatus ");
-
-        return Row(
-          children: [
-            Stack(
-              children: [
-                ...pawnsStatus.mapIndexed((pawn, index) => Positioned(
-                      left: index * cellSize,
-                      top: index * cellSize,
-                      child: PawnPiece(
-                        size: (cellSize * 0.95),
-                        pawnId: pawn.id,
-                        isKing: pawn.isKing,
-                        pawnColor: pawn.color,
-                      ),
-                    ))
-              ],
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -262,7 +195,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
       return Positioned(
         left: (cell.offset.dx + 0.1) * cellSize,
-        top: (cell.offset.dy + 0.1) * cellSize,
+        top: ((cell.offset.dy + 0.1) * cellSize) + (cellSize * 1.5),
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
@@ -281,16 +214,31 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 alignment: Alignment.center,
                 children: [
                   RepaintBoundary(
-                      child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 125),
-                    color: cell.tmpColor,
-                    height: cellSize,
-                    width: cellSize,
+                      child: Transform.rotate(
+                    angle: cell.isUnValid ? pi / 2 : 0,
+                    // Specify the rotation angle in radians
+                    child: Image.asset('assets/wood.png',
+                        color: cell.isUnValid
+                            ? Colors.white.withOpacity(0.35)
+                            : cell.tmpColor == cell.color
+                                ? Colors.black.withOpacity(0.15)
+                                : cell.tmpColor.withOpacity(0.6),
+                        colorBlendMode: BlendMode.srcATop,
+                        width: cellSize,
+                        height: cellSize),
                   )),
-                  cell.cellType == CellType.UNVALID
-                      ? Container()
-                      : Text('${cell.row}, ${cell.column}',
-                          textAlign: TextAlign.center)
+
+                  // RepaintBoundary(
+                  //         child: AnimatedContainer(
+                  //         duration: const Duration(milliseconds: 125),
+                  //         color: cell.tmpColor,
+                  //         height: cellSize,
+                  //         width: cellSize,
+                  //       )),
+                  // cell.cellType == CellType.UNVALID
+                  //     ? Container()
+                  //     : Text('${cell.row}, ${cell.column}',
+                  //         textAlign: TextAlign.center)
                 ],
               );
             },
@@ -300,33 +248,73 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     }).toList();
   }
 
-  List<Widget> _getPawns(double cellSize) {
+  Widget _getPawns(double cellSize) {
     logDebug("MAIN WIDGET _getPawns");
 
-    return gameViewModel.pawns
-        .map((pawn) => ValueListenableBuilder<PawnData>(
+    List<Widget> pawns = gameViewModel.pawns
+        .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
+                bool isNextLineKilled = pawnData.indexKilled > 5;
+
                 // logDebug(
                 //     "MAIN WIDGET ***REBUILD*** _getPawns ValueListenableBuilder $pawn");
 
+                double topNotKilled =
+                    ((pawnData.offset.dy + 0.1) * cellSize) + (cellSize * 1.5);
+
+                double topKilledWhite =
+                    isNextLineKilled ? (cellSize * 0.5) + 2 : -6;
+
+                double topKilledBlack = isNextLineKilled
+                    ? (cellSize * 10) + 14
+                    : (cellSize * 9.5) + 7;
+
+                double top = pawnData.isKilled
+                    ? pawn.isSomeWhite
+                        ? topKilledWhite
+                        : topKilledBlack
+                    : topNotKilled;
+
+                double leftNotKilled = (pawnData.offset.dx + 0.1) * cellSize;
+                double leftKilled = isNextLineKilled
+                    ? (pawnData.indexKilled - 6) * (cellSize * 0.65)
+                    : pawnData.indexKilled * (cellSize * 0.65);
+                double left = pawnData.isKilled ? leftKilled : leftNotKilled;
+
                 return AnimatedPositioned(
-                  duration: _pawnMoveController.duration ??
-                      const Duration(milliseconds: 200),
-                  left: (pawnData.offset.dx + 0.1) * cellSize,
-                  top: (pawnData.offset.dy + 0.1) * cellSize,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: pawnData.isKilled
-                        ? Container(
-                            key: ValueKey('empty_${pawn.id}AnimatedSwitcher'))
-                        : _buildPawnWidget(
-                            pawn, cellSize, pawnData.isAnimating),
-                  ),
+                  duration: pawnData.isKilled
+                      ? const Duration(milliseconds: 800)
+                      : _pawnMoveController.duration ??
+                          const Duration(milliseconds: 200),
+                  left: left,
+                  top: top,
+                  child: pawnData.isKilled
+                      ? Animate(
+                          effects: [
+                            ScaleEffect(
+                              curve: Curves.easeOutQuad,
+                                end: Offset(0.75, 0.75),
+                                duration: Duration(milliseconds: 800)),
+                          ],
+                          child: _buildPawnWidget(
+                              pawn, cellSize, pawnData.isAnimating),
+                        )
+                      : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
                 );
               },
             ))
         .toList();
+
+    return Container(
+      alignment: Alignment.center,
+      height: CheckersBoard.sizeBoard * cellSize + (cellSize * 3) + 10,
+      child: Stack(
+        children: [
+          ...pawns,
+        ],
+      ),
+    );
   }
 
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>

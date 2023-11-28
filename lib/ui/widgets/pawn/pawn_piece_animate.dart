@@ -4,7 +4,6 @@ import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 
 class PawnPieceAnimate extends StatefulWidget {
-
   final bool isAnimatingPawn;
   final AnimationController pawnMoveController;
   final double size;

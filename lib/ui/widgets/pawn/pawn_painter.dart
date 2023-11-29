@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class PawnPainter extends CustomPainter {
   final Color pawnColor;
+  final bool isShadow;
 
-  PawnPainter(this.pawnColor);
+  PawnPainter(this.pawnColor, this.isShadow);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -11,11 +12,13 @@ class PawnPainter extends CustomPainter {
     double mainRadius = ((size.width / 2) * 0.75);
 
     // Shadow
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-    canvas.drawCircle(center + const Offset(4, 6),
-        mainRadius, shadowPaint);
+    if(isShadow){
+      final shadowPaint = Paint()
+        ..color = Colors.black.withOpacity(0.5)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+      canvas.drawCircle(center + const Offset(4, 6),
+          mainRadius, shadowPaint);
+    }
 
     //Main circle
     final mainCirclePaint = Paint()..color = pawnColor;

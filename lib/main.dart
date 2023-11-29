@@ -121,7 +121,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     return Scaffold(
       body: Container(
-        height: MediaQuery.of(context).size.height ,
+        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           image: DecorationImage(
             colorFilter: ColorFilter.mode(
@@ -197,7 +197,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                       pawnsStatus.currPlayer == CellType.BLACK
                           ? const Icon(Icons.arrow_back)
                           : Container(),
-
                     ],
                   ),
                   Row(
@@ -246,14 +245,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     // logDebug("MAIN WIDGET _getCells");
 
     List<Widget> cells = gameViewModel.boardCells.map((cell) {
-      // logDebug("MAIN WIDGET ***REBUILD*** Positioned START");
-      // double resultCellSize = cellSize - (mainBoardBorder / 2);
-
-      double resultCellSize = cellSize;
 
       return Positioned(
-        left: (cell.offset.dx) * resultCellSize,
-        top: (cell.offset.dy) * resultCellSize,
+        left: (cell.offset.dx) * cellSize,
+        top: (cell.offset.dy) * cellSize,
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
@@ -282,8 +277,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                                 ? Colors.black.withOpacity(0.15)
                                 : cell.tmpColor.withOpacity(0.6),
                         colorBlendMode: BlendMode.srcATop,
-                        width: resultCellSize,
-                        height: resultCellSize),
+                        width: cellSize,
+                        height: cellSize),
                   )),
                 ],
               );
@@ -324,31 +319,20 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                bool isNextLineKilled = pawnData.indexKilled > 5;
-
-                // logDebug(
-                //     "MAIN WIDGET ***REBUILD*** _getPawns ValueListenableBuilder $pawn");
 
                 double topNotKilled =
                     ((pawnData.offset.dy + 0.1) * cellSize) + (cellSize * 1.5);
 
-                double topKilledWhite =
-                    isNextLineKilled ? (cellSize * 0.5) + 2 : -6;
-
-                double topKilledBlack = isNextLineKilled
-                    ? (cellSize * 10) + 14
-                    : (cellSize * 9.5) + 7;
-
+                double topKilledWhite = cellSize * 0.6;
+                double topKilledBlack = (cellSize * 9.5) + 6;
                 double top = pawnData.isKilled
                     ? pawn.isSomeWhite
                         ? topKilledWhite
                         : topKilledBlack
                     : topNotKilled;
 
-                double leftNotKilled = (pawnData.offset.dx + 0.1) * cellSize;
-                double leftKilled = isNextLineKilled
-                    ? (pawnData.indexKilled - 6) * (cellSize * 0.65)
-                    : pawnData.indexKilled * (cellSize * 0.65);
+                double leftNotKilled = (pawnData.offset.dx + 0.09) * cellSize;
+                double leftKilled = (pawnData.indexKilled * (cellSize * 0.67)) - 5;
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;
 
                 double distancePoints = (Offset(leftNotKilled, topNotKilled) -
@@ -377,6 +361,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                                         (distancePoints * 5).toInt())),
                           ],
                           child: PawnPiece(
+                            isShadow: false,
                             size: cellSize,
                             pawnId: pawn.id,
                             isKing: pawn.isKing,

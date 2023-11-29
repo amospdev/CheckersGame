@@ -3,15 +3,16 @@ import 'package:untitled/ui/widgets/pawn/pawn_painter.dart';
 import 'package:untitled/ui/widgets/crown_animation.dart';
 
 class PawnPiece extends StatelessWidget {
-  // final Pawn pawn;
   final double size;
   final Color pawnColor;
   final bool isKing;
+  final bool isShadow;
   final String pawnId;
 
   const PawnPiece(
       {required this.pawnColor,
       required this.isKing,
+      this.isShadow = true,
       required this.pawnId,
       required this.size,
       super.key});
@@ -31,7 +32,7 @@ class PawnPiece extends StatelessWidget {
           RepaintBoundary(
               child: CustomPaint(
             size: Size(size, size),
-            painter: PawnPainter(pawnColor),
+            painter: PawnPainter(pawnColor, isShadow),
           )),
           isKing
               ? CrownAnimation(pawnId: pawnId, isKing: isKing)

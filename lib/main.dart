@@ -12,9 +12,9 @@ import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
+import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
-import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 
@@ -50,6 +50,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late final AnimationController _pawnMoveController;
 
   static const int _pawnMoveDuration = 350;
+  static const double mainBoardBorder = 5;
   late final GameViewModel gameViewModel;
   StreamSubscription<bool>? _streamAiTurn;
 
@@ -110,38 +111,55 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget build(BuildContext context) => _mainBoard(context);
 
   Widget _mainBoard(BuildContext context) {
-    // logDebug("MAIN WIDGET REBUILD _mainBoard");
-    final cellSize = (MediaQuery.of(context).sizeByOrientation - 10) /
-        CheckersBoard.sizeBoard; // For an 8x8 board
+    final sizeBoardByOrientation =
+        MediaQuery.of(context).sizeByOrientation; // For an 8x8 board
+
+    final sizeBoardMinusBorder = sizeBoardByOrientation - (mainBoardBorder * 2);
+    final cellSize = sizeBoardMinusBorder / 8;
 
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              children: [
-                Container(
-                  color: Colors.brown.shade500,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          const MainGameBorder(),
-                          ..._getCells(cellSize),
-                          _getPawns(cellSize),
-                        ],
-                      ),
-                    ],
-                  ),
-                )
-              ],
+      body: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height -
+              MediaQuery.of(context).padding.top,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.5), BlendMode.srcATop),
+              image: const AssetImage('assets/wood.png'),
+              // Replace with your background image
+              fit: BoxFit.fill, // You can adjust the fit as needed
             ),
-            _features(),
-            // _pawnsStatus()
-          ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                  flex: 11,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _getCells(cellSize, sizeBoardByOrientation),
+                      _getPawns(cellSize),
+                    ],
+                  )),
+              Container(
+                height: 65,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('assets/wood.png'),
+                    // Replace with your background image
+                    fit: BoxFit.fitWidth, // You can adjust the fit as needed
+                  ),
+                ),
+                child: const Align(
+                  alignment: Alignment.center,
+                  child: Features(),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -156,47 +174,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _features() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: gameViewModel.isUndoEnable,
-      builder: (ctx, isUndoEnable, _) {
-        // logDebug(
-        //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            IconButton(
-                splashRadius: 20,
-                color: isUndoEnable ? Colors.blue : Colors.grey,
-                iconSize: 34,
-                splashColor: Colors.green,
-                onPressed: isUndoEnable ? () => gameViewModel.undo() : null,
-                icon: const Icon(Icons.undo)),
-            IconButton(
-                splashRadius: 20,
-                color: isUndoEnable ? Colors.red : Colors.grey,
-                iconSize: 34,
-                splashColor: Colors.green,
-                onPressed:
-                    isUndoEnable ? () => gameViewModel.resetGame() : null,
-                icon: const Icon(Icons.refresh))
-          ],
-        );
-      },
-    );
-  }
-
-  List<Widget> _getCells(double cellSize) {
+  Widget _getCells(double cellSize, double widthBoardByOrientation) {
     // logDebug("MAIN WIDGET _getCells");
 
-    return gameViewModel.boardCells.map((cell) {
+    List<Widget> cells = gameViewModel.boardCells.map((cell) {
       // logDebug("MAIN WIDGET ***REBUILD*** Positioned START");
+      // double resultCellSize = cellSize - (mainBoardBorder / 2);
+
+      double resultCellSize = cellSize;
 
       return Positioned(
-        left: (cell.offset.dx + 0.1) * cellSize,
-        top: ((cell.offset.dy + 0.1) * cellSize) + (cellSize * 1.5),
+        left: (cell.offset.dx) * resultCellSize,
+        top: (cell.offset.dy) * resultCellSize,
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
@@ -225,21 +214,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                                 ? Colors.black.withOpacity(0.15)
                                 : cell.tmpColor.withOpacity(0.6),
                         colorBlendMode: BlendMode.srcATop,
-                        width: cellSize,
-                        height: cellSize),
+                        width: resultCellSize,
+                        height: resultCellSize),
                   )),
-
-                  // RepaintBoundary(
-                  //         child: AnimatedContainer(
-                  //         duration: const Duration(milliseconds: 125),
-                  //         color: cell.tmpColor,
-                  //         height: cellSize,
-                  //         width: cellSize,
-                  //       )),
-                  // cell.cellType == CellType.UNVALID
-                  //     ? Container()
-                  //     : Text('${cell.row}, ${cell.column}',
-                  //         textAlign: TextAlign.center)
                 ],
               );
             },
@@ -247,6 +224,29 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         ),
       );
     }).toList();
+
+    return Container(
+      width: widthBoardByOrientation,
+      // Increased size to account for the border and prevent cut-off
+      height: widthBoardByOrientation,
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: Colors.brown,
+            width: mainBoardBorder,
+            style: BorderStyle.none),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.shade500,
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 0),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [...cells],
+      ),
+    );
   }
 
   Widget _getPawns(double cellSize) {

@@ -143,27 +143,29 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                       _getPawns(cellSize),
                     ],
                   )),
-              Container(
-                height: 65,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('assets/wood.png'),
-                    // Replace with your background image
-                    fit: BoxFit.fitWidth, // You can adjust the fit as needed
-                  ),
-                ),
-                child: const Align(
-                  alignment: Alignment.center,
-                  child: Features(),
-                ),
-              )
+              _features()
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _features() => Container(
+        height: 65,
+        width: MediaQuery.of(context).size.width,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/wood.png'),
+            // Replace with your background image
+            fit: BoxFit.fitWidth, // You can adjust the fit as needed
+          ),
+        ),
+        child: const Align(
+          alignment: Alignment.center,
+          child: Features(),
+        ),
+      );
 
   Widget _pawnsStatus() {
     return ValueListenableBuilder<String>(

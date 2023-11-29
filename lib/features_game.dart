@@ -17,7 +17,6 @@ class Features extends StatelessWidget {
       valueListenable: gameViewModel.isUndoEnable,
       builder: (ctx, isUndoEnable, _) {
         return Row(
-          // crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           mainAxisSize: MainAxisSize.max,
           children: [

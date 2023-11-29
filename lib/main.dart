@@ -8,12 +8,14 @@ import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
@@ -118,38 +120,111 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final cellSize = sizeBoardMinusBorder / 8;
 
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          height: MediaQuery.of(context).size.height -
-              MediaQuery.of(context).padding.top,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.5), BlendMode.srcATop),
-              image: const AssetImage('assets/wood.png'),
-              // Replace with your background image
-              fit: BoxFit.fill, // You can adjust the fit as needed
-            ),
+      body: Container(
+        height: MediaQuery.of(context).size.height ,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            colorFilter: ColorFilter.mode(
+                Colors.white.withOpacity(0.5), BlendMode.srcATop),
+            image: const AssetImage('assets/wood.png'),
+            // Replace with your background image
+            fit: BoxFit.fill, // You can adjust the fit as needed
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                  flex: 11,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      _getCells(cellSize, sizeBoardByOrientation),
-                      _getPawns(cellSize),
-                    ],
-                  )),
-              _features()
-            ],
-          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _status(),
+            Expanded(
+                flex: 11,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    _getCells(cellSize, sizeBoardByOrientation),
+                    _getPawns(cellSize),
+                  ],
+                )),
+            _features()
+          ],
         ),
       ),
     );
   }
+
+  Widget _status() => ValueListenableBuilder<StatusGame>(
+        valueListenable: gameViewModel.gameStatus,
+        builder: (ctx, pawnsStatus, _) {
+          return Container(
+            margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            height: 65,
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: const AssetImage('assets/wood.png'),
+                // Replace with your background image
+                fit: BoxFit.fitWidth, // You can adjust the fit as needed
+                colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.3), BlendMode.srcATop),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Align(
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const PawnPiece(
+                              pawnColor: Colors.grey,
+                              isKing: false,
+                              pawnId: "pawnId",
+                              size: 40),
+                          Text(
+                              '${pawnsStatus.totalBlackKings + pawnsStatus.totalBlackPawns}')
+                        ],
+                      ),
+                      pawnsStatus.currPlayer == CellType.BLACK
+                          ? const Icon(Icons.arrow_back)
+                          : Container(),
+
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      pawnsStatus.currPlayer == CellType.WHITE
+                          ? const Icon(Icons.arrow_forward)
+                          : Container(),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const PawnPiece(
+                              pawnColor: Colors.white,
+                              isKing: false,
+                              pawnId: "pawnId",
+                              size: 40),
+                          Text(
+                              '${pawnsStatus.totalWitheKings + pawnsStatus.totalWithePawns}')
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
 
   Widget _features() => Container(
         height: 65,
@@ -166,15 +241,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           child: Features(),
         ),
       );
-
-  Widget _pawnsStatus() {
-    return ValueListenableBuilder<String>(
-      valueListenable: gameViewModel.pawnsStatus,
-      builder: (ctx, pawnsStatus, _) {
-        return Text(pawnsStatus);
-      },
-    );
-  }
 
   Widget _getCells(double cellSize, double widthBoardByOrientation) {
     // logDebug("MAIN WIDGET _getCells");
@@ -239,9 +305,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         boxShadow: [
           BoxShadow(
             color: Colors.brown.shade500,
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(0, 0),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(2, 3),
           ),
         ],
       ),

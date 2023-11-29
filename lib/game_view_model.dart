@@ -17,9 +17,11 @@ class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();
   final Set<String> _markedKings = {};
 
-  ValueNotifier<String> pawnsStatus = ValueNotifier("");
-  ValueNotifier<List<Pawn>> blackPawnsKilled = ValueNotifier(List.empty(growable: true));
-  ValueNotifier<List<Pawn>> withePawnsKilled = ValueNotifier(List.empty(growable: true));
+  ValueNotifier<StatusGame> gameStatus = ValueNotifier(StatusGame());
+  ValueNotifier<List<Pawn>> blackPawnsKilled =
+      ValueNotifier(List.empty(growable: true));
+  ValueNotifier<List<Pawn>> withePawnsKilled =
+      ValueNotifier(List.empty(growable: true));
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -55,6 +57,9 @@ class GameViewModel extends ChangeNotifier {
     _setCheckersBoard(checkersBoard.board);
     _setCurrentPlayer(checkersBoard.player);
     _pawns.addAll(checkersBoard.pawns);
+    StatusGame gameStatus = PawnsOperation()
+        .pawnsSummarize(_checkersBoard.board, checkersBoard.player);
+    this.gameStatus.value = gameStatus;
   }
 
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>
@@ -126,6 +131,7 @@ class GameViewModel extends ChangeNotifier {
     _endProcess();
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
+    _updatePawnsStatus();
   }
 
   void _setCheckersBoard(List<List<CellDetails>> board) {
@@ -218,17 +224,21 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _updatePawnsStatus() {
-    SummarizerPawns summarizerPawns =
-        PawnsOperation().pawnsSummarize(_checkersBoard.board);
-    String summarize =
-        "BLACK PAWNS ${summarizerPawns.totalBlackPawns}, KINGS: ${summarizerPawns.totalBlackKings}\n"
-        "WHITE PAWNS ${summarizerPawns.totalWithePawns}, KINGS: ${summarizerPawns.totalWitheKings}";
+    StatusGame summarizerPawns = PawnsOperation()
+        .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
+    // String summarize =
+    //     "BLACK PAWNS ${summarizerPawns.totalBlackPawns}, KINGS: ${summarizerPawns.totalBlackKings}\n"
+    //     "WHITE PAWNS ${summarizerPawns.totalWithePawns}, KINGS: ${summarizerPawns.totalWitheKings}";
 
-    pawnsStatus.value = summarize;
+    gameStatus.value = summarizerPawns;
 
     print(
         "VM summarizerKilledPawns.blackPawns: ${_checkersBoard.summarizerKilledPawns.blackPawns}");
-    blackPawnsKilled.value = [..._checkersBoard.summarizerKilledPawns.blackPawns];
-    withePawnsKilled.value = [..._checkersBoard.summarizerKilledPawns.withePawns];
+    blackPawnsKilled.value = [
+      ..._checkersBoard.summarizerKilledPawns.blackPawns
+    ];
+    withePawnsKilled.value = [
+      ..._checkersBoard.summarizerKilledPawns.withePawns
+    ];
   }
 }

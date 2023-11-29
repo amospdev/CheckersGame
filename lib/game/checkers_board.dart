@@ -381,7 +381,7 @@ class CheckersBoard {
   void resetBoard() {
     _checkersBoardFeatures.resetBoard(pawns, board);
     _initPlayer();
-    _pawnsOperation.pawnsSummarize(board);
+    _pawnsOperation.pawnsSummarize(board, CellType.BLACK);
   }
 
   void popLastStep() {
@@ -390,7 +390,7 @@ class CheckersBoard {
 
     _switchPlayer();
 
-    _pawnsOperation.pawnsSummarize(board);
+    _pawnsOperation.pawnsSummarize(board, player);
   }
 
   void updateHistory(PathPawn pathPawn) =>
@@ -600,7 +600,7 @@ class CheckersBoard {
   }
 
   bool isGameOver(bool isAIMode) =>
-      _pawnsOperation.pawnsSummarize(board).isGameOver ||
+      _pawnsOperation.pawnsSummarize(board, player).isGameOver ||
       getLegalMoves(CellType.WHITE, board, isAIMode).isEmpty ||
       getLegalMoves(CellType.BLACK, board, isAIMode).isEmpty;
 

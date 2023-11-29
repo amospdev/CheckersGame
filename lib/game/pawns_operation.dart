@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
+import 'package:untitled/enum/cell_type.dart';
 
 class PawnsOperation {
   static const prefixPawnId = "pawn_id_";
@@ -28,7 +29,7 @@ class PawnsOperation {
 
   void pawnKilled(Pawn? capturePawn) {
     print("PawnsOperation pawnKilled capturePawn: $capturePawn");
-    if(capturePawn == null) return;
+    if (capturePawn == null) return;
     if (capturePawn.isBlack) {
       summarizerKilledPawns.blackPawns.add(capturePawn);
     } else if (capturePawn.isBlackKing) {
@@ -40,9 +41,9 @@ class PawnsOperation {
     }
   }
 
-  SummarizerPawns pawnsSummarize(List<List<CellDetails>> board) {
-    SummarizerPawns summarizerPawns = SummarizerPawns();
-
+  StatusGame pawnsSummarize(List<List<CellDetails>> board, CellType player) {
+    StatusGame summarizerPawns = StatusGame();
+    summarizerPawns.currPlayer = player;
     for (var cellsRow in board) {
       for (var cell in cellsRow) {
         if (cell.isWhite) {
@@ -70,15 +71,17 @@ class SummarizerKilledPawns {
   List<Pawn> withePawns = [];
 }
 
-class SummarizerPawns {
+class StatusGame {
   int totalBlackKings;
   int totalWitheKings;
   int totalBlackPawns;
   int totalWithePawns;
+  CellType currPlayer;
 
-  SummarizerPawns(
+  StatusGame(
       {this.totalBlackKings = 0,
       this.totalWitheKings = 0,
+      this.currPlayer = CellType.UNDEFINED,
       this.totalBlackPawns = 0,
       this.totalWithePawns = 0});
 

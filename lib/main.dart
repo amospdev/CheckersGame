@@ -53,6 +53,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   static const int _pawnMoveDuration = 350;
   static const double mainBoardBorder = 5;
+  static const Offset mainBoardBorderOffset = Offset(2, 3);
+  static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
+  static const double mainBoardBorderAll = mainBoardBorder * 2;
   late final GameViewModel gameViewModel;
   StreamSubscription<bool>? _streamAiTurn;
 
@@ -116,7 +119,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final sizeBoardByOrientation =
         MediaQuery.of(context).sizeByOrientation; // For an 8x8 board
 
-    final sizeBoardMinusBorder = sizeBoardByOrientation - (mainBoardBorder * 2);
+    final sizeBoardMinusBorder = sizeBoardByOrientation - mainBoardBorderAll;
     final cellSize = sizeBoardMinusBorder / 8;
 
     return Scaffold(
@@ -189,6 +192,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                               pawnColor: Colors.grey,
                               isKing: false,
                               pawnId: "pawnId",
+                              rectSize: 40,
                               size: 40),
                           Text(
                               '${pawnsStatus.totalBlackKings + pawnsStatus.totalBlackPawns}')
@@ -211,6 +215,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                               pawnColor: Colors.white,
                               isKing: false,
                               pawnId: "pawnId",
+                              rectSize: 40,
                               size: 40),
                           Text(
                               '${pawnsStatus.totalWitheKings + pawnsStatus.totalWithePawns}')
@@ -245,7 +250,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     // logDebug("MAIN WIDGET _getCells");
 
     List<Widget> cells = gameViewModel.boardCells.map((cell) {
-
       return Positioned(
         left: (cell.offset.dx) * cellSize,
         top: (cell.offset.dy) * cellSize,
@@ -302,7 +306,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             color: Colors.brown.shade500,
             spreadRadius: 1,
             blurRadius: 3,
-            offset: const Offset(2, 3),
+            offset: mainBoardBorderOffset,
           ),
         ],
       ),
@@ -314,25 +318,28 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   Widget _getPawns(double cellSize) {
     logDebug("MAIN WIDGET _getPawns");
-
+    double discardPileSize =
+        (cellSize * 1.5) + mainBoardBorderAll + mainBoardBorderOffset.dx;
+    double pawnsAreaSize = CheckersBoard.sizeBoard * cellSize + discardPileSize;
     List<Widget> pawns = gameViewModel.pawns
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-
                 double topNotKilled =
-                    ((pawnData.offset.dy + 0.1) * cellSize) + (cellSize * 1.5);
+                    ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2);
 
-                double topKilledWhite = cellSize * 0.6;
-                double topKilledBlack = (cellSize * 9.5) + 6;
+                double topKilledWhite = -(cellSize * 0.15);
+                double topKilledBlack = pawnsAreaSize - (cellSize * 0.85) ;
                 double top = pawnData.isKilled
                     ? pawn.isSomeWhite
                         ? topKilledWhite
                         : topKilledBlack
                     : topNotKilled;
 
-                double leftNotKilled = (pawnData.offset.dx + 0.09) * cellSize;
-                double leftKilled = (pawnData.indexKilled * (cellSize * 0.67)) - 5;
+                double leftNotKilled =
+                    ((pawnData.offset.dx) * cellSize) + (mainBoardBorder);
+                double leftKilled =
+                    (pawnData.indexKilled * (cellSize * 0.67)) - 5;
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;
 
                 double distancePoints = (Offset(leftNotKilled, topNotKilled) -
@@ -355,7 +362,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                           effects: [
                             ScaleEffect(
                                 curve: Curves.fastEaseInToSlowEaseOut,
-                                end: const Offset(0.75, 0.75),
+                                end: pawnKilledScaleOffset,
                                 duration: Duration(
                                     milliseconds:
                                         (distancePoints * 5).toInt())),
@@ -363,6 +370,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                           child: PawnPiece(
                             isShadow: false,
                             size: cellSize,
+                            rectSize: cellSize,
                             pawnId: pawn.id,
                             isKing: pawn.isKing,
                             pawnColor: pawn.color,
@@ -376,7 +384,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     return Container(
       alignment: Alignment.center,
-      height: CheckersBoard.sizeBoard * cellSize + (cellSize * 3) + 10,
+      height: pawnsAreaSize,
       child: Stack(
         children: [
           ...pawns,
@@ -389,7 +397,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       PawnPieceAnimate(
           isAnimatingPawn: isAnimatingPawn,
           pawnMoveController: _pawnMoveController,
-          size: cellSize,
+          size: cellSize * 0.75,
+          rectSize: cellSize,
           pawnColor: pawn.color,
           isKing: pawn.isKing,
           pawnId: pawn.id,

@@ -7,6 +7,7 @@ class PawnPieceAnimate extends StatefulWidget {
   final bool isAnimatingPawn;
   final AnimationController pawnMoveController;
   final double size;
+  final double rectSize;
   final Color pawnColor;
   final bool isKing;
   final String pawnId;
@@ -17,6 +18,7 @@ class PawnPieceAnimate extends StatefulWidget {
       {required this.pawnMoveController,
       required this.isAnimatingPawn,
       required this.pawnColor,
+      required this.rectSize,
       required this.isKing,
       required this.row,
       required this.column,
@@ -62,6 +64,7 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
       column: widget.column,
       size: widget.size,
       pawnId: widget.pawnId,
+      rectSize: widget.rectSize,
       isAnimatingPawn: widget.isAnimatingPawn);
 
   Widget _getPawn(
@@ -71,6 +74,7 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
       required int row,
       required int column,
       required String pawnId,
+      required double rectSize,
       required double size}) {
     return GestureDetector(
       onTap: () => Provider.of<GameViewModel>(context, listen: false)
@@ -84,6 +88,7 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
               size: size,
               pawnId: pawnId,
               isKing: isKing,
+              rectSize: rectSize,
               pawnColor: pawnColor,
             ),
           );

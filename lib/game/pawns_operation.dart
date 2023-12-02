@@ -85,19 +85,19 @@ class StatusGame {
       this.totalBlackPawns = 0,
       this.totalWithePawns = 0});
 
-  bool get isBlackPlayerWin => sumWithePawns == 0;
+  bool get isBlackPlayerWin => allWithePawns == 0;
 
-  bool get isBlackPlayerLose => sumBlackPawns == 0;
+  bool get isBlackPlayerLose => allBlackPawns == 0;
 
-  bool get isWhitePlayerWin => sumBlackPawns == 0;
+  bool get isWhitePlayerWin => allBlackPawns == 0;
 
-  bool get isWhitePlayerLose => sumWithePawns == 0;
+  bool get isWhitePlayerLose => allWithePawns == 0;
 
-  int get sumBlackPawns => totalBlackKings + totalBlackPawns;
+  int get allBlackPawns => totalBlackKings + totalBlackPawns;
 
-  int get sumWithePawns => totalWitheKings + totalWithePawns;
+  int get allWithePawns => totalWitheKings + totalWithePawns;
 
-  bool get isGameOver => sumBlackPawns == 0 || sumWithePawns == 0;
+  bool get isGameOver => allBlackPawns == 0 || allWithePawns == 0;
 
   @override
   String toString() {

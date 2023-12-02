@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details_data.dart';
@@ -14,6 +16,7 @@ import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
@@ -132,105 +135,150 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             fit: BoxFit.fill, // You can adjust the fit as needed
           ),
         ),
-        child: Column(
+        child: SafeArea(
+            child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // _status(),
-            Expanded(
-                flex: 11,
-                child: Container(
-                  margin: EdgeInsets.only(
-                      top: (MediaQuery.of(context).padding.top)),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      _getCells(cellSize, sizeBoardByOrientation),
-                      _getPawns(cellSize),
-                    ],
-                  ),
-                )),
+            Expanded(flex: 1, child: _playerOne(pawnColor: Colors.grey)),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                _getCells(cellSize, sizeBoardByOrientation),
+                _getPawns(cellSize),
+              ],
+            ),
+
+            Expanded(flex: 1, child: _playerTwo(pawnColor: Colors.white)),
             _features()
           ],
-        ),
+        )),
       ),
     );
   }
 
-  // Widget _status() => ValueListenableBuilder<StatusGame>(
-  //       valueListenable: gameViewModel.gameStatus,
-  //       builder: (ctx, pawnsStatus, _) {
-  //         return Container(
-  //           margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-  //           height: 65,
-  //           width: MediaQuery.of(context).size.width,
-  //           decoration: BoxDecoration(
-  //             image: DecorationImage(
-  //               image: const AssetImage('assets/wood.png'),
-  //               // Replace with your background image
-  //               fit: BoxFit.fitWidth, // You can adjust the fit as needed
-  //               colorFilter: ColorFilter.mode(
-  //                   Colors.black.withOpacity(0.3), BlendMode.srcATop),
-  //             ),
-  //             boxShadow: [
-  //               BoxShadow(
-  //                 color: Colors.black.withOpacity(0.3),
-  //                 spreadRadius: 5,
-  //                 blurRadius: 7,
-  //                 offset: const Offset(0, 5),
-  //               ),
-  //             ],
-  //           ),
-  //           child: Align(
-  //             alignment: Alignment.center,
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Row(
-  //                   children: [
-  //                     Stack(
-  //                       alignment: Alignment.center,
-  //                       children: [
-  //                         const PawnPiece(
-  //                             pawnColor: Colors.grey,
-  //                             isKing: false,
-  //                             pawnId: "pawnId",
-  //                             rectSize: 40,
-  //                             size: 40),
-  //                         Text(
-  //                             '${pawnsStatus.totalBlackKings + pawnsStatus.totalBlackPawns}')
-  //                       ],
-  //                     ),
-  //                     pawnsStatus.currPlayer == CellType.BLACK
-  //                         ? const Icon(Icons.arrow_back)
-  //                         : Container(),
-  //                   ],
-  //                 ),
-  //                 Row(
-  //                   children: [
-  //                     pawnsStatus.currPlayer == CellType.WHITE
-  //                         ? const Icon(Icons.arrow_forward)
-  //                         : Container(),
-  //                     Stack(
-  //                       alignment: Alignment.center,
-  //                       children: [
-  //                         const PawnPiece(
-  //                             pawnColor: Colors.white,
-  //                             isKing: false,
-  //                             pawnId: "pawnId",
-  //                             rectSize: 40,
-  //                             size: 40),
-  //                         Text(
-  //                             '${pawnsStatus.totalWitheKings + pawnsStatus.totalWithePawns}')
-  //                       ],
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         );
-  //       },
-  //     );
+  Widget _playerOne({required Color pawnColor}) {
+    Widget pawnWithStatusChange = ValueListenableBuilder<StatusGame>(
+      valueListenable: gameViewModel.gameStatus,
+      builder: (ctx, pawnsStatus, _) {
+        return Container(
+          width: 80,
+          height: 60,
+          padding: const EdgeInsets.only(right: 8),
+          alignment: Alignment.bottomRight,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PawnPiece(
+                  pawnColor: pawnColor,
+                  isKing: false,
+                  isShadow: false,
+                  pawnId: "pawnId",
+                  rectSize: 25,
+                  size: 25),
+              Text(
+                  '${pawnsStatus.allBlackPawns}')
+            ],
+          ),
+        );
+      },
+    );
+    Widget widget = Stack(
+      children: [
+        Container(
+          alignment: Alignment.centerLeft,
+          width: 80,
+          height: 60,
+          child: FutureBuilder<Uint8List>(
+            future: loadImageBytes('avatar_player'),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasError) {
+                  return const Text('Error loading image');
+                }
+                return CircleAvatar(
+                  radius: 50.0, // Adjust the radius as needed
+                  backgroundImage: MemoryImage(snapshot.data!),
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
+        ),
+        pawnWithStatusChange
+      ],
+    );
+
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: widget,
+    );
+  }
+
+  Future<Uint8List> loadImageBytes(String fileName) async {
+    final ByteData data = await rootBundle.load('assets/$fileName.png');
+    return data.buffer.asUint8List();
+  }
+
+  Widget _playerTwo({required Color pawnColor}) {
+    Widget pawnStatusChange = ValueListenableBuilder<StatusGame>(
+      valueListenable: gameViewModel.gameStatus,
+      builder: (ctx, pawnsStatus, _) {
+       return Container(
+          width: 80,
+          height: 60,
+          padding: const EdgeInsets.only(right: 8),
+          alignment: Alignment.bottomRight,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PawnPiece(
+                  pawnColor: pawnColor,
+                  isKing: false,
+                  isShadow: false,
+                  pawnId: "pawnId",
+                  rectSize: 25,
+                  size: 25),
+              Text(
+                  '${pawnsStatus.allWithePawns}')
+            ],
+          ),
+        );
+      },
+    );
+    Widget widget = Stack(
+      children: [
+        Container(
+          alignment: Alignment.centerLeft,
+          width: 80,
+          height: 60,
+          child: FutureBuilder<Uint8List>(
+            future: loadImageBytes('bot_1'),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasError) {
+                  return const Text('Error loading image');
+                }
+                return CircleAvatar(
+                  radius: 50.0, // Adjust the radius as needed
+                  backgroundImage: MemoryImage(snapshot.data!),
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
+        ),
+        pawnStatusChange
+      ],
+    );
+
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: widget,
+    );
+  }
 
   Widget _features() => Container(
         height: 65,
@@ -413,5 +461,56 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController.dispose();
     _streamAiTurn?.cancel();
     super.dispose();
+  }
+}
+
+class CircleWithSmallCircle extends StatelessWidget {
+  const CircleWithSmallCircle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer Circle
+          CircleWidget(
+            diameter: 150,
+            color: Colors.blue,
+          ),
+
+          // Inner Circle (small circle on the edge)
+          Positioned(
+            child: CircleWidget(
+              diameter: 20,
+              color: Colors.red,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CircleWidget extends StatelessWidget {
+  final double diameter;
+  final Color color;
+
+  const CircleWidget({
+    super.key,
+    required this.diameter,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
+    );
   }
 }

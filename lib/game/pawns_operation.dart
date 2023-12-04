@@ -66,6 +66,15 @@ class PawnsOperation {
   }
 }
 
+class PawnStatus {
+  final int totalPawns;
+  final bool isCurrPlayer;
+
+  String get totalPawnsText => totalPawns.toString();
+
+  PawnStatus({this.totalPawns = 0, this.isCurrPlayer = false});
+}
+
 class SummarizerKilledPawns {
   List<Pawn> blackPawns = [];
   List<Pawn> withePawns = [];
@@ -84,6 +93,12 @@ class StatusGame {
       this.currPlayer = CellType.UNDEFINED,
       this.totalBlackPawns = 0,
       this.totalWithePawns = 0});
+
+  PawnStatus get blackPawnStatus =>
+      PawnStatus(totalPawns: allBlackPawns, isCurrPlayer: currPlayer == CellType.BLACK);
+
+  PawnStatus get whitePawnStatus =>
+      PawnStatus(totalPawns: allWithePawns, isCurrPlayer: currPlayer == CellType.WHITE);
 
   bool get isBlackPlayerWin => allWithePawns == 0;
 

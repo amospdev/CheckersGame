@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
+import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
@@ -130,7 +132,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(flex: 1, child: _playerOne(pawnColor: Colors.grey)),
+            Expanded(
+                flex: 1,
+                child: _playerOne(
+                    pawnColor: Colors.grey,
+                    pawnStatusValueNotifier: gameViewModel.blackPawnStatus)),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -138,8 +144,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 _getPawns(cellSize),
               ],
             ),
-
-            Expanded(flex: 1, child: _playerTwo(pawnColor: Colors.white)),
+            Expanded(
+                flex: 1,
+                child: _playerTwo(
+                    pawnColor: Colors.white,
+                    pawnStatusValueNotifier: gameViewModel.whitePawnStatus)),
             _features()
           ],
         )),
@@ -158,9 +167,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       );
 
   Widget _pawnStatusChangeAnimate(
-      {required Color pawnColor, required String pawnText}) {
+      {required Color pawnColor, required PawnStatus pawnStatus}) {
     return Animate(
-      key: ValueKey(pawnText),
+      key: ValueKey(pawnStatus.totalPawnsText),
       effects: const [
         FlipEffect(
           duration: Duration(milliseconds: 200),
@@ -183,52 +192,73 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 pawnId: "pawnId",
                 rectSize: 25,
                 size: 25),
-            Text(pawnText)
+            Text(pawnStatus.totalPawnsText)
           ],
         ),
       ),
     );
   }
 
+  Widget _timer(PawnStatus pawnStatus) => pawnStatus.isCurrPlayer
+      ? CircularCountDownTimer(
+          textStyle: TextStyle(
+              fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),
+          width: 60,
+          height: 60,
+          duration: 30,
+          fillColor: Colors.brown.shade800,
+          ringColor: Colors.transparent,
+          strokeWidth: 3,
+        )
+      : SizedBox();
+
   Widget _pawnStatusChange(
+          {required Color pawnColor, required PawnStatus pawnStatus}) =>
+      _pawnStatusChangeAnimate(pawnColor: pawnColor, pawnStatus: pawnStatus);
+
+  Widget _playerOne(
           {required Color pawnColor,
-          required ValueNotifier<String> pawnStatusValueNotifier}) =>
-      ValueListenableBuilder<String>(
-        valueListenable: pawnStatusValueNotifier,
-        builder: (ctx, pawnStatus, _) {
-          return _pawnStatusChangeAnimate(
-              pawnColor: pawnColor, pawnText: pawnStatus);
-        },
-      );
-
-  Widget _playerOne({required Color pawnColor}) => Container(
+          required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
+      Container(
         color: Colors.brown.withOpacity(0.15),
         padding: const EdgeInsets.only(left: 4),
         alignment: Alignment.centerLeft,
-        child: Stack(
-          children: [
-            _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
-            _pawnStatusChange(
-                pawnColor: pawnColor,
-                pawnStatusValueNotifier: gameViewModel.blackPawnStatus)
-          ],
+        child: ValueListenableBuilder<PawnStatus>(
+          valueListenable: pawnStatusValueNotifier,
+          builder: (ctx, pawnStatus, _) {
+            return Stack(
+              children: [
+                _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
+                _timer(pawnStatus),
+                _pawnStatusChange(
+                    pawnColor: pawnColor, pawnStatus: pawnStatus)
+              ],
+            );
+          },
         ),
       );
 
-  Widget _playerTwo({required Color pawnColor}) => Container(
+  Widget _playerTwo(
+          {required Color pawnColor,
+          required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
+      Container(
         color: Colors.brown.withOpacity(0.15),
         padding: const EdgeInsets.only(left: 4),
         alignment: Alignment.centerLeft,
-        child: Stack(
-          children: [
-            _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
-            _pawnStatusChange(
-                pawnColor: pawnColor,
-                pawnStatusValueNotifier: gameViewModel.whitePawnStatus)
-          ],
+        child: ValueListenableBuilder<PawnStatus>(
+          valueListenable: pawnStatusValueNotifier,
+          builder: (ctx, pawnStatus, _) {
+            return Stack(
+              children: [
+                _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
+                _timer(pawnStatus),
+                _pawnStatusChange(
+                    pawnColor: pawnColor, pawnStatus: pawnStatus)
+              ],
+            );
+          },
         ),
       );
-
   Widget _circleAvatarPlayer({required filePath}) {
     return CircleAvatar(
       radius: 30.0, // Adjust the radius as needed

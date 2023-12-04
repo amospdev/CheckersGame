@@ -19,13 +19,13 @@ class GameViewModel extends ChangeNotifier {
 
   ValueNotifier<StatusGame> gameStatus = ValueNotifier(StatusGame());
 
-  ValueNotifier<String> _blackPawnStatus = ValueNotifier('');
+  ValueNotifier<PawnStatus> _blackPawnStatus = ValueNotifier(PawnStatus());
 
-  ValueNotifier<String> get blackPawnStatus => _blackPawnStatus;
+  ValueNotifier<PawnStatus> get blackPawnStatus => _blackPawnStatus;
 
-  ValueNotifier<String> _whitePawnStatus = ValueNotifier('');
+  ValueNotifier<PawnStatus> _whitePawnStatus = ValueNotifier(PawnStatus());
 
-  ValueNotifier<String> get whitePawnStatus => _whitePawnStatus;
+  ValueNotifier<PawnStatus> get whitePawnStatus => _whitePawnStatus;
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -68,8 +68,8 @@ class GameViewModel extends ChangeNotifier {
     StatusGame summarizerPawns = PawnsOperation()
         .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
 
-    _blackPawnStatus.value = summarizerPawns.allBlackPawns.toString();
-    _whitePawnStatus.value = summarizerPawns.allWithePawns.toString();
+    _blackPawnStatus.value = summarizerPawns.blackPawnStatus;
+    _whitePawnStatus.value = summarizerPawns.whitePawnStatus;
   }
 
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>

@@ -69,7 +69,7 @@ class GameViewModel extends ChangeNotifier {
         .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
 
     _blackPawnStatus.value = summarizerPawns.allBlackPawns.toString();
-    whitePawnStatus.value = summarizerPawns.allWithePawns.toString();
+    _whitePawnStatus.value = summarizerPawns.allWithePawns.toString();
   }
 
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>

@@ -125,20 +125,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     return Scaffold(
       body: Container(
         height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            colorFilter: ColorFilter.mode(
-                Colors.white.withOpacity(0.5), BlendMode.srcATop),
-            image: const AssetImage('assets/wood.png'),
-            // Replace with your background image
-            fit: BoxFit.fill, // You can adjust the fit as needed
-          ),
-        ),
+        decoration: _gameBackground(),
         child: SafeArea(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // _status(),
             Expanded(flex: 1, child: _playerOne(pawnColor: Colors.grey)),
             Stack(
               alignment: Alignment.center,
@@ -156,10 +147,15 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Future<Uint8List> loadImageBytes(String fileName) async {
-    final ByteData data = await rootBundle.load('assets/$fileName.png');
-    return data.buffer.asUint8List();
-  }
+  BoxDecoration _gameBackground() => BoxDecoration(
+        image: DecorationImage(
+          colorFilter: ColorFilter.mode(
+              Colors.white.withOpacity(0.5), BlendMode.srcATop),
+          image: const AssetImage('assets/wood.png'),
+          // Replace with your background image
+          fit: BoxFit.fill, // You can adjust the fit as needed
+        ),
+      );
 
   Widget _pawnStatusChangeAnimate(
       {required Color pawnColor, required String pawnText}) {

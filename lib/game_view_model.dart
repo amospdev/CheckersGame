@@ -18,10 +18,14 @@ class GameViewModel extends ChangeNotifier {
   final Set<String> _markedKings = {};
 
   ValueNotifier<StatusGame> gameStatus = ValueNotifier(StatusGame());
-  ValueNotifier<List<Pawn>> blackPawnsKilled =
-      ValueNotifier(List.empty(growable: true));
-  ValueNotifier<List<Pawn>> withePawnsKilled =
-      ValueNotifier(List.empty(growable: true));
+
+  ValueNotifier<String> _blackPawnStatus = ValueNotifier('');
+
+  ValueNotifier<String> get blackPawnStatus => _blackPawnStatus;
+
+  ValueNotifier<String> _whitePawnStatus = ValueNotifier('');
+
+  ValueNotifier<String> get whitePawnStatus => _whitePawnStatus;
 
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
@@ -57,9 +61,15 @@ class GameViewModel extends ChangeNotifier {
     _setCheckersBoard(checkersBoard.board);
     _setCurrentPlayer(checkersBoard.player);
     _pawns.addAll(checkersBoard.pawns);
-    StatusGame gameStatus = PawnsOperation()
-        .pawnsSummarize(_checkersBoard.board, checkersBoard.player);
-    this.gameStatus.value = gameStatus;
+    _setGameStatus();
+  }
+
+  void _setGameStatus() {
+    StatusGame summarizerPawns = PawnsOperation()
+        .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
+
+    _blackPawnStatus.value = summarizerPawns.allBlackPawns.toString();
+    whitePawnStatus.value = summarizerPawns.allWithePawns.toString();
   }
 
   void _continueNextIterationOrTurn(int endRow, int endColumn) =>
@@ -127,11 +137,11 @@ class GameViewModel extends ChangeNotifier {
     _checkersBoard
       ..updateHistory(_pathPawn)
       ..performMove(_checkersBoard.board, _pawnPaths, _pathPawn, isAI: false);
-    _updatePawnsStatus();
+    _setGameStatus();
     _endProcess();
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
-    _updatePawnsStatus();
+    _setGameStatus();
   }
 
   void _setCheckersBoard(List<List<CellDetails>> board) {
@@ -221,24 +231,5 @@ class GameViewModel extends ChangeNotifier {
   void dispose() {
     _isAITurnController.close();
     super.dispose();
-  }
-
-  void _updatePawnsStatus() {
-    StatusGame summarizerPawns = PawnsOperation()
-        .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
-    // String summarize =
-    //     "BLACK PAWNS ${summarizerPawns.totalBlackPawns}, KINGS: ${summarizerPawns.totalBlackKings}\n"
-    //     "WHITE PAWNS ${summarizerPawns.totalWithePawns}, KINGS: ${summarizerPawns.totalWitheKings}";
-
-    gameStatus.value = summarizerPawns;
-
-    print(
-        "VM summarizerKilledPawns.blackPawns: ${_checkersBoard.summarizerKilledPawns.blackPawns}");
-    blackPawnsKilled.value = [
-      ..._checkersBoard.summarizerKilledPawns.blackPawns
-    ];
-    withePawnsKilled.value = [
-      ..._checkersBoard.summarizerKilledPawns.withePawns
-    ];
   }
 }

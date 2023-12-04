@@ -10,14 +10,12 @@ import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
-import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
-import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
@@ -196,27 +194,14 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _pawnStatusChangePlayerOne({required Color pawnColor}) =>
-      ValueListenableBuilder<StatusGame>(
-        valueListenable: gameViewModel.gameStatus,
-        builder: (ctx, pawnsStatus, _) {
-          CellType cellType = pawnsStatus.currPlayer;
-          print("CURR PLAYER: $cellType ");
+  Widget _pawnStatusChange(
+          {required Color pawnColor,
+          required ValueNotifier<String> pawnStatusValueNotifier}) =>
+      ValueListenableBuilder<String>(
+        valueListenable: pawnStatusValueNotifier,
+        builder: (ctx, pawnStatus, _) {
           return _pawnStatusChangeAnimate(
-              pawnColor: pawnColor,
-              pawnText: pawnsStatus.allBlackPawns.toString());
-        },
-      );
-
-  Widget _pawnStatusChangePlayerTwo({required Color pawnColor}) =>
-      ValueListenableBuilder<StatusGame>(
-        valueListenable: gameViewModel.gameStatus,
-        builder: (ctx, pawnsStatus, _) {
-          CellType cellType = pawnsStatus.currPlayer;
-          print("CURR PLAYER: $cellType ");
-          return _pawnStatusChangeAnimate(
-              pawnColor: pawnColor,
-              pawnText: pawnsStatus.allWithePawns.toString());
+              pawnColor: pawnColor, pawnText: pawnStatus);
         },
       );
 
@@ -227,7 +212,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: Stack(
           children: [
             _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
-            _pawnStatusChangePlayerOne(pawnColor: pawnColor)
+            _pawnStatusChange(
+                pawnColor: pawnColor,
+                pawnStatusValueNotifier: gameViewModel.blackPawnStatus)
           ],
         ),
       );
@@ -239,7 +226,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: Stack(
           children: [
             _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
-            _pawnStatusChangePlayerTwo(pawnColor: pawnColor)
+            _pawnStatusChange(
+                pawnColor: pawnColor,
+                pawnStatusValueNotifier: gameViewModel.whitePawnStatus)
           ],
         ),
       );

@@ -10,6 +10,7 @@ import 'package:untitled/data/cell_details_data.dart';
 import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/extensions/cg_log.dart';
@@ -157,126 +158,100 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _playerOne({required Color pawnColor}) {
-    Widget pawnWithStatusChange = ValueListenableBuilder<StatusGame>(
-      valueListenable: gameViewModel.gameStatus,
-      builder: (ctx, pawnsStatus, _) {
-        return Container(
-          width: 80,
-          height: 60,
-          padding: const EdgeInsets.only(right: 8),
-          alignment: Alignment.bottomRight,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              PawnPiece(
-                  pawnColor: pawnColor,
-                  isKing: false,
-                  isShadow: false,
-                  pawnId: "pawnId",
-                  rectSize: 25,
-                  size: 25),
-              Text(
-                  '${pawnsStatus.allBlackPawns}')
-            ],
-          ),
-        );
-      },
-    );
-    Widget widget = Stack(
-      children: [
-        Container(
-          alignment: Alignment.centerLeft,
-          width: 80,
-          height: 60,
-          child: FutureBuilder<Uint8List>(
-            future: loadImageBytes('avatar_player'),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasError) {
-                  return const Text('Error loading image');
-                }
-                return CircleAvatar(
-                  radius: 50.0, // Adjust the radius as needed
-                  backgroundImage: MemoryImage(snapshot.data!),
-                );
-              } else {
-                return const CircularProgressIndicator();
-              }
-            },
-          ),
-        ),
-        pawnWithStatusChange
-      ],
-    );
-
-    return Container(
-      alignment: Alignment.centerLeft,
-      child: widget,
-    );
-  }
-
   Future<Uint8List> loadImageBytes(String fileName) async {
     final ByteData data = await rootBundle.load('assets/$fileName.png');
     return data.buffer.asUint8List();
   }
 
-  Widget _playerTwo({required Color pawnColor}) {
-    Widget pawnStatusChange = ValueListenableBuilder<StatusGame>(
-      valueListenable: gameViewModel.gameStatus,
-      builder: (ctx, pawnsStatus, _) {
-       return Container(
-          width: 80,
-          height: 60,
-          padding: const EdgeInsets.only(right: 8),
-          alignment: Alignment.bottomRight,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              PawnPiece(
-                  pawnColor: pawnColor,
-                  isKing: false,
-                  isShadow: false,
-                  pawnId: "pawnId",
-                  rectSize: 25,
-                  size: 25),
-              Text(
-                  '${pawnsStatus.allWithePawns}')
-            ],
-          ),
-        );
-      },
-    );
-    Widget widget = Stack(
-      children: [
-        Container(
-          alignment: Alignment.centerLeft,
-          width: 80,
-          height: 60,
-          child: FutureBuilder<Uint8List>(
-            future: loadImageBytes('bot_1'),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasError) {
-                  return const Text('Error loading image');
-                }
-                return CircleAvatar(
-                  radius: 50.0, // Adjust the radius as needed
-                  backgroundImage: MemoryImage(snapshot.data!),
-                );
-              } else {
-                return const CircularProgressIndicator();
-              }
-            },
-          ),
-        ),
-        pawnStatusChange
+  Widget _pawnStatusChangeAnimate(
+      {required Color pawnColor, required String pawnText}) {
+    return Animate(
+      key: ValueKey(pawnText),
+      effects: const [
+        FlipEffect(
+          duration: Duration(milliseconds: 200),
+          alignment: Alignment.center,
+          begin: 1,
+          end: 2, // 2 * pi for a full rotation
+        )
       ],
+      child: Container(
+        width: 73,
+        height: 60,
+        alignment: Alignment.centerRight,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            PawnPiece(
+                pawnColor: pawnColor,
+                isKing: false,
+                isShadow: false,
+                pawnId: "pawnId",
+                rectSize: 25,
+                size: 25),
+            Text(pawnText)
+          ],
+        ),
+      ),
     );
+  }
 
-    return Container(
-      alignment: Alignment.centerLeft,
-      child: widget,
+  Widget _pawnStatusChangePlayerOne({required Color pawnColor}) =>
+      ValueListenableBuilder<StatusGame>(
+        valueListenable: gameViewModel.gameStatus,
+        builder: (ctx, pawnsStatus, _) {
+          CellType cellType = pawnsStatus.currPlayer;
+          print("CURR PLAYER: $cellType ");
+          return _pawnStatusChangeAnimate(
+              pawnColor: pawnColor,
+              pawnText: pawnsStatus.allBlackPawns.toString());
+        },
+      );
+
+  Widget _pawnStatusChangePlayerTwo({required Color pawnColor}) =>
+      ValueListenableBuilder<StatusGame>(
+        valueListenable: gameViewModel.gameStatus,
+        builder: (ctx, pawnsStatus, _) {
+          CellType cellType = pawnsStatus.currPlayer;
+          print("CURR PLAYER: $cellType ");
+          return _pawnStatusChangeAnimate(
+              pawnColor: pawnColor,
+              pawnText: pawnsStatus.allWithePawns.toString());
+        },
+      );
+
+  Widget _playerOne({required Color pawnColor}) => Container(
+        color: Colors.brown.withOpacity(0.15),
+        padding: const EdgeInsets.only(left: 4),
+        alignment: Alignment.centerLeft,
+        child: Stack(
+          children: [
+            _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
+            _pawnStatusChangePlayerOne(pawnColor: pawnColor)
+          ],
+        ),
+      );
+
+  Widget _playerTwo({required Color pawnColor}) => Container(
+        color: Colors.brown.withOpacity(0.15),
+        padding: const EdgeInsets.only(left: 4),
+        alignment: Alignment.centerLeft,
+        child: Stack(
+          children: [
+            _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
+            _pawnStatusChangePlayerTwo(pawnColor: pawnColor)
+          ],
+        ),
+      );
+
+  Widget _circleAvatarPlayer({required filePath}) {
+    return CircleAvatar(
+      radius: 30.0, // Adjust the radius as needed
+      backgroundColor: Colors.white.withOpacity(0.55),
+      child: Image.asset(
+        filePath,
+        height: 50,
+      ),
     );
   }
 
@@ -461,56 +436,5 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController.dispose();
     _streamAiTurn?.cancel();
     super.dispose();
-  }
-}
-
-class CircleWithSmallCircle extends StatelessWidget {
-  const CircleWithSmallCircle({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Outer Circle
-          CircleWidget(
-            diameter: 150,
-            color: Colors.blue,
-          ),
-
-          // Inner Circle (small circle on the edge)
-          Positioned(
-            child: CircleWidget(
-              diameter: 20,
-              color: Colors.red,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CircleWidget extends StatelessWidget {
-  final double diameter;
-  final Color color;
-
-  const CircleWidget({
-    super.key,
-    required this.diameter,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: diameter,
-      height: diameter,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
-    );
   }
 }

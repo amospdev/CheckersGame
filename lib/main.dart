@@ -133,28 +133,45 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-                flex: 1,
-                child: _playerOne(
-                    pawnColor: Colors.grey,
-                    pawnStatusValueNotifier: gameViewModel.blackPawnStatus)),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                _getCells(cellSize, sizeBoardByOrientation),
-                _getPawns(cellSize),
-              ],
-            ),
+                child: Container(
+              alignment: Alignment.bottomCenter,
+              color: Colors.redAccent,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: _players(),
+              ),
+            )),
             Expanded(
-                flex: 1,
-                child: _playerTwo(
-                    pawnColor: Colors.white,
-                    pawnStatusValueNotifier: gameViewModel.whitePawnStatus)),
+                flex: 7,
+                child: Container(
+                  alignment: Alignment.topCenter,
+                  color: Colors.yellow,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: _boardLayers(cellSize, sizeBoardByOrientation),
+                  ),
+                )),
             _features()
           ],
         )),
       ),
     );
   }
+
+  List<Widget> _boardLayers(double cellSize, double sizeBoardByOrientation) => [
+        _getCells(cellSize, sizeBoardByOrientation),
+        _getPawns(cellSize),
+      ];
+
+  List<Widget> _players() => [
+        _playerOne(
+            pawnColor: Colors.grey,
+            pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
+        _playerTwo(
+            pawnColor: Colors.white,
+            pawnStatusValueNotifier: gameViewModel.whitePawnStatus)
+      ];
 
   BoxDecoration _gameBackground() => BoxDecoration(
         image: DecorationImage(
@@ -219,46 +236,35 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget _playerOne(
           {required Color pawnColor,
           required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
-      Container(
-        color: Colors.brown.withOpacity(0.15),
-        padding: const EdgeInsets.only(left: 4),
-        alignment: Alignment.centerLeft,
-        child: ValueListenableBuilder<PawnStatus>(
-          valueListenable: pawnStatusValueNotifier,
-          builder: (ctx, pawnStatus, _) {
-            return Stack(
-              children: [
-                _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
-                _timer(pawnStatus),
-                _pawnStatusChange(
-                    pawnColor: pawnColor, pawnStatus: pawnStatus)
-              ],
-            );
-          },
-        ),
+      ValueListenableBuilder<PawnStatus>(
+        valueListenable: pawnStatusValueNotifier,
+        builder: (ctx, pawnStatus, _) {
+          return Stack(
+            children: [
+              _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
+              _timer(pawnStatus),
+              _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
+            ],
+          );
+        },
       );
 
   Widget _playerTwo(
           {required Color pawnColor,
           required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
-      Container(
-        color: Colors.brown.withOpacity(0.15),
-        padding: const EdgeInsets.only(left: 4),
-        alignment: Alignment.centerLeft,
-        child: ValueListenableBuilder<PawnStatus>(
-          valueListenable: pawnStatusValueNotifier,
-          builder: (ctx, pawnStatus, _) {
-            return Stack(
-              children: [
-                _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
-                _timer(pawnStatus),
-                _pawnStatusChange(
-                    pawnColor: pawnColor, pawnStatus: pawnStatus)
-              ],
-            );
-          },
-        ),
+      ValueListenableBuilder<PawnStatus>(
+        valueListenable: pawnStatusValueNotifier,
+        builder: (ctx, pawnStatus, _) {
+          return Stack(
+            children: [
+              _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
+              _timer(pawnStatus),
+              _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
+            ],
+          );
+        },
       );
+
   Widget _circleAvatarPlayer({required filePath}) {
     return CircleAvatar(
       radius: 30.0, // Adjust the radius as needed
@@ -351,7 +357,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         ],
       ),
       child: Stack(
-        children: [...cells],
+        children: cells,
       ),
     );
   }
@@ -365,26 +371,45 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                double topNotKilled =
-                    ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2);
+                double topNotKilled = ((pawnData.offset.dy) * cellSize) +
+                    (cellSize * 1.5) +
+                    (mainBoardBorderAll - mainBoardBorderOffset.dy);
 
-                double topKilledWhite = -(cellSize * 0.15);
-                double topKilledBlack = pawnsAreaSize - (cellSize * 0.85);
-                double top = pawnData.isKilled
-                    ? pawn.isSomeWhite
-                        ? topKilledWhite
-                        : topKilledBlack
-                    : topNotKilled;
+                double topKilledPawn = pawnData.indexKilled < 6
+                    ? -(cellSize * 0.15)
+                    : cellSize * 0.6;
+
+                double top = pawnData.isKilled ? topKilledPawn : topNotKilled;
 
                 double leftNotKilled =
                     ((pawnData.offset.dx) * cellSize) + (mainBoardBorder);
-                double leftKilled =
-                    (pawnData.indexKilled * (cellSize * 0.67)) - 5;
-                double left = pawnData.isKilled ? leftKilled : leftNotKilled;
+
+                int pawnKilledIndex = pawnData.indexKilled < 6
+                    ? pawnData.indexKilled
+                    : pawnData.indexKilled - 6;
+
+                double marginBlackLeft = cellSize * 0.8;
+                int padding = -5;
+                double leftKilledWithe =
+                    (pawnKilledIndex * (cellSize * 0.6)) + padding;
+
+                double leftKilledBlack =
+                    ((pawnKilledIndex + 6) * (cellSize * 0.6)) +
+                        padding +
+                        marginBlackLeft;
+
+                double left = pawnData.isKilled
+                    ? pawn.isSomeWhite
+                        ? leftKilledWithe
+                        : leftKilledBlack
+                    : leftNotKilled;
 
                 double distancePoints = (Offset(leftNotKilled, topNotKilled) -
-                        Offset(leftKilled,
-                            pawn.isSomeWhite ? topKilledWhite : topKilledBlack))
+                        Offset(
+                            pawn.isSomeWhite
+                                ? leftKilledWithe
+                                : leftKilledBlack,
+                            topKilledPawn))
                     .distance;
 
                 return AnimatedPositioned(
@@ -422,13 +447,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             ))
         .toList();
 
-    return Container(
-      alignment: Alignment.center,
+    return SizedBox(
       height: pawnsAreaSize,
       child: Stack(
-        children: [
-          ...pawns,
-        ],
+        children: pawns,
       ),
     );
   }

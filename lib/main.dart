@@ -219,7 +219,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           {required Color pawnColor,
           required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
       Container(
-        color: Colors.brown.withOpacity(0.15),
         padding: const EdgeInsets.only(left: 4),
         alignment: Alignment.centerLeft,
         child: ValueListenableBuilder<PawnStatus>(
@@ -240,7 +239,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           {required Color pawnColor,
           required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
       Container(
-        color: Colors.brown.withOpacity(0.15),
         padding: const EdgeInsets.only(left: 4),
         alignment: Alignment.centerLeft,
         child: ValueListenableBuilder<PawnStatus>(

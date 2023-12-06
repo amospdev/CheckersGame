@@ -190,7 +190,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 isKing: false,
                 isShadow: false,
                 pawnId: "pawnId",
-                rectSize: 25,
                 size: 25),
             Text(pawnStatus.totalPawnsText)
           ],
@@ -230,8 +229,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               children: [
                 _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
                 _timer(pawnStatus),
-                _pawnStatusChange(
-                    pawnColor: pawnColor, pawnStatus: pawnStatus)
+                _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
               ],
             );
           },
@@ -252,13 +250,13 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               children: [
                 _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
                 _timer(pawnStatus),
-                _pawnStatusChange(
-                    pawnColor: pawnColor, pawnStatus: pawnStatus)
+                _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
               ],
             );
           },
         ),
       );
+
   Widget _circleAvatarPlayer({required filePath}) {
     return CircleAvatar(
       radius: 30.0, // Adjust the radius as needed
@@ -410,13 +408,13 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                           child: PawnPiece(
                             isShadow: false,
                             size: cellSize,
-                            rectSize: cellSize,
                             pawnId: pawn.id,
                             isKing: pawn.isKing,
                             pawnColor: pawn.color,
                           ),
                         )
-                      : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
+                      : _buildPawnWidget(
+                      pawn, cellSize, pawnData.isAnimating),
                 );
               },
             ))
@@ -437,8 +435,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       PawnPieceAnimate(
           isAnimatingPawn: isAnimatingPawn,
           pawnMoveController: _pawnMoveController,
-          size: cellSize * 0.75,
-          rectSize: cellSize,
+          size: cellSize,
           pawnColor: pawn.color,
           isKing: pawn.isKing,
           pawnId: pawn.id,

@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details_data.dart';
@@ -216,18 +213,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _timer(PawnStatus pawnStatus) => pawnStatus.isCurrPlayer
-      ? CircularCountDownTimer(
-          textStyle: TextStyle(
-              fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),
-          width: 60,
-          height: 60,
-          duration: 30,
-          fillColor: Colors.brown.shade800,
-          ringColor: Colors.transparent,
-          strokeWidth: 3,
-        )
-      : SizedBox();
+  // Widget _timer(PawnStatus pawnStatus) => pawnStatus.isCurrPlayer
+  //     ? CircularCountDownTimer(
+  //         textStyle: TextStyle(
+  //             fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),
+  //         width: 60,
+  //         height: 60,
+  //         duration: 30,
+  //         fillColor: Colors.brown.shade800,
+  //         ringColor: Colors.transparent,
+  //         strokeWidth: 3,
+  //       )
+  //     : SizedBox();
 
   Widget _pawnStatusChange(
           {required Color pawnColor, required PawnStatus pawnStatus}) =>
@@ -242,7 +239,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           return Stack(
             children: [
               _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
-              _timer(pawnStatus),
+              // _timer(pawnStatus),
               _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
             ],
           );
@@ -258,7 +255,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           return Stack(
             children: [
               _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
-              _timer(pawnStatus),
+              // _timer(pawnStatus),
               _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
             ],
           );

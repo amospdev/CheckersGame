@@ -55,7 +55,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   static const int _pawnMoveDuration = 350;
   static const double mainBoardBorder = 5;
-  static const Offset mainBoardBorderOffset = Offset(2, 3);
+  static const Offset mainBoardBorderOffset = Offset(0, 0);
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
   static const double mainBoardBorderAll = mainBoardBorder * 2;
   late final GameViewModel gameViewModel;
@@ -355,7 +355,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget _getPawns(double cellSize) {
     logDebug("MAIN WIDGET _getPawns");
     double discardPileSize =
-        (cellSize * 1.5) + mainBoardBorderAll + mainBoardBorderOffset.dx;
+        (cellSize * 1.5) + mainBoardBorderAll + mainBoardBorderOffset.dy;
     double pawnsAreaSize = CheckersBoard.sizeBoard * cellSize + discardPileSize;
     List<Widget> pawns = gameViewModel.pawns
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
@@ -374,8 +374,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
                 double leftNotKilled =
                     ((pawnData.offset.dx) * cellSize) + (mainBoardBorder);
-                double leftKilled =
-                    (pawnData.indexKilled * (cellSize * 0.67)) - 5;
+                double leftKilled = pawnData.indexKilled *
+                    (cellSize * pawnKilledScaleOffset.dx + 2.5);
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;
 
                 double distancePoints = (Offset(leftNotKilled, topNotKilled) -
@@ -411,8 +411,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                             pawnColor: pawn.color,
                           ),
                         )
-                      : _buildPawnWidget(
-                      pawn, cellSize, pawnData.isAnimating),
+                      : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
                 );
               },
             ))

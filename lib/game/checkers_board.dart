@@ -20,7 +20,7 @@ class CheckersBoard {
   static const int sizeBoard = 8;
   static const int _whiteKingRow = 0;
   static const int _blackKingRow = sizeBoard - 1;
-  static const startPositionColor = Colors.green;
+  static const startPositionColor = Colors.lightGreen;
   static final captureColor = Colors.red.shade100;
   static const endPositionColor = Colors.blueAccent;
 

@@ -437,7 +437,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                                         (distancePoints * 5).toInt())),
                           ],
                           child: PawnPiece(
-                            isShadow: false,
+                            isShadow: true,
                             size: cellSize,
                             pawnId: pawn.id,
                             isKing: pawn.isKing,

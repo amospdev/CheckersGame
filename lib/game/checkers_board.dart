@@ -13,10 +13,6 @@ import 'package:untitled/game/checkers_board_features.dart';
 import 'package:untitled/game/checkers_creator.dart';
 import 'package:untitled/game/pawns_operation.dart';
 
-// Define the colors as constants at the top of your file for better clarity
-const startPositionColor = Colors.green;
-const captureColor = Colors.redAccent;
-const endPositionColor = Colors.blueAccent;
 
 //TODO force capture
 //TODO Check the GameOver function, after copying the board if the board remains unchanged
@@ -24,6 +20,9 @@ class CheckersBoard {
   static const int sizeBoard = 8;
   static const int _whiteKingRow = 0;
   static const int _blackKingRow = sizeBoard - 1;
+  static const startPositionColor = Colors.green;
+  static final captureColor = Colors.red.shade100;
+  static const endPositionColor = Colors.blueAccent;
 
   bool isMandatoryCapture = true;
 
@@ -43,15 +42,11 @@ class CheckersBoard {
 
   void _initPlayer() => _player = CellType.BLACK;
 
-  // final CheckersPrinter _checkersPrinter = CheckersPrinter();
   final PawnsOperation _pawnsOperation = PawnsOperation();
   final CheckersBoardFeatures _checkersBoardFeatures = CheckersBoardFeatures();
 
   ValueNotifier<bool> get isHistoryEnable =>
       _checkersBoardFeatures.isHistoryEnable;
-
-  SummarizerKilledPawns get summarizerKilledPawns =>
-      _pawnsOperation.summarizerKilledPawns;
 
   List<List<CellDetails>> _board = [];
 
@@ -428,9 +423,6 @@ class CheckersBoard {
   void _updatePawns(PathPawn pathPawn, bool isKing) {
     _updatePawn(isKing, pathPawn);
 
-    _pawnsOperation.pawnKilled(pathPawn.capturePawn);
-
-    // _pawnsOperation.
     pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
 
     int killedLength = _pawns
@@ -441,13 +433,6 @@ class CheckersBoard {
     print(
         "killedLength: $killedLength, pathPawn.capturePawn?.cellTypePlayer: ${pathPawn.capturePawn?.cellTypePlayer}");
     pathPawn.capturePawn?.setPawnDataNotifier(indexKilled: killedLength - 1);
-
-    /*forEach((element) {
-      // if(element.pawnDataNotifier.value.isKilled){
-      print("_pawns.forEach: ${element}");
-      // }
-    });
-*/
   }
 
   void _updatePawn(bool isKing, PathPawn pathPawn) => pathPawn.pawnStartPath

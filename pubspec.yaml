@@ -69,7 +69,10 @@ flutter:
     - assets/bot_1.png
     - assets/bot_2.png
     - assets/avatar_player.png
-
+    - assets/wood_background.png
+    - assets/wood_background_v1.jpg
+    - assets/wood_background_vintage.jpg
+    - assets/new_button.png
     - assets/button_wood.png
     - assets/CrownAnimation.json
   # To add assets to your application, add an assets section, like this:

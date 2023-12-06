@@ -16,81 +16,37 @@ class Features extends StatelessWidget {
       valueListenable: gameViewModel.isUndoEnable,
       builder: (ctx, isUndoEnable, _) {
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           mainAxisSize: MainAxisSize.max,
           children: [
-            Container(
-              width: 80, // Adjust the width of the container
-              height: 80, // Adjust the height of the container
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/button_wood.png'),
-                  // Replace with your background image
-                  fit: BoxFit.cover, // You can adjust the fit as needed
-                ),
-              ),
-              child: IconButton(
-                  color: Colors.white,
-                  disabledColor: Colors.grey.shade400,
-                  iconSize: 34,
-                  onPressed: isUndoEnable ? () => gameViewModel.undo() : null,
-                  icon: const Icon(Icons.undo)),
-            ),
-            Container(
-              width: 80, // Adjust the width of the container
-              height: 80, // Adjust the height of the container
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/button_wood.png'),
-                  // Replace with your background image
-                  fit: BoxFit.cover, // You can adjust the fit as needed
-                ),
-              ),
-              child: IconButton(
-                  color: Colors.white,
-                  disabledColor: Colors.grey.shade400,
-                  iconSize: 34,
-                  onPressed:
-                      isUndoEnable ? () => gameViewModel.resetGame() : null,
-                  icon: const Icon(Icons.refresh)),
-            ),
-            Container(
-              width: 80, // Adjust the width of the container
-              height: 80, // Adjust the height of the container
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/button_wood.png'),
-                  // Replace with your background image
-                  fit: BoxFit.cover, // You can adjust the fit as needed
-                ),
-              ),
-              child: IconButton(
-                  color: Colors.white,
-                  disabledColor: Colors.grey.shade400,
-                  iconSize: 34,
-                  onPressed: null,
-                  icon: const Icon(Icons.chat)),
-            ),
-            Container(
-              width: 80, // Adjust the width of the container
-              height: 80, // Adjust the height of the container
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/button_wood.png'),
-                  // Replace with your background image
-                  fit: BoxFit.cover, // You can adjust the fit as needed
-                ),
-              ),
-              child: IconButton(
-                  color: Colors.white,
-                  disabledColor: Colors.grey.shade400,
-                  iconSize: 34,
-                  onPressed: null,
-                  icon: const Icon(Icons.menu)),
-            )
+            _button(Icons.menu, () {}),
+            Spacer(),
+            _button(Icons.chat, () {}),
+            _button(
+                Icons.undo, isUndoEnable ? () => gameViewModel.undo() : null),
           ],
         );
       },
+    );
+  }
+
+  Widget _button(IconData icon, VoidCallback? onPressed) {
+    return Container(
+      width: 60, // Adjust the width of the container
+      height: 60, // Adjust the height of the container
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/new_button.png'),
+          // Replace with your background image
+          fit: BoxFit.cover, // You can adjust the fit as needed
+        ),
+      ),
+      child: IconButton(
+          color: Colors.white,
+          disabledColor: Colors.grey.shade400,
+          iconSize: 24,
+          onPressed: onPressed,
+          icon: Icon(icon)),
     );
   }
 }

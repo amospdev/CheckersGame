@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/cell_details_data.dart';
@@ -132,35 +129,87 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            _features(),
             Expanded(
-                flex: 1,
-                child: _playerOne(
-                    pawnColor: Colors.grey,
-                    pawnStatusValueNotifier: gameViewModel.blackPawnStatus)),
-            Stack(
+                child: Stack(
               alignment: Alignment.center,
               children: [
                 _getCells(cellSize, sizeBoardByOrientation),
                 _getPawns(cellSize),
               ],
+            )),
+            Container(
+              margin: const EdgeInsets.only(bottom: 32),
+              // height: 100,
+              // color: Colors.green,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _player(
+                        playerName: 'AMOS',
+                        avatarPath: 'assets/avatar_player.png',
+                        pawnColor: PawnsOperation.playerOneDarkColor,
+                        pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
+                    _timer(), ////////
+                    _player(
+                        playerName: 'BATMAN',
+                        avatarPath: 'assets/bot_1.png',
+                        pawnColor: PawnsOperation.playerTwoLightColor,
+                        pawnStatusValueNotifier: gameViewModel.whitePawnStatus),
+                  ],
+                ),
+              ),
             ),
-            Expanded(
-                flex: 1,
-                child: _playerTwo(
-                    pawnColor: Colors.white,
-                    pawnStatusValueNotifier: gameViewModel.whitePawnStatus)),
-            _features()
           ],
         )),
       ),
     );
   }
 
-  BoxDecoration _gameBackground() => BoxDecoration(
+  Widget _timer() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+              color: Colors.grey.shade700,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.tealAccent, // Green border
+                width: 2.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade700,
+                  blurRadius: 10.0,
+                  offset: const Offset(0, 0),
+                ),
+              ]),
+          child: const Text(
+            "22",
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 24),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: Text(
+            "Time Left",
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20),
+          ),
+        )
+      ],
+    );
+  }
+
+  BoxDecoration _gameBackground() => const BoxDecoration(
         image: DecorationImage(
           colorFilter: ColorFilter.mode(
-              Colors.white.withOpacity(0.5), BlendMode.srcATop),
-          image: const AssetImage('assets/wood.png'),
+              Colors.black, BlendMode.color),
+          image: AssetImage('assets/wood_background_vintage.jpg'),
           // Replace with your background image
           fit: BoxFit.fill, // You can adjust the fit as needed
         ),
@@ -198,57 +247,48 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _timer(PawnStatus pawnStatus) => pawnStatus.isCurrPlayer
-      ? CircularCountDownTimer(
-          textStyle: TextStyle(
-              fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),
-          width: 60,
-          height: 60,
-          duration: 30,
-          fillColor: Colors.brown.shade800,
-          ringColor: Colors.transparent,
-          strokeWidth: 3,
-        )
-      : SizedBox();
-
   Widget _pawnStatusChange(
           {required Color pawnColor, required PawnStatus pawnStatus}) =>
       _pawnStatusChangeAnimate(pawnColor: pawnColor, pawnStatus: pawnStatus);
 
-  Widget _playerOne(
+  Widget _player(
           {required Color pawnColor,
+          required String avatarPath,
+          required String playerName,
           required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
       Container(
-        padding: const EdgeInsets.only(left: 4),
-        alignment: Alignment.centerLeft,
-        child: ValueListenableBuilder<PawnStatus>(
-          valueListenable: pawnStatusValueNotifier,
-          builder: (ctx, pawnStatus, _) {
-            return Stack(
-              children: [
-                _circleAvatarPlayer(filePath: 'assets/avatar_player.png'),
-                _timer(pawnStatus),
-                _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
-              ],
-            );
-          },
+        padding: const EdgeInsets.only(left: 8, top: 24, right: 8, bottom: 24),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade700,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.yellow, // Green border
+            width: 1.0,
+          ),
         ),
-      );
-
-  Widget _playerTwo(
-          {required Color pawnColor,
-          required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
-      Container(
-        padding: const EdgeInsets.only(left: 4),
         alignment: Alignment.centerLeft,
         child: ValueListenableBuilder<PawnStatus>(
           valueListenable: pawnStatusValueNotifier,
           builder: (ctx, pawnStatus, _) {
-            return Stack(
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _circleAvatarPlayer(filePath: 'assets/bot_1.png'),
-                _timer(pawnStatus),
-                _pawnStatusChange(pawnColor: pawnColor, pawnStatus: pawnStatus)
+                 Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    playerName,
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Stack(
+                  children: [
+                    _circleAvatarPlayer(filePath: avatarPath),
+                    _pawnStatusChange(
+                        pawnColor: pawnColor, pawnStatus: pawnStatus)
+                  ],
+                ),
               ],
             );
           },
@@ -258,7 +298,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget _circleAvatarPlayer({required filePath}) {
     return CircleAvatar(
       radius: 30.0, // Adjust the radius as needed
-      backgroundColor: Colors.white.withOpacity(0.55),
+      backgroundColor: Colors.white.withOpacity(0.95),
       child: Image.asset(
         filePath,
         height: 50,
@@ -266,18 +306,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _features() => Container(
+  Widget _features() => SizedBox(
         height: 65,
         width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/wood.png'),
-            // Replace with your background image
-            fit: BoxFit.fitWidth, // You can adjust the fit as needed
-          ),
-        ),
         child: const Align(
-          alignment: Alignment.center,
+          alignment: Alignment.topCenter,
           child: Features(),
         ),
       );
@@ -312,10 +345,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     // Specify the rotation angle in radians
                     child: Image.asset('assets/wood.png',
                         color: cell.isUnValid
-                            ? Colors.white.withOpacity(0.35)
+                            ? Colors.white.withOpacity(0.75)
                             : cell.tmpColor == cell.color
-                                ? Colors.black.withOpacity(0.15)
-                                : cell.tmpColor.withOpacity(0.6),
+                                ? Colors.black.withOpacity(0.25)
+                                : cell.tmpColor.withOpacity(0.65),
                         colorBlendMode: BlendMode.srcATop,
                         width: cellSize,
                         height: cellSize),
@@ -339,7 +372,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             style: BorderStyle.none),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.shade500,
+            color: Colors.grey.shade400,
             spreadRadius: 1,
             blurRadius: 3,
             offset: mainBoardBorderOffset,

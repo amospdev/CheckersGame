@@ -16,6 +16,7 @@ import 'package:untitled/settings_repo.dart';
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();
   final Set<String> _markedKings = {};
+  PawnsOperation pawnsOperation = PawnsOperation();
 
   ValueNotifier<StatusGame> gameStatus = ValueNotifier(StatusGame());
 
@@ -65,7 +66,7 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _setGameStatus() {
-    StatusGame summarizerPawns = PawnsOperation()
+    StatusGame summarizerPawns = pawnsOperation
         .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
 
     _blackPawnStatus.value = summarizerPawns.blackPawnStatus;

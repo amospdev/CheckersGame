@@ -5,7 +5,21 @@ import 'package:untitled/enum/cell_type.dart';
 
 class PawnsOperation {
   static const prefixPawnId = "pawn_id_";
-  SummarizerKilledPawns summarizerKilledPawns = SummarizerKilledPawns();
+
+  static final List<Color> PLAYER_ONE_DARK = [
+    Colors.grey.shade900,
+    Colors.black
+  ];
+
+  static final List<Color> PLAYER_TWO_LIGHT = [Colors.white, Colors.yellow];
+
+  static Color get playerOneDarkColor => PLAYER_ONE_DARK.first;
+
+  // PLAYER_ONE_DARK[Random().nextInt(PLAYER_ONE_DARK.length)];
+
+  static Color get playerTwoLightColor =>
+      // PLAYER_ONE_DARK[Random().nextInt(PLAYER_ONE_DARK.length)];
+      PLAYER_TWO_LIGHT.first;
 
   List<Pawn> create(List<List<CellDetails>> board) {
     List<Pawn> pawns = [];
@@ -18,27 +32,15 @@ class PawnsOperation {
               cellTypePlayer: cellDeatils.cellTypePlayer,
               index: pawns.length,
               column: column,
-              color: cellDeatils.isWhite ? Colors.white : Colors.grey,
+              color: cellDeatils.isWhite
+                  ? PawnsOperation.playerTwoLightColor
+                  : PawnsOperation.playerOneDarkColor,
               isKing: cellDeatils.isKing));
         }
       }
     }
 
     return pawns;
-  }
-
-  void pawnKilled(Pawn? capturePawn) {
-    print("PawnsOperation pawnKilled capturePawn: $capturePawn");
-    if (capturePawn == null) return;
-    if (capturePawn.isBlack) {
-      summarizerKilledPawns.blackPawns.add(capturePawn);
-    } else if (capturePawn.isBlackKing) {
-      summarizerKilledPawns.blackPawns.add(capturePawn);
-    } else if (capturePawn.isWhite) {
-      summarizerKilledPawns.withePawns.add(capturePawn);
-    } else if (capturePawn.isWhiteKing) {
-      summarizerKilledPawns.withePawns.add(capturePawn);
-    }
   }
 
   StatusGame pawnsSummarize(List<List<CellDetails>> board, CellType player) {
@@ -75,11 +77,6 @@ class PawnStatus {
   PawnStatus({this.totalPawns = 0, this.isCurrPlayer = false});
 }
 
-class SummarizerKilledPawns {
-  List<Pawn> blackPawns = [];
-  List<Pawn> withePawns = [];
-}
-
 class StatusGame {
   int totalBlackKings;
   int totalWitheKings;
@@ -94,11 +91,11 @@ class StatusGame {
       this.totalBlackPawns = 0,
       this.totalWithePawns = 0});
 
-  PawnStatus get blackPawnStatus =>
-      PawnStatus(totalPawns: allBlackPawns, isCurrPlayer: currPlayer == CellType.BLACK);
+  PawnStatus get blackPawnStatus => PawnStatus(
+      totalPawns: allBlackPawns, isCurrPlayer: currPlayer == CellType.BLACK);
 
-  PawnStatus get whitePawnStatus =>
-      PawnStatus(totalPawns: allWithePawns, isCurrPlayer: currPlayer == CellType.WHITE);
+  PawnStatus get whitePawnStatus => PawnStatus(
+      totalPawns: allWithePawns, isCurrPlayer: currPlayer == CellType.WHITE);
 
   bool get isBlackPlayerWin => allWithePawns == 0;
 

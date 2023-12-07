@@ -120,6 +120,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     final sizeBoardMinusBorder = sizeBoardByOrientation - mainBoardBorderAll;
     final cellSize = sizeBoardMinusBorder / 8;
+    // final cellSize = (sizeBoardMinusBorder - 16) / 8;
 
     return Scaffold(
       body: SizedBox(
@@ -140,7 +141,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 gradient: LinearGradient(
                   colors: [
                     Colors.grey.shade500.withOpacity(0.55), // Change these colors to create your desired gradient
-                    Colors.grey.shade900.withOpacity(0.9), // Change these colors to create your desired gradient
+                    Colors.black54.withOpacity(0.5), // Change these colors to create your desired gradient
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -230,23 +231,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       ],
     );
   }
-
-  BoxDecoration _gameBackground() => const BoxDecoration(
-        image: DecorationImage(
-          // colorFilter: ColorFilter.mode(
-          //     Colors.black, BlendMode.color),
-          image: AssetImage('assets/wood_background_vintage.jpg'),
-          fit: BoxFit.fill,
-        ),
-        gradient: LinearGradient(
-          colors: [
-            Colors.red, // Change these colors to create your desired gradient
-            Colors.blue,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      );
 
   Widget _pawnStatusChangeAnimate(
       {required Color pawnColor, required PawnStatus pawnStatus}) {
@@ -396,8 +380,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     return Container(
       width: widthBoardByOrientation,
-      // Increased size to account for the border and prevent cut-off
       height: widthBoardByOrientation,
+      // margin: const EdgeInsets.only(left: 8, right: 8),
       decoration: BoxDecoration(
         border: Border.all(
             color: Colors.brown,
@@ -413,7 +397,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         ],
       ),
       child: Stack(
-        children: [...cells],
+        children: cells,
       ),
     );
   }
@@ -429,6 +413,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               builder: (ctx, pawnData, _) {
                 double topNotKilled =
                     ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2);
+                // double topNotKilled =
+                //     ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2) - 8;
 
                 double topKilledWhite = -(cellSize * 0.15);
                 double topKilledBlack = pawnsAreaSize - (cellSize * 0.85);
@@ -437,6 +423,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                         ? topKilledWhite
                         : topKilledBlack
                     : topNotKilled;
+
+                // double leftNotKilled =
+                //     ((pawnData.offset.dx) * cellSize) + (mainBoardBorder) + 8;
 
                 double leftNotKilled =
                     ((pawnData.offset.dx) * cellSize) + (mainBoardBorder);

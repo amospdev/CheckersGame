@@ -118,7 +118,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final sizeBoardByOrientation =
         MediaQuery.of(context).sizeByOrientation; // For an 8x8 board
 
-    final sizeBoardMinusBorder = sizeBoardByOrientation - mainBoardBorderAll;
+    final sizeBoardMinusBorder = sizeBoardByOrientation;
     final cellSize = sizeBoardMinusBorder / 8;
     // final cellSize = (sizeBoardMinusBorder - 16) / 8;
 
@@ -140,8 +140,10 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.grey.shade500.withOpacity(0.55), // Change these colors to create your desired gradient
-                    Colors.black54.withOpacity(0.5), // Change these colors to create your desired gradient
+                    Colors.grey.shade500.withOpacity(0.55),
+                    // Change these colors to create your desired gradient
+                    Colors.black54.withOpacity(0.5),
+                    // Change these colors to create your desired gradient
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -382,20 +384,20 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       width: widthBoardByOrientation,
       height: widthBoardByOrientation,
       // margin: const EdgeInsets.only(left: 8, right: 8),
-      decoration: BoxDecoration(
-        border: Border.all(
-            color: Colors.brown,
-            width: mainBoardBorder,
-            style: BorderStyle.none),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.brown.shade500,
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: mainBoardBorderOffset,
-          ),
-        ],
-      ),
+      // decoration: BoxDecoration(
+      //   border: Border.all(
+      //       color: Colors.brown,
+      //       width: mainBoardBorder,
+      //       style: BorderStyle.none),
+      //   boxShadow: [
+      //     BoxShadow(
+      //       color: Colors.brown.shade500,
+      //       spreadRadius: 1,
+      //       blurRadius: 4,
+      //       offset: mainBoardBorderOffset,
+      //     ),
+      //   ],
+      // ),
       child: Stack(
         children: cells,
       ),
@@ -416,8 +418,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 // double topNotKilled =
                 //     ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2) - 8;
 
-                double topKilledWhite = -(cellSize * 0.15);
-                double topKilledBlack = pawnsAreaSize - (cellSize * 0.85);
+                double topKilledWhite = pawnsAreaSize - (cellSize * 0.85);
+                double topKilledBlack = -(cellSize * 0.15);
                 double top = pawnData.isKilled
                     ? pawn.isSomeWhite
                         ? topKilledWhite
@@ -427,8 +429,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 // double leftNotKilled =
                 //     ((pawnData.offset.dx) * cellSize) + (mainBoardBorder) + 8;
 
-                double leftNotKilled =
-                    ((pawnData.offset.dx) * cellSize) + (mainBoardBorder);
+                double leftNotKilled = ((pawnData.offset.dx) * cellSize);
                 double leftKilled = pawnData.indexKilled *
                     (cellSize * pawnKilledScaleOffset.dx + 2.5);
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;

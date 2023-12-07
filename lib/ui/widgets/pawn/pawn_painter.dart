@@ -16,8 +16,8 @@ class PawnPainter extends CustomPainter {
     // Shadow
     if (isShadow) {
       final shadowPaint = Paint()
-        ..color = Colors.black54.withOpacity(0.8)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+        ..color = Colors.grey.shade900
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
       canvas.drawCircle(center + const Offset(3, 5), mainRadius, shadowPaint);
     }
 

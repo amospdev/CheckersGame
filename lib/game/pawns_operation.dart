@@ -7,7 +7,7 @@ class PawnsOperation {
   static const prefixPawnId = "pawn_id_";
 
   static final List<Color> PLAYER_ONE_DARK = [
-    Colors.grey.shade900,
+    Colors.grey.shade800,
     Colors.black
   ];
 

@@ -118,8 +118,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final sizeBoardByOrientation =
         MediaQuery.of(context).sizeByOrientation; // For an 8x8 board
 
-    final sizeBoardMinusBorder = sizeBoardByOrientation;
-    final cellSize = sizeBoardMinusBorder / 8;
+    double paddingGameBoard = 12;
+
+    // final sizeBoardMinusBorder = sizeBoardByOrientation;
+    final cellSize = (sizeBoardByOrientation - (paddingGameBoard * 2)) / 8;
+    final boardSize = cellSize * CheckersBoard.sizeBoard;
     // final cellSize = (sizeBoardMinusBorder - 16) / 8;
 
     return Scaffold(
@@ -128,67 +131,36 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         // decoration: _gameBackground(),
         child: Stack(
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/wood_background_vintage.jpg'),
-                  fit: BoxFit.fill,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.grey.shade500.withOpacity(0.55),
-                    // Change these colors to create your desired gradient
-                    Colors.black54.withOpacity(0.5),
-                    // Change these colors to create your desired gradient
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
+            _backgroundGame(),
             SafeArea(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _features(),
                 Expanded(
-                    child: Stack(
+                    child: Container(
+                  padding: EdgeInsets.all(paddingGameBoard),
                   alignment: Alignment.center,
-                  children: [
-                    _getCells(cellSize, sizeBoardByOrientation),
-                    _getPawns(cellSize),
-                  ],
-                )),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 32),
-                  // height: 100,
-                  // color: Colors.green,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _player(
-                            playerName: 'AMOS',
-                            avatarPath: 'assets/avatar_player.png',
-                            pawnColor: PawnsOperation.playerOneDarkColor,
-                            pawnStatusValueNotifier:
-                                gameViewModel.blackPawnStatus),
-                        _timer(), ////////
-                        _player(
-                            playerName: 'BATMAN',
-                            avatarPath: 'assets/bot_1.png',
-                            pawnColor: PawnsOperation.playerTwoLightColor,
-                            pawnStatusValueNotifier:
-                                gameViewModel.whitePawnStatus),
-                      ],
-                    ),
+                  // color: Colors.lightGreen,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        // color: Colors.blue.withOpacity(0.8),
+                        width: boardSize,
+                        height: boardSize,
+                        child: _getCells(cellSize, sizeBoardByOrientation),
+                      ),
+                      Container(
+                        color: Colors.lightGreen.withOpacity(0.1),
+                        width: boardSize,
+                        height: boardSize + cellSize + cellSize,
+                        child: _getPawns(cellSize, paddingGameBoard, cellSize),
+                      ),
+                    ],
                   ),
-                ),
+                )),
+                _bottomLayer(),
               ],
             ))
           ],
@@ -381,43 +353,48 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     }).toList();
 
     return Container(
-      width: widthBoardByOrientation,
-      height: widthBoardByOrientation,
-      // margin: const EdgeInsets.only(left: 8, right: 8),
-      // decoration: BoxDecoration(
-      //   border: Border.all(
-      //       color: Colors.brown,
-      //       width: mainBoardBorder,
-      //       style: BorderStyle.none),
-      //   boxShadow: [
-      //     BoxShadow(
-      //       color: Colors.brown.shade500,
-      //       spreadRadius: 1,
-      //       blurRadius: 4,
-      //       offset: mainBoardBorderOffset,
-      //     ),
-      //   ],
-      // ),
+      // width: widthBoardByOrientation,
+      // height: widthBoardByOrientation,
+
       child: Stack(
         children: cells,
       ),
     );
+    //   Container(
+    //   width: widthBoardByOrientation,
+    //   height: widthBoardByOrientation,
+    //   // margin: const EdgeInsets.only(left: 8, right: 8),
+    //   // decoration: BoxDecoration(
+    //   //   border: Border.all(
+    //   //       color: Colors.brown,
+    //   //       width: mainBoardBorder,
+    //   //       style: BorderStyle.none),
+    //   //   boxShadow: [
+    //   //     BoxShadow(
+    //   //       color: Colors.brown.shade500,
+    //   //       spreadRadius: 1,
+    //   //       blurRadius: 4,
+    //   //       offset: mainBoardBorderOffset,
+    //   //     ),
+    //   //   ],
+    //   // ),
+    //   child: ,
+    // );
   }
 
-  Widget _getPawns(double cellSize) {
+  Widget _getPawns(
+      double cellSize, double paddingGameBoard, double heightOffset) {
     logDebug("MAIN WIDGET _getPawns");
     double discardPileSize = ((cellSize * pawnKilledScaleOffset.dx)) +
         mainBoardBorderAll +
         mainBoardBorderOffset.dy;
-    double pawnsAreaSize = CheckersBoard.sizeBoard * cellSize + discardPileSize;
+    double pawnsAreaSize = CheckersBoard.sizeBoard * cellSize;
     List<Widget> pawns = gameViewModel.pawns
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
                 double topNotKilled =
-                    ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2);
-                // double topNotKilled =
-                //     ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2) - 8;
+                    (pawnData.offset.dy * cellSize) + heightOffset;
 
                 double topKilledWhite = pawnsAreaSize - (cellSize * 0.85);
                 double topKilledBlack = ((discardPileSize / 2) -
@@ -476,15 +453,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             ))
         .toList();
 
-    return Container(
-      // color: Colors.lightGreen.withOpacity(0.2),
-      alignment: Alignment.center,
-      height: pawnsAreaSize,
-      child: Stack(
-        children: [
-          ...pawns,
-        ],
-      ),
+    return Stack(
+      children: pawns,
     );
   }
 
@@ -505,5 +475,60 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     _pawnMoveController.dispose();
     _streamAiTurn?.cancel();
     super.dispose();
+  }
+
+  Widget _backgroundGame() {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/wood_background_vintage.jpg'),
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.grey.shade700.withOpacity(0.6),
+                // Colors.black45,
+                Colors.black87,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _bottomLayer() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 32),
+      // height: 100,
+      // color: Colors.green,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _player(
+                playerName: 'AMOS',
+                avatarPath: 'assets/avatar_player.png',
+                pawnColor: PawnsOperation.playerOneDarkColor,
+                pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
+            _timer(), ////////
+            _player(
+                playerName: 'BATMAN',
+                avatarPath: 'assets/bot_1.png',
+                pawnColor: PawnsOperation.playerTwoLightColor,
+                pawnStatusValueNotifier: gameViewModel.whitePawnStatus),
+          ],
+        ),
+      ),
+    );
   }
 }

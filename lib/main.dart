@@ -118,10 +118,15 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final sizeBoardByOrientation =
         MediaQuery.of(context).sizeByOrientation; // For an 8x8 board
 
-    double paddingGameBoard = 12;
+    double paddingGameBoard = 8;
+    double borderWidthGameBoard = 10;
+    double innerBorderWidthGameBoard = 1;
 
     // final sizeBoardMinusBorder = sizeBoardByOrientation;
-    final cellSize = (sizeBoardByOrientation - (paddingGameBoard * 2)) / 8;
+    final cellSize = (sizeBoardByOrientation -
+            (paddingGameBoard * 2) -
+            (borderWidthGameBoard * 2)) /
+        8;
     final boardSize = cellSize * CheckersBoard.sizeBoard;
     // final cellSize = (sizeBoardMinusBorder - 16) / 8;
 
@@ -146,13 +151,47 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     alignment: Alignment.center,
                     children: [
                       Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.grey.shade200.withOpacity(0.4),
+                            // Green border
+                            width: borderWidthGameBoard,
+                          ),
+                        ),
+                        width: boardSize + (borderWidthGameBoard * 2),
+                        height: boardSize + (borderWidthGameBoard * 2),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.white,
+                            // Green border
+                            width: innerBorderWidthGameBoard,
+                          ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black,
+                                blurRadius: 6.5,
+                                offset: const Offset(1, 1),
+                              ),
+                            ]
+                        ),
+                        width: boardSize + innerBorderWidthGameBoard,
+                        height: boardSize + innerBorderWidthGameBoard,
+                      ),
+                      SizedBox(
                         // color: Colors.blue.withOpacity(0.8),
                         width: boardSize,
                         height: boardSize,
-                        child: _getCells(cellSize, sizeBoardByOrientation),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: _getCells(cellSize, sizeBoardByOrientation),
+                        ),
                       ),
-                      Container(
-                        color: Colors.lightGreen.withOpacity(0.1),
+                      SizedBox(
+                        // color: Colors.lightGreen.withOpacity(0.1),
                         width: boardSize,
                         height: boardSize + cellSize + cellSize,
                         child: _getPawns(cellSize, paddingGameBoard, cellSize),

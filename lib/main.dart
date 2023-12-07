@@ -51,7 +51,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late final AnimationController _pawnMoveController;
 
   static const int _pawnMoveDuration = 350;
-  static const double mainBoardBorder = 5;
+  static const double mainBoardBorder = 0;
   static const Offset mainBoardBorderOffset = Offset(3, 3);
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
   static const double mainBoardBorderAll = mainBoardBorder * 2;
@@ -336,11 +336,12 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   Widget _getCells(double cellSize, double widthBoardByOrientation) {
     // logDebug("MAIN WIDGET _getCells");
-
     List<Widget> cells = gameViewModel.boardCells.map((cell) {
+      double leftPos = (cell.offset.dx) * cellSize;
+      double topPos = (cell.offset.dy) * cellSize;
       return Positioned(
-        left: (cell.offset.dx) * cellSize,
-        top: (cell.offset.dy) * cellSize,
+        left: leftPos,
+        top: topPos,
         child: GestureDetector(
           onTap: () {
             TapOnBoard tapOnBoard =
@@ -355,25 +356,24 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               // logDebug(
               //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
 
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  RepaintBoundary(
-                      child: Transform.rotate(
-                    angle: cell.isUnValid ? pi / 2 : 0,
-                    // Specify the rotation angle in radians
-                    child: Image.asset('assets/wood.png',
-                        color: cell.isUnValid
-                            ? Colors.white.withOpacity(0.75)
-                            : cell.tmpColor == cell.color
-                                ? Colors.black.withOpacity(0.25)
-                                : cell.tmpColor.withOpacity(0.65),
-                        colorBlendMode: BlendMode.srcATop,
-                        width: cellSize,
-                        height: cellSize),
-                  )),
-                ],
-              );
+              return RepaintBoundary(
+                  child: Transform.rotate(
+                angle: cell.isUnValid ? pi / 2 : 0,
+                // Specify the rotation angle in radians
+                child: Image.asset('assets/wood.png',
+                    color: cell.isUnValid
+                        ? Colors.white
+                        : cell.tmpColor == cell.color
+                            ? Colors.black
+                            : cell.tmpColor,
+                    colorBlendMode: cell.isUnValid
+                        ? BlendMode.modulate
+                        : cell.tmpColor == cell.color
+                            ? BlendMode.overlay
+                            : BlendMode.color,
+                    width: cellSize,
+                    height: cellSize),
+              ));
             },
           ),
         ),
@@ -406,8 +406,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   Widget _getPawns(double cellSize) {
     logDebug("MAIN WIDGET _getPawns");
-    double discardPileSize =
-        (cellSize * 1.5) + mainBoardBorderAll + mainBoardBorderOffset.dy;
+    double discardPileSize = ((cellSize * pawnKilledScaleOffset.dx)) +
+        mainBoardBorderAll +
+        mainBoardBorderOffset.dy;
     double pawnsAreaSize = CheckersBoard.sizeBoard * cellSize + discardPileSize;
     List<Widget> pawns = gameViewModel.pawns
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
@@ -419,7 +420,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 //     ((pawnData.offset.dy) * cellSize) + (discardPileSize / 2) - 8;
 
                 double topKilledWhite = pawnsAreaSize - (cellSize * 0.85);
-                double topKilledBlack = -(cellSize * 0.15);
+                double topKilledBlack = ((discardPileSize / 2) -
+                        (cellSize * pawnKilledScaleOffset.dx)) /
+                    2;
                 double top = pawnData.isKilled
                     ? pawn.isSomeWhite
                         ? topKilledWhite
@@ -474,6 +477,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         .toList();
 
     return Container(
+      // color: Colors.lightGreen.withOpacity(0.2),
       alignment: Alignment.center,
       height: pawnsAreaSize,
       child: Stack(

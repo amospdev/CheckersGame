@@ -550,7 +550,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.grey.shade200.withOpacity(0.4),
+              color: Colors.grey.shade300.withOpacity(0.6),
               // Green border
               width: borderWidthGameBoard,
             ),

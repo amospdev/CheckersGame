@@ -120,15 +120,14 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     double paddingGameBoard = 8;
     double borderWidthGameBoard = 10;
-    double innerBorderWidthGameBoard = 1;
+    double innerBorderWidthGameBoard = 2;
 
-    // final sizeBoardMinusBorder = sizeBoardByOrientation;
     final cellSize = (sizeBoardByOrientation -
             (paddingGameBoard * 2) -
             (borderWidthGameBoard * 2)) /
-        8;
+        CheckersBoard.sizeBoard;
+
     final boardSize = cellSize * CheckersBoard.sizeBoard;
-    // final cellSize = (sizeBoardMinusBorder - 16) / 8;
 
     return Scaffold(
       body: SizedBox(
@@ -150,37 +149,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.grey.shade200.withOpacity(0.4),
-                            // Green border
-                            width: borderWidthGameBoard,
-                          ),
-                        ),
-                        width: boardSize + (borderWidthGameBoard * 2),
-                        height: boardSize + (borderWidthGameBoard * 2),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.white,
-                            // Green border
-                            width: innerBorderWidthGameBoard,
-                          ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black,
-                                blurRadius: 6.5,
-                                offset: const Offset(1, 1),
-                              ),
-                            ]
-                        ),
-                        width: boardSize + innerBorderWidthGameBoard,
-                        height: boardSize + innerBorderWidthGameBoard,
-                      ),
+                      _bordersGameBoard(borderWidthGameBoard, boardSize,
+                          innerBorderWidthGameBoard),
                       SizedBox(
                         // color: Colors.blue.withOpacity(0.8),
                         width: boardSize,
@@ -531,7 +501,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.grey.shade700.withOpacity(0.6),
+                Colors.grey.shade400.withOpacity(0.5),
                 // Colors.black45,
                 Colors.black87,
               ],
@@ -568,6 +538,45 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _bordersGameBoard(double borderWidthGameBoard, double boardSize,
+      double innerBorderWidthGameBoard) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.grey.shade200.withOpacity(0.4),
+              // Green border
+              width: borderWidthGameBoard,
+            ),
+          ),
+          width: boardSize + (borderWidthGameBoard * 2),
+          height: boardSize + (borderWidthGameBoard * 2),
+        ),
+        Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.grey,
+                // Green border
+                width: innerBorderWidthGameBoard,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 6.5,
+                  offset: const Offset(1.5, 1.5),
+                ),
+              ]),
+          width: boardSize + innerBorderWidthGameBoard,
+          height: boardSize + innerBorderWidthGameBoard,
+        )
+      ],
     );
   }
 }

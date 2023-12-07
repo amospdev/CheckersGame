@@ -52,7 +52,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   static const int _pawnMoveDuration = 350;
   static const double mainBoardBorder = 5;
-  static const Offset mainBoardBorderOffset = Offset(0, 0);
+  static const Offset mainBoardBorderOffset = Offset(3, 3);
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
   static const double mainBoardBorderAll = mainBoardBorder * 2;
   late final GameViewModel gameViewModel;
@@ -122,48 +122,74 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final cellSize = sizeBoardMinusBorder / 8;
 
     return Scaffold(
-      body: Container(
+      body: SizedBox(
         height: MediaQuery.of(context).size.height,
-        decoration: _gameBackground(),
-        child: SafeArea(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        // decoration: _gameBackground(),
+        child: Stack(
           children: [
-            _features(),
-            Expanded(
-                child: Stack(
-              alignment: Alignment.center,
-              children: [
-                _getCells(cellSize, sizeBoardByOrientation),
-                _getPawns(cellSize),
-              ],
-            )),
             Container(
-              margin: const EdgeInsets.only(bottom: 32),
-              // height: 100,
-              // color: Colors.green,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _player(
-                        playerName: 'AMOS',
-                        avatarPath: 'assets/avatar_player.png',
-                        pawnColor: PawnsOperation.playerOneDarkColor,
-                        pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
-                    _timer(), ////////
-                    _player(
-                        playerName: 'BATMAN',
-                        avatarPath: 'assets/bot_1.png',
-                        pawnColor: PawnsOperation.playerTwoLightColor,
-                        pawnStatusValueNotifier: gameViewModel.whitePawnStatus),
-                  ],
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/wood_background_vintage.jpg'),
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.grey.shade500.withOpacity(0.55), // Change these colors to create your desired gradient
+                    Colors.grey.shade900.withOpacity(0.9), // Change these colors to create your desired gradient
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            SafeArea(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _features(),
+                Expanded(
+                    child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    _getCells(cellSize, sizeBoardByOrientation),
+                    _getPawns(cellSize),
+                  ],
+                )),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 32),
+                  // height: 100,
+                  // color: Colors.green,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _player(
+                            playerName: 'AMOS',
+                            avatarPath: 'assets/avatar_player.png',
+                            pawnColor: PawnsOperation.playerOneDarkColor,
+                            pawnStatusValueNotifier:
+                                gameViewModel.blackPawnStatus),
+                        _timer(), ////////
+                        _player(
+                            playerName: 'BATMAN',
+                            avatarPath: 'assets/bot_1.png',
+                            pawnColor: PawnsOperation.playerTwoLightColor,
+                            pawnStatusValueNotifier:
+                                gameViewModel.whitePawnStatus),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ))
           ],
-        )),
+        ),
       ),
     );
   }
@@ -207,11 +233,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   BoxDecoration _gameBackground() => const BoxDecoration(
         image: DecorationImage(
-          colorFilter: ColorFilter.mode(
-              Colors.black, BlendMode.color),
+          // colorFilter: ColorFilter.mode(
+          //     Colors.black, BlendMode.color),
           image: AssetImage('assets/wood_background_vintage.jpg'),
-          // Replace with your background image
-          fit: BoxFit.fill, // You can adjust the fit as needed
+          fit: BoxFit.fill,
+        ),
+        gradient: LinearGradient(
+          colors: [
+            Colors.red, // Change these colors to create your desired gradient
+            Colors.blue,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
       );
 
@@ -274,7 +307,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                 Padding(
+                Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
                     playerName,
@@ -372,9 +405,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             style: BorderStyle.none),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade400,
+            color: Colors.brown.shade500,
             spreadRadius: 1,
-            blurRadius: 3,
+            blurRadius: 4,
             offset: mainBoardBorderOffset,
           ),
         ],
@@ -437,7 +470,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                                         (distancePoints * 5).toInt())),
                           ],
                           child: PawnPiece(
-                            isShadow: true,
+                            isShadow: false,
                             size: cellSize,
                             pawnId: pawn.id,
                             isKing: pawn.isKing,

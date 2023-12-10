@@ -188,27 +188,51 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget _timer() {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-              color: Colors.grey.shade700,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: Colors.tealAccent, // Green border
-                width: 2.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade700,
-                  blurRadius: 10.0,
-                  offset: const Offset(0, 0),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 60,
+              height: 60,
+              child: CustomPaint(
+                painter: GradientStrokePainter(
+                  strokeWidth: 3.5, // Adjust the stroke width as needed
+                  gradient: const LinearGradient(
+                    colors: [
+                      Colors.redAccent,
+                      Colors.yellowAccent,
+                      Colors.green
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-              ]),
-          child: const Text(
-            "22",
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 24),
-          ),
+              ),
+            ),
+            Container(
+              width: 57,
+              height: 57,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade500.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(1, 2),
+                      blurRadius: 1.5,
+                      color: Colors.black.withOpacity(0.4),
+                    )
+                  ]
+              ),
+              child: const Text(
+                "45",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                ),
+              ),
+            )
+          ],
         ),
         const Padding(
           padding: EdgeInsets.only(top: 8.0),
@@ -396,10 +420,11 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
                 double leftNotKilled = (pawnData.offset.dx * cellSize);
 
-                double cellSizeKilledWithFactor = cellSize * pawnKilledScaleOffset.dx;
+                double cellSizeKilledWithFactor =
+                    cellSize * pawnKilledScaleOffset.dx;
 
-
-                double padding = -(cellSizeKilledWithFactor * (1- pawnAliveScale));
+                double padding =
+                    -(cellSizeKilledWithFactor * (1 - pawnAliveScale));
                 double margin = 3;
 
                 double leftKilled = padding +
@@ -535,7 +560,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.grey.shade300.withOpacity(0.6),
+              color: Colors.grey.shade300.withOpacity(0.7),
               // Green border
               width: borderWidthGameBoard,
             ),
@@ -563,5 +588,48 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         )
       ],
     );
+  }
+}
+
+class GradientStrokePainter extends CustomPainter {
+  final double strokeWidth;
+  final Gradient gradient;
+  final BorderRadius borderRadius;
+
+  GradientStrokePainter({
+    required this.strokeWidth,
+    required this.gradient,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..shader = gradient.createShader(Rect.fromPoints(
+        const Offset(0, 0),
+        Offset(size.width, size.height),
+      ));
+
+    final Rect rect = Rect.fromPoints(
+      Offset(strokeWidth / 2, strokeWidth / 2),
+      Offset(size.width - strokeWidth / 2, size.height - strokeWidth / 2),
+    );
+
+    final RRect roundedRect = RRect.fromRectAndCorners(
+      rect,
+      topLeft: borderRadius.topLeft,
+      topRight: borderRadius.topRight,
+      bottomLeft: borderRadius.bottomLeft,
+      bottomRight: borderRadius.bottomRight,
+    );
+
+    canvas.drawRRect(roundedRect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

@@ -150,7 +150,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                     child: Container(
                   padding: EdgeInsets.all(paddingGameBoard),
                   alignment: Alignment.center,
-                  // color: Colors.lightGreen,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [

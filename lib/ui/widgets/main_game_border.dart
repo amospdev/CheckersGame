@@ -1,30 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/extensions/screen_ratio.dart';
-import 'package:untitled/game/checkers_board.dart';
 
 class MainGameBorder extends StatelessWidget {
-  const MainGameBorder({super.key});
+  static const double innerBorderWidthGameBoard = 2;
+  final double borderWidthGameBoard;
+  final double innerBoardSize;
+
+  const MainGameBorder(this.borderWidthGameBoard, this.innerBoardSize,
+      {super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      _mainGameBorder((MediaQuery.of(context).sizeByOrientation - 10) / CheckersBoard.sizeBoard);
+  Widget build(BuildContext context) => _bordersGameBoard(
+      borderWidthGameBoard, innerBoardSize, innerBorderWidthGameBoard);
 
-  Widget _mainGameBorder(double cellSize) => Container(
-      width: CheckersBoard.sizeBoard * cellSize + 10,
-      // Increased size to account for the border and prevent cut-off
-      height: CheckersBoard.sizeBoard * cellSize + 10,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.brown.shade700,
-          width: 10.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(0, 0),
+  Widget _bordersGameBoard(double borderWidthGameBoard, double innerBoardSize,
+      double innerBorderWidthGameBoard) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.grey.shade300.withOpacity(0.7),
+              // Green border
+              width: borderWidthGameBoard,
+            ),
           ),
-        ],
-      ));
+          width: innerBoardSize + (borderWidthGameBoard * 2),
+          height: innerBoardSize + (borderWidthGameBoard * 2),
+        ),
+        Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.grey,
+                // Green border
+                width: innerBorderWidthGameBoard,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 6.5,
+                  offset: Offset(1.5, 1.5),
+                ),
+              ]),
+          width: innerBoardSize + innerBorderWidthGameBoard,
+          height: innerBoardSize + innerBorderWidthGameBoard,
+        )
+      ],
+    );
+  }
 }

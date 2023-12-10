@@ -16,8 +16,11 @@ import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/background_game.dart';
+import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
+import 'package:untitled/ui/widgets/timer/timer.dart';
 
 void main() => runApp(
       ChangeNotifierProvider(
@@ -120,7 +123,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
     double paddingGameBoard = 8;
     double borderWidthGameBoard = 10;
-    double innerBorderWidthGameBoard = 2;
 
     final cellSize = (sizeBoardByOrientation -
             (paddingGameBoard * 2) -
@@ -138,12 +140,12 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         height: MediaQuery.of(context).size.height,
         child: Stack(
           children: [
-            _backgroundGame(),
+            const BackgroundGame(),
             SafeArea(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _features(),
+                const Features(),
                 Expanded(
                     child: Container(
                   padding: EdgeInsets.all(paddingGameBoard),
@@ -152,10 +154,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      _bordersGameBoard(borderWidthGameBoard, innerBoardSize,
-                          innerBorderWidthGameBoard),
+                      MainGameBorder(borderWidthGameBoard, innerBoardSize),
                       SizedBox(
-                        // color: Colors.blue.withOpacity(0.8),
                         width: innerBoardSize,
                         height: innerBoardSize,
                         child: ClipRRect(
@@ -182,67 +182,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _timer() {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 60,
-              height: 60,
-              child: CustomPaint(
-                painter: GradientStrokePainter(
-                  strokeWidth: 3.5, // Adjust the stroke width as needed
-                  gradient: const LinearGradient(
-                    colors: [
-                      Colors.redAccent,
-                      Colors.yellowAccent,
-                      Colors.green
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
-            Container(
-              width: 57,
-              height: 57,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade500.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                    BoxShadow(
-                      offset: const Offset(1, 2),
-                      blurRadius: 1.5,
-                      color: Colors.black.withOpacity(0.4),
-                    )
-                  ]
-              ),
-              child: const Text(
-                "45",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 24,
-                ),
-              ),
-            )
-          ],
-        ),
-        const Padding(
-          padding: EdgeInsets.only(top: 8.0),
-          child: Text(
-            "Time Left",
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20),
-          ),
-        )
-      ],
     );
   }
 
@@ -336,15 +275,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       ),
     );
   }
-
-  Widget _features() => SizedBox(
-        height: 65,
-        width: MediaQuery.of(context).size.width,
-        child: const Align(
-          alignment: Alignment.topCenter,
-          child: Features(),
-        ),
-      );
 
   Widget _getCells(double cellSize, double widthBoardByOrientation) {
     // logDebug("MAIN WIDGET _getCells");
@@ -496,39 +426,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Widget _backgroundGame() {
-    return Stack(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/wood_background_vintage.jpg'),
-              fit: BoxFit.fill,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.grey.shade400.withOpacity(0.5),
-                // Colors.black45,
-                Colors.black87,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
   Widget _bottomLayer() {
     return Container(
       margin: const EdgeInsets.only(bottom: 32),
-      // height: 100,
-      // color: Colors.green,
       child: Padding(
         padding: const EdgeInsets.only(left: 8.0, right: 8.0),
         child: Row(
@@ -539,7 +439,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 avatarPath: 'assets/avatar_player.png',
                 pawnColor: PawnsOperation.playerOneDarkColor,
                 pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
-            _timer(), ////////
+            const TurnTimer(),
             _player(
                 playerName: 'BATMAN',
                 avatarPath: 'assets/bot_1.png',
@@ -549,87 +449,5 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  Widget _bordersGameBoard(double borderWidthGameBoard, double innerBoardSize,
-      double innerBorderWidthGameBoard) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.grey.shade300.withOpacity(0.7),
-              // Green border
-              width: borderWidthGameBoard,
-            ),
-          ),
-          width: innerBoardSize + (borderWidthGameBoard * 2),
-          height: innerBoardSize + (borderWidthGameBoard * 2),
-        ),
-        Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Colors.grey,
-                // Green border
-                width: innerBorderWidthGameBoard,
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 6.5,
-                  offset: Offset(1.5, 1.5),
-                ),
-              ]),
-          width: innerBoardSize + innerBorderWidthGameBoard,
-          height: innerBoardSize + innerBorderWidthGameBoard,
-        )
-      ],
-    );
-  }
-}
-
-class GradientStrokePainter extends CustomPainter {
-  final double strokeWidth;
-  final Gradient gradient;
-  final BorderRadius borderRadius;
-
-  GradientStrokePainter({
-    required this.strokeWidth,
-    required this.gradient,
-    required this.borderRadius,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..shader = gradient.createShader(Rect.fromPoints(
-        const Offset(0, 0),
-        Offset(size.width, size.height),
-      ));
-
-    final Rect rect = Rect.fromPoints(
-      Offset(strokeWidth / 2, strokeWidth / 2),
-      Offset(size.width - strokeWidth / 2, size.height - strokeWidth / 2),
-    );
-
-    final RRect roundedRect = RRect.fromRectAndCorners(
-      rect,
-      topLeft: borderRadius.topLeft,
-      topRight: borderRadius.topRight,
-      bottomLeft: borderRadius.bottomLeft,
-      bottomRight: borderRadius.bottomRight,
-    );
-
-    canvas.drawRRect(roundedRect, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

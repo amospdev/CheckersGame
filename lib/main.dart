@@ -51,6 +51,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late final AnimationController _pawnMoveController;
 
   static const int _pawnMoveDuration = 350;
+  static const double pawnAliveScale = 0.75;
 
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
 
@@ -126,14 +127,15 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             (borderWidthGameBoard * 2)) /
         CheckersBoard.sizeBoard;
 
-    final discardPileArea = cellSize * 2 + borderWidthGameBoard * 2;
+    final discardPileAreaTop = cellSize + borderWidthGameBoard;
+    final discardPileAreaBottom = cellSize + borderWidthGameBoard;
+    final discardPileArea = discardPileAreaTop + discardPileAreaBottom;
 
-    final boardSize = cellSize * CheckersBoard.sizeBoard;
+    final innerBoardSize = cellSize * CheckersBoard.sizeBoard;
 
     return Scaffold(
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
-        // decoration: _gameBackground(),
         child: Stack(
           children: [
             _backgroundGame(),
@@ -150,23 +152,26 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      _bordersGameBoard(borderWidthGameBoard, boardSize,
+                      _bordersGameBoard(borderWidthGameBoard, innerBoardSize,
                           innerBorderWidthGameBoard),
                       SizedBox(
                         // color: Colors.blue.withOpacity(0.8),
-                        width: boardSize,
-                        height: boardSize,
+                        width: innerBoardSize,
+                        height: innerBoardSize,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: _getCells(cellSize, sizeBoardByOrientation),
                         ),
                       ),
-                      Container(
-                        // color: Colors.lightGreen.withOpacity(0.1),
-                        width: boardSize,
-                        height: boardSize + discardPileArea,
-                        child: _getPawns(cellSize, (discardPileArea / 2),
-                            discardPileArea, boardSize, borderWidthGameBoard),
+                      SizedBox(
+                        width: innerBoardSize,
+                        height: innerBoardSize + discardPileArea,
+                        child: _getPawns(
+                            cellSize,
+                            (discardPileArea / 2),
+                            discardPileArea,
+                            innerBoardSize,
+                            borderWidthGameBoard),
                       ),
                     ],
                   ),
@@ -363,18 +368,13 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       );
     }).toList();
 
-    return Container(
-      // width: widthBoardByOrientation,
-      // height: widthBoardByOrientation,
-
-      child: Stack(
-        children: cells,
-      ),
+    return Stack(
+      children: cells,
     );
   }
 
   Widget _getPawns(double cellSize, double heightOffset, double discardPileArea,
-      double boardSize, double borderWidthGameBoard) {
+      double innerBoardSize, double borderWidthGameBoard) {
     logDebug("MAIN WIDGET _getPawns");
     List<Widget> pawns = gameViewModel.pawns
         .mapIndexed((pawn, index) => ValueListenableBuilder<PawnData>(
@@ -383,8 +383,9 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 double topNotKilled =
                     (pawnData.offset.dy * cellSize) + heightOffset;
 
-                double topKilledWhite =
-                    boardSize + (discardPileArea / 2) + borderWidthGameBoard;
+                double topKilledWhite = innerBoardSize +
+                    (discardPileArea / 2) +
+                    borderWidthGameBoard;
                 double topKilledBlack = 0;
 
                 double top = pawnData.isKilled
@@ -393,10 +394,18 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                         : topKilledBlack
                     : topNotKilled;
 
-                double leftNotKilled = ((pawnData.offset.dx) * cellSize);
-                double leftKilled = (pawnData.indexKilled *
-                        (cellSize * pawnKilledScaleOffset.dx + 2)) -
-                    4;
+                double leftNotKilled = (pawnData.offset.dx * cellSize);
+
+                double cellSizeKilledWithFactor = cellSize * pawnKilledScaleOffset.dx;
+
+
+                double padding = -(cellSizeKilledWithFactor * (1- pawnAliveScale));
+                double margin = 3;
+
+                double leftKilled = padding +
+                    (pawnData.indexKilled *
+                        (cellSizeKilledWithFactor + margin));
+
                 double left = pawnData.isKilled ? leftKilled : leftNotKilled;
 
                 double distancePoints = (Offset(leftNotKilled, topNotKilled) -
@@ -517,7 +526,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _bordersGameBoard(double borderWidthGameBoard, double boardSize,
+  Widget _bordersGameBoard(double borderWidthGameBoard, double innerBoardSize,
       double innerBorderWidthGameBoard) {
     return Stack(
       alignment: Alignment.center,
@@ -531,8 +540,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
               width: borderWidthGameBoard,
             ),
           ),
-          width: boardSize + (borderWidthGameBoard * 2),
-          height: boardSize + (borderWidthGameBoard * 2),
+          width: innerBoardSize + (borderWidthGameBoard * 2),
+          height: innerBoardSize + (borderWidthGameBoard * 2),
         ),
         Container(
           decoration: BoxDecoration(
@@ -549,8 +558,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                   offset: Offset(1.5, 1.5),
                 ),
               ]),
-          width: boardSize + innerBorderWidthGameBoard,
-          height: boardSize + innerBorderWidthGameBoard,
+          width: innerBoardSize + innerBorderWidthGameBoard,
+          height: innerBoardSize + innerBorderWidthGameBoard,
         )
       ],
     );

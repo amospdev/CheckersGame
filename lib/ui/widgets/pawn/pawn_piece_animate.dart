@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/game_view_model.dart';
+import 'package:untitled/main.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 
 class PawnPieceAnimate extends StatefulWidget {
@@ -84,7 +85,7 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
               size: size,
               pawnId: pawnId,
               isKing: isKing,
-              factorRadius: 0.75,
+              factorRadius: GameBoardState.pawnAliveScale,
               pawnColor: pawnColor,
             ),
           );

@@ -14,7 +14,6 @@ import 'package:untitled/extensions/cg_log.dart';
 import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
-import 'package:untitled/game/pawns_operation.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/background_game.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
@@ -22,6 +21,7 @@ import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 import 'package:untitled/ui/widgets/pawn/status_change/pawn_player_one_dark.dart';
 import 'package:untitled/ui/widgets/pawn/status_change/pawn_player_two_light.dart';
+import 'package:untitled/ui/widgets/player_pager_card.dart';
 import 'package:untitled/ui/widgets/timer/timer.dart';
 
 void main() => runApp(
@@ -54,6 +54,7 @@ class GameBoard extends StatefulWidget {
 
 class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   late final AnimationController _pawnMoveController;
+  late int selectedPage;
 
   static const int _pawnMoveDuration = 350;
   static const double pawnAliveScale = 0.75;
@@ -68,6 +69,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    selectedPage = 0;
     gameViewModel = Provider.of<GameViewModel>(context, listen: false);
     _pawnMoveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
@@ -195,47 +197,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _player({required String avatarPath, required String playerName}) =>
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              playerName,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w700),
-            ),
-          ),
-          _circleAvatarPlayer(filePath: avatarPath),
-        ],
-      );
-
-  Widget _circleAvatarPlayer({required filePath}) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: borderCircleAvatar, // Set the color of the border
-          width: 2, // Set the width of the border
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blueAccent.withOpacity(0.9),
-            blurRadius: 3
-          )
-        ]
-      ),
-      child: CircleAvatar(
-        radius: 35.0, // Adjust the radius as needed
-        backgroundColor: Colors.white,
-        child: Image.asset(
-          filePath,
-          height: 55,
-        ),
-      ),
-    );
-  }
 
   Widget _getCells(double cellSize, double widthBoardByOrientation) {
     // logDebug("MAIN WIDGET _getCells");
@@ -390,60 +351,75 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
   Widget _bottomLayer() {
     return Container(
       margin: const EdgeInsets.only(bottom: 32),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+      child: const Padding(
+        padding: EdgeInsets.only(left: 8.0, right: 8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _playerPager(
+            PlayerPagerCard(
                 avatarPath: 'assets/avatar_player.png',
                 playerName: 'AMOS',
-                pawnColor: PawnsOperation.playerOnePawnDarkColor,
-                pawnTextColor: PawnsOperation.playerOnePawnTextLightColor,
-                pawnStatusValueNotifier: gameViewModel.blackPawnStatus,
-                pawnStatusChange: const PawnPlayerOneDark()),
-            const TurnTimer(),
-            _playerPager(
+                pawnStatusChange: PawnPlayerOneDark()),
+            TurnTimer(),
+            PlayerPagerCard(
                 avatarPath: 'assets/bot_1.png',
                 playerName: 'BATMAN',
-                pawnTextColor: PawnsOperation.playerTwoPawnTextDarkColor,
-                pawnColor: PawnsOperation.playerTwoPawnLightColor,
-                pawnStatusValueNotifier: gameViewModel.whitePawnStatus,
-                pawnStatusChange: const PawnPlayerTwoLight())
+                pawnStatusChange: PawnPlayerTwoLight())
           ],
         ),
       ),
     );
   }
 
-  Widget _playerPager(
-      {required String avatarPath,
-      required Color pawnTextColor,
-      required String playerName,
-      required Color pawnColor,
-      required ValueNotifier<PawnStatus> pawnStatusValueNotifier,
-      required Widget pawnStatusChange}) {
-    return Container(
-      height: 140,
-      width: 100,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade700,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: borderRoundedPlayerCard, // Green border
-          width: 2,
-        ),
-      ),
-      child: PageView(
-        // Customize the PageView widget as needed
-        children: [
-          _player(
-            playerName: playerName,
-            avatarPath: avatarPath,
-          ),
-          pawnStatusChange
-        ],
-      ),
-    );
-  }
+// Widget _playerPager(
+//     {required String avatarPath,
+//     required String playerName,
+//     required Widget pawnStatusChange}) {
+//   return Container(
+//     height: 140,
+//     width: 100,
+//     decoration: BoxDecoration(
+//       color: Colors.grey.shade700,
+//       borderRadius: BorderRadius.circular(15),
+//       border: Border.all(
+//         color: borderRoundedPlayerCard, // Green border
+//         width: 2,
+//       ),
+//     ),
+//     child: Column(
+//       children: [
+//         Expanded(
+//             child: PageView(
+//           onPageChanged: (page) {
+//             setState(() {
+//               selectedPage = page;
+//             });
+//           },
+//           children: [
+//             _player(
+//               playerName: playerName,
+//               avatarPath: avatarPath,
+//             ),
+//             pawnStatusChange
+//           ],
+//         )),
+//         PageViewDotIndicator(
+//           currentItem: selectedPage,
+//           count: 2,
+//           unselectedColor: Colors.black26,
+//           selectedColor: Colors.blue,
+//           duration: const Duration(milliseconds: 200),
+//           boxShape: BoxShape.circle,
+//           // onItemClicked: (index) {
+//           //   _pageController.animateToPage(
+//           //     index,
+//           //     duration: const Duration(milliseconds: 200),
+//           //     curve: Curves.easeInOut,
+//           //   );
+//           // },
+//         ),
+//       ],
+//     ),
+//   );
+// }
 }

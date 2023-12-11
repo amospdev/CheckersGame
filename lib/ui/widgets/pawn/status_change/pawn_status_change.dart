@@ -24,7 +24,7 @@ class PawnStatusChange extends StatelessWidget {
     required Color pawnColor,
     required Color pawnTextColor,
   }) {
-    double pawnSize = 45;
+    double pawnSize = 40;
     double pawnTextScaleFactor = 0.41;
     return ValueListenableBuilder<PawnStatus>(
       valueListenable: pawnStatusNotifier,

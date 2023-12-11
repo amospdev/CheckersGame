@@ -35,6 +35,7 @@ dependencies:
   lottie: ^2.6.0
   flutter_animate: ^4.3.0
   circular_countdown_timer: ^0.2.3
+  page_view_dot_indicator: ^2.3.0
 
 
   # The following adds the Cupertino Icons font to your application.

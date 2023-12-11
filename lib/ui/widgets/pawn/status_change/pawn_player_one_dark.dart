@@ -12,7 +12,7 @@ class PawnPlayerOneDark extends StatelessWidget {
       pawnColor: PawnsOperation.playerOnePawnDarkColor,
       pawnTextColor: PawnsOperation.playerOnePawnTextLightColor,
       pawnStatusNotifier:
-          Provider.of<GameViewModel>(context, listen: false).whitePawnStatus);
+          Provider.of<GameViewModel>(context, listen: false).blackPawnStatus);
 
   Widget _pawnStatusChange({
     required ValueNotifier<PawnStatus> pawnStatusNotifier,

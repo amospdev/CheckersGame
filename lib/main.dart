@@ -20,6 +20,8 @@ import 'package:untitled/ui/background_game.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
+import 'package:untitled/ui/widgets/pawn/status_change/pawn_player_one_dark.dart';
+import 'package:untitled/ui/widgets/pawn/status_change/pawn_player_two_light.dart';
 import 'package:untitled/ui/widgets/timer/timer.dart';
 
 void main() => runApp(
@@ -55,6 +57,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
 
   static const int _pawnMoveDuration = 350;
   static const double pawnAliveScale = 0.75;
+  static const Color borderCircleAvatar = Colors.black26;
+  static const Color borderRoundedPlayerCard = Colors.blueGrey;
 
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
 
@@ -191,64 +195,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _pawnStatusChange({
-    required Color pawnColor,
-    required Color pawnTextColor,
-    required PawnStatus pawnStatus,
-  }) {
-    double pawnSize = 45;
-    double pawnTextScaleFactor = 0.41;
-    return SizedBox(
-      width: 73,
-      height: 60,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              PawnPiece(
-                pawnColor: pawnColor,
-                isKing: false,
-                isShadow: false,
-                pawnId: "pawnId",
-                size: pawnSize,
-                isShowAnimation: false,
-              ),
-              Text(
-                pawnStatus.totalPawnsText,
-                style: TextStyle(
-                    color: pawnTextColor,
-                    fontSize: pawnSize * pawnTextScaleFactor,
-                    fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              PawnPiece(
-                pawnColor: pawnColor,
-                isKing: true,
-                isShadow: false,
-                pawnId: "pawnId",
-                size: pawnSize,
-                isShowAnimation: false,
-              ),
-              Text(
-                pawnStatus.totalKingPawnsText,
-                style: TextStyle(
-                    color: pawnTextColor,
-                    fontSize: pawnSize * pawnTextScaleFactor,
-                    fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _player({required String avatarPath, required String playerName}) =>
       Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -266,12 +212,27 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       );
 
   Widget _circleAvatarPlayer({required filePath}) {
-    return CircleAvatar(
-      radius: 35.0, // Adjust the radius as needed
-      backgroundColor: Colors.white.withOpacity(0.95),
-      child: Image.asset(
-        filePath,
-        height: 55,
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: borderCircleAvatar, // Set the color of the border
+          width: 2, // Set the width of the border
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.9),
+            blurRadius: 3
+          )
+        ]
+      ),
+      child: CircleAvatar(
+        radius: 35.0, // Adjust the radius as needed
+        backgroundColor: Colors.white,
+        child: Image.asset(
+          filePath,
+          height: 55,
+        ),
       ),
     );
   }
@@ -439,16 +400,16 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
                 playerName: 'AMOS',
                 pawnColor: PawnsOperation.playerOnePawnDarkColor,
                 pawnTextColor: PawnsOperation.playerOnePawnTextLightColor,
-                pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
-
+                pawnStatusValueNotifier: gameViewModel.blackPawnStatus,
+                pawnStatusChange: const PawnPlayerOneDark()),
             const TurnTimer(),
             _playerPager(
                 avatarPath: 'assets/bot_1.png',
                 playerName: 'BATMAN',
                 pawnTextColor: PawnsOperation.playerTwoPawnTextDarkColor,
                 pawnColor: PawnsOperation.playerTwoPawnLightColor,
-                pawnStatusValueNotifier: gameViewModel.whitePawnStatus)
-            // Wrap PageView with SizedBox to constrain its height
+                pawnStatusValueNotifier: gameViewModel.whitePawnStatus,
+                pawnStatusChange: const PawnPlayerTwoLight())
           ],
         ),
       ),
@@ -460,7 +421,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       required Color pawnTextColor,
       required String playerName,
       required Color pawnColor,
-      required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) {
+      required ValueNotifier<PawnStatus> pawnStatusValueNotifier,
+      required Widget pawnStatusChange}) {
     return Container(
       height: 140,
       width: 100,
@@ -468,8 +430,8 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         color: Colors.grey.shade700,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.yellow, // Green border
-          width: 1.0,
+          color: borderRoundedPlayerCard, // Green border
+          width: 2,
         ),
       ),
       child: PageView(
@@ -479,15 +441,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
             playerName: playerName,
             avatarPath: avatarPath,
           ),
-          ValueListenableBuilder<PawnStatus>(
-            valueListenable: pawnStatusValueNotifier,
-            builder: (ctx, pawnStatus, _) {
-              return _pawnStatusChange(
-                  pawnColor: pawnColor,
-                  pawnStatus: pawnStatus,
-                  pawnTextColor: pawnTextColor);
-            },
-          ),
+          pawnStatusChange
         ],
       ),
     );

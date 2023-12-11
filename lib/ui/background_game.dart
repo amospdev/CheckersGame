@@ -21,9 +21,11 @@ class BackgroundGame extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
+                Colors.black12.withOpacity(0.6),
                 Colors.grey.shade400.withOpacity(0.5),
-                // Colors.black45,
-                Colors.black87,
+                Colors.black45.withOpacity(0.8),
+                Colors.black54.withOpacity(0.1),
+                Colors.grey.shade700.withOpacity(0.7),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

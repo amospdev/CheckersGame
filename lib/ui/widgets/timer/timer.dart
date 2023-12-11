@@ -18,7 +18,7 @@ class TurnTimer extends StatelessWidget {
               height: 60,
               child: CustomPaint(
                 painter: GradientStrokePainter(
-                  strokeWidth: 3.5, // Adjust the stroke width as needed
+                  strokeWidth: 3, // Adjust the stroke width as needed
                   gradient: const LinearGradient(
                     colors: [
                       Colors.lightBlueAccent,
@@ -31,17 +31,17 @@ class TurnTimer extends StatelessWidget {
               ),
             ),
             Container(
-              width: 57,
-              height: 57,
+              width: 58,
+              height: 58,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                  color: Colors.grey.shade500.withOpacity(0.6),
+                  color: Colors.grey.shade300.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      offset: const Offset(1, 2),
-                      blurRadius: 1.5,
-                      color: Colors.black.withOpacity(0.4),
+                      offset: const Offset(0, 0),
+                      blurRadius: 3,
+                      color: Colors.black.withOpacity(0.5),
                     )
                   ]),
               child: const Text(

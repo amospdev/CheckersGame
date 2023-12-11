@@ -352,7 +352,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     return Container(
       margin: const EdgeInsets.only(bottom: 32),
       child: const Padding(
-        padding: EdgeInsets.only(left: 8.0, right: 8.0),
+        padding: EdgeInsets.only(left: 12.0, right: 12.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

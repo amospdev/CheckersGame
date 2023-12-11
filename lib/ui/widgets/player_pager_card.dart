@@ -53,35 +53,38 @@ class _PlayerPagerCardState extends State<PlayerPagerCard> {
       child: Column(
         children: [
           Expanded(
-              flex: 4,
               child: PageView(
-                controller: _pageController,
-                onPageChanged: (page) {
-                  setState(() {
-                    selectedPage = page;
-                  });
-                },
-                children: [
-                  _player(
-                    playerName: playerName,
-                    avatarPath: avatarPath,
-                  ),
-                  pawnStatusChange,
-                  Container(
-                    alignment: Alignment.center,
-                    child: const Text("PLAYER DATA"),
-                  )
-                ],
-              )),
-          Expanded(
+            controller: _pageController,
+            onPageChanged: (page) {
+              setState(() {
+                selectedPage = page;
+              });
+            },
+            children: [
+              _player(
+                playerName: playerName,
+                avatarPath: avatarPath,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: pawnStatusChange,
+              ),
+              Container(
+                alignment: Alignment.center,
+                child: const Text("PLAYER DATA"),
+              )
+            ],
+          )),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
             child: PageViewDotIndicator(
               padding: EdgeInsets.zero,
-              // margin: EdgeInsets.zero,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
               size: const Size(10, 10),
               currentItem: selectedPage,
               count: 3,
               unselectedColor: Colors.black26,
-              selectedColor: Colors.white70,
+              selectedColor: Colors.white,
               duration: const Duration(milliseconds: 200),
               boxShape: BoxShape.circle,
               onItemClicked: (index) {
@@ -103,7 +106,7 @@ class _PlayerPagerCardState extends State<PlayerPagerCard> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 6.0, top: 6),
+            padding: const EdgeInsets.only(bottom: 6.0),
             child: Text(
               playerName,
               style: const TextStyle(

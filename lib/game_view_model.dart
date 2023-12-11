@@ -69,6 +69,9 @@ class GameViewModel extends ChangeNotifier {
     StatusGame summarizerPawns = pawnsOperation
         .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
 
+
+    print("VM _setGameStatus");
+
     _blackPawnStatus.value = summarizerPawns.blackPawnStatus;
     _whitePawnStatus.value = summarizerPawns.whitePawnStatus;
   }

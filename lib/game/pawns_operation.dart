@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:untitled/data/cell_details.dart';
 import 'package:untitled/data/pawn.dart';
@@ -14,11 +13,13 @@ class PawnsOperation {
 
   static final List<Color> PLAYER_TWO_LIGHT = [Colors.white, Colors.yellow];
 
-  static Color get playerOneDarkColor => PLAYER_ONE_DARK.first;
+  static Color get playerOnePawnDarkColor => PLAYER_ONE_DARK.first;
+  static Color get playerOnePawnTextLightColor => Colors.white;
+  static Color get playerTwoPawnTextDarkColor => Colors.black;
 
   // PLAYER_ONE_DARK[Random().nextInt(PLAYER_ONE_DARK.length)];
 
-  static Color get playerTwoLightColor =>
+  static Color get playerTwoPawnLightColor =>
       // PLAYER_ONE_DARK[Random().nextInt(PLAYER_ONE_DARK.length)];
       PLAYER_TWO_LIGHT.first;
 
@@ -34,8 +35,8 @@ class PawnsOperation {
               index: pawns.length,
               column: column,
               color: cellDeatils.isWhite
-                  ? PawnsOperation.playerTwoLightColor
-                  : PawnsOperation.playerOneDarkColor,
+                  ? PawnsOperation.playerTwoPawnLightColor
+                  : PawnsOperation.playerOnePawnDarkColor,
               isKing: cellDeatils.isKing));
         }
       }
@@ -71,11 +72,22 @@ class PawnsOperation {
 
 class PawnStatus {
   final int totalPawns;
+  final int totalKingPawns;
   final bool isCurrPlayer;
 
   String get totalPawnsText => totalPawns.toString();
 
-  PawnStatus({this.totalPawns = 0, this.isCurrPlayer = false});
+  String get totalKingPawnsText => totalKingPawns.toString();
+
+  PawnStatus(
+      {this.totalPawns = 0,
+      this.totalKingPawns = 0,
+      this.isCurrPlayer = false});
+
+  @override
+  String toString() {
+    return 'PawnStatus{totalPawns: $totalPawns, totalKingPawns: $totalKingPawns, isCurrPlayer: $isCurrPlayer}';
+  }
 }
 
 class StatusGame {
@@ -93,10 +105,14 @@ class StatusGame {
       this.totalWithePawns = 0});
 
   PawnStatus get blackPawnStatus => PawnStatus(
-      totalPawns: allBlackPawns, isCurrPlayer: currPlayer == CellType.BLACK);
+      totalPawns: allBlackPawns,
+      totalKingPawns: totalBlackKings,
+      isCurrPlayer: currPlayer == CellType.BLACK);
 
   PawnStatus get whitePawnStatus => PawnStatus(
-      totalPawns: allWithePawns, isCurrPlayer: currPlayer == CellType.WHITE);
+      totalPawns: allWithePawns,
+      totalKingPawns: totalWitheKings,
+      isCurrPlayer: currPlayer == CellType.WHITE);
 
   bool get isBlackPlayerWin => allWithePawns == 0;
 

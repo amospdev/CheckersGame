@@ -9,11 +9,13 @@ class PawnPiece extends StatelessWidget {
   final bool isShadow;
   final String pawnId;
   final double factorRadius;
+  final bool isShowAnimation;
 
   const PawnPiece(
       {required this.pawnColor,
       required this.isKing,
       this.isShadow = true,
+      this.isShowAnimation = true,
       this.factorRadius = 1,
       required this.pawnId,
       required this.size,
@@ -40,7 +42,10 @@ class PawnPiece extends StatelessWidget {
                 factorRadius: factorRadius),
           )),
           isKing
-              ? CrownAnimation(pawnId: pawnId, isKing: isKing)
+              ? CrownAnimation(
+                  pawnId: pawnId,
+                  isKing: isKing,
+                  isShowAnimation: isShowAnimation)
               : const SizedBox(),
         ],
       );

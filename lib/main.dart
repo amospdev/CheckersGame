@@ -136,141 +136,142 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     final innerBoardSize = cellSize * CheckersBoard.sizeBoard;
 
     return Scaffold(
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: Stack(
-          children: [
-            const BackgroundGame(),
-            SafeArea(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Features(),
-                Expanded(
-                    child: Container(
-                  padding: EdgeInsets.all(paddingGameBoard),
-                  alignment: Alignment.center,
-                  child: Stack(
+      body: WillPopScope(
+        onWillPop: () async {
+          // Handle the back button press
+          // Return true to allow the app to be closed, false to prevent closure
+          return false;
+        },
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          child: Stack(
+            children: [
+              const BackgroundGame(),
+              SafeArea(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Features(),
+                  Expanded(
+                      child: Container(
+                    padding: EdgeInsets.all(paddingGameBoard),
                     alignment: Alignment.center,
-                    children: [
-                      MainGameBorder(borderWidthGameBoard, innerBoardSize),
-                      SizedBox(
-                        width: innerBoardSize,
-                        height: innerBoardSize,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: _getCells(cellSize, sizeBoardByOrientation),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        MainGameBorder(borderWidthGameBoard, innerBoardSize),
+                        SizedBox(
+                          width: innerBoardSize,
+                          height: innerBoardSize,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _getCells(cellSize, sizeBoardByOrientation),
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: innerBoardSize,
-                        height: innerBoardSize + discardPileArea,
-                        child: _getPawns(
-                            cellSize,
-                            (discardPileArea / 2),
-                            discardPileArea,
-                            innerBoardSize,
-                            borderWidthGameBoard),
-                      ),
-                    ],
-                  ),
-                )),
-                _bottomLayer(),
-              ],
-            ))
-          ],
+                        SizedBox(
+                          width: innerBoardSize,
+                          height: innerBoardSize + discardPileArea,
+                          child: _getPawns(
+                              cellSize,
+                              (discardPileArea / 2),
+                              discardPileArea,
+                              innerBoardSize,
+                              borderWidthGameBoard),
+                        ),
+                      ],
+                    ),
+                  )),
+                  _bottomLayer(),
+                ],
+              ))
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _pawnStatusChangeAnimate(
-      {required Color pawnColor, required PawnStatus pawnStatus}) {
-    return Animate(
-      key: ValueKey(pawnStatus.totalPawnsText),
-      effects: const [
-        FlipEffect(
-          duration: Duration(milliseconds: 200),
-          alignment: Alignment.center,
-          begin: 1,
-          end: 2, // 2 * pi for a full rotation
-        )
-      ],
-      child: Container(
-        width: 73,
-        height: 60,
-        alignment: Alignment.centerRight,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            PawnPiece(
+  Widget _pawnStatusChange({
+    required Color pawnColor,
+    required Color pawnTextColor,
+    required PawnStatus pawnStatus,
+  }) {
+    double pawnSize = 45;
+    double pawnTextScaleFactor = 0.41;
+    return SizedBox(
+      width: 73,
+      height: 60,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              PawnPiece(
                 pawnColor: pawnColor,
                 isKing: false,
                 isShadow: false,
                 pawnId: "pawnId",
-                size: 25),
-            Text(pawnStatus.totalPawnsText)
-          ],
-        ),
+                size: pawnSize,
+                isShowAnimation: false,
+              ),
+              Text(
+                pawnStatus.totalPawnsText,
+                style: TextStyle(
+                    color: pawnTextColor,
+                    fontSize: pawnSize * pawnTextScaleFactor,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              PawnPiece(
+                pawnColor: pawnColor,
+                isKing: true,
+                isShadow: false,
+                pawnId: "pawnId",
+                size: pawnSize,
+                isShowAnimation: false,
+              ),
+              Text(
+                pawnStatus.totalKingPawnsText,
+                style: TextStyle(
+                    color: pawnTextColor,
+                    fontSize: pawnSize * pawnTextScaleFactor,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _pawnStatusChange(
-          {required Color pawnColor, required PawnStatus pawnStatus}) =>
-      _pawnStatusChangeAnimate(pawnColor: pawnColor, pawnStatus: pawnStatus);
-
-  Widget _player(
-          {required Color pawnColor,
-          required String avatarPath,
-          required String playerName,
-          required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) =>
-      Container(
-        padding: const EdgeInsets.only(left: 8, top: 24, right: 8, bottom: 24),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade700,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: Colors.yellow, // Green border
-            width: 1.0,
+  Widget _player({required String avatarPath, required String playerName}) =>
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              playerName,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w700),
+            ),
           ),
-        ),
-        alignment: Alignment.centerLeft,
-        child: ValueListenableBuilder<PawnStatus>(
-          valueListenable: pawnStatusValueNotifier,
-          builder: (ctx, pawnStatus, _) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    playerName,
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                Stack(
-                  children: [
-                    _circleAvatarPlayer(filePath: avatarPath),
-                    _pawnStatusChange(
-                        pawnColor: pawnColor, pawnStatus: pawnStatus)
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
+          _circleAvatarPlayer(filePath: avatarPath),
+        ],
       );
 
   Widget _circleAvatarPlayer({required filePath}) {
     return CircleAvatar(
-      radius: 30.0, // Adjust the radius as needed
+      radius: 35.0, // Adjust the radius as needed
       backgroundColor: Colors.white.withOpacity(0.95),
       child: Image.asset(
         filePath,
-        height: 50,
+        height: 55,
       ),
     );
   }
@@ -433,19 +434,61 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _player(
-                playerName: 'AMOS',
+            _playerPager(
                 avatarPath: 'assets/avatar_player.png',
-                pawnColor: PawnsOperation.playerOneDarkColor,
+                playerName: 'AMOS',
+                pawnColor: PawnsOperation.playerOnePawnDarkColor,
+                pawnTextColor: PawnsOperation.playerOnePawnTextLightColor,
                 pawnStatusValueNotifier: gameViewModel.blackPawnStatus),
+
             const TurnTimer(),
-            _player(
-                playerName: 'BATMAN',
+            _playerPager(
                 avatarPath: 'assets/bot_1.png',
-                pawnColor: PawnsOperation.playerTwoLightColor,
-                pawnStatusValueNotifier: gameViewModel.whitePawnStatus),
+                playerName: 'BATMAN',
+                pawnTextColor: PawnsOperation.playerTwoPawnTextDarkColor,
+                pawnColor: PawnsOperation.playerTwoPawnLightColor,
+                pawnStatusValueNotifier: gameViewModel.whitePawnStatus)
+            // Wrap PageView with SizedBox to constrain its height
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _playerPager(
+      {required String avatarPath,
+      required Color pawnTextColor,
+      required String playerName,
+      required Color pawnColor,
+      required ValueNotifier<PawnStatus> pawnStatusValueNotifier}) {
+    return Container(
+      height: 140,
+      width: 100,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade700,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: Colors.yellow, // Green border
+          width: 1.0,
+        ),
+      ),
+      child: PageView(
+        // Customize the PageView widget as needed
+        children: [
+          _player(
+            playerName: playerName,
+            avatarPath: avatarPath,
+          ),
+          ValueListenableBuilder<PawnStatus>(
+            valueListenable: pawnStatusValueNotifier,
+            builder: (ctx, pawnStatus, _) {
+              return _pawnStatusChange(
+                  pawnColor: pawnColor,
+                  pawnStatus: pawnStatus,
+                  pawnTextColor: pawnTextColor);
+            },
+          ),
+        ],
       ),
     );
   }

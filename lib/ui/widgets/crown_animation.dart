@@ -7,8 +7,13 @@ import 'package:untitled/game_view_model.dart';
 class CrownAnimation extends StatefulWidget {
   final String pawnId;
   final bool isKing;
+  final bool isShowAnimation;
 
-  const CrownAnimation({required this.pawnId, required this.isKing, super.key});
+  const CrownAnimation(
+      {required this.pawnId,
+      required this.isKing,
+      this.isShowAnimation = true,
+      super.key});
 
   @override
   CrownAnimationState createState() => CrownAnimationState();
@@ -33,7 +38,8 @@ class CrownAnimationState extends State<CrownAnimation>
       if (mounted) {
         _lottieController.forward(
             from: Provider.of<GameViewModel>(context, listen: false)
-                    .isAlreadyMarkedKing(widget.pawnId)
+                        .isAlreadyMarkedKing(widget.pawnId) ||
+                    !widget.isShowAnimation
                 ? composition.endFrame
                 : 0);
       }

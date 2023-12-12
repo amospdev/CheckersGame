@@ -217,8 +217,6 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           child: ValueListenableBuilder<CellDetailsData>(
             valueListenable: cell.cellDetailsData,
             builder: (ctx, cellDetailsData, _) {
-              // logDebug(
-              //     "MAIN WIDGET ***REBUILD*** _getCells ValueListenableBuilder $cell");
 
               return RepaintBoundary(
                   child: Transform.rotate(
@@ -370,56 +368,4 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
       ),
     );
   }
-
-// Widget _playerPager(
-//     {required String avatarPath,
-//     required String playerName,
-//     required Widget pawnStatusChange}) {
-//   return Container(
-//     height: 140,
-//     width: 100,
-//     decoration: BoxDecoration(
-//       color: Colors.grey.shade700,
-//       borderRadius: BorderRadius.circular(15),
-//       border: Border.all(
-//         color: borderRoundedPlayerCard, // Green border
-//         width: 2,
-//       ),
-//     ),
-//     child: Column(
-//       children: [
-//         Expanded(
-//             child: PageView(
-//           onPageChanged: (page) {
-//             setState(() {
-//               selectedPage = page;
-//             });
-//           },
-//           children: [
-//             _player(
-//               playerName: playerName,
-//               avatarPath: avatarPath,
-//             ),
-//             pawnStatusChange
-//           ],
-//         )),
-//         PageViewDotIndicator(
-//           currentItem: selectedPage,
-//           count: 2,
-//           unselectedColor: Colors.black26,
-//           selectedColor: Colors.blue,
-//           duration: const Duration(milliseconds: 200),
-//           boxShape: BoxShape.circle,
-//           // onItemClicked: (index) {
-//           //   _pageController.animateToPage(
-//           //     index,
-//           //     duration: const Duration(milliseconds: 200),
-//           //     curve: Curves.easeInOut,
-//           //   );
-//           // },
-//         ),
-//       ],
-//     ),
-//   );
-// }
 }

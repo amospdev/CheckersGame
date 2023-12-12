@@ -18,13 +18,19 @@ class GameViewModel extends ChangeNotifier {
   final Set<String> _markedKings = {};
   PawnsOperation pawnsOperation = PawnsOperation();
 
-  ValueNotifier<StatusGame> gameStatus = ValueNotifier(StatusGame());
+  static const int TURN_TIME_LIMIT = 6;
 
-  ValueNotifier<PawnStatus> _blackPawnStatus = ValueNotifier(PawnStatus());
+  final ValueNotifier<int> _turnTimerText = ValueNotifier(TURN_TIME_LIMIT - 1);
+
+  ValueNotifier<int> get turnTimerText => _turnTimerText;
+
+  final ValueNotifier<PawnStatus> _blackPawnStatus =
+      ValueNotifier(PawnStatus());
 
   ValueNotifier<PawnStatus> get blackPawnStatus => _blackPawnStatus;
 
-  ValueNotifier<PawnStatus> _whitePawnStatus = ValueNotifier(PawnStatus());
+  final ValueNotifier<PawnStatus> _whitePawnStatus =
+      ValueNotifier(PawnStatus());
 
   ValueNotifier<PawnStatus> get whitePawnStatus => _whitePawnStatus;
 
@@ -57,18 +63,40 @@ class GameViewModel extends ChangeNotifier {
     _initializeGame(_checkersBoard);
   }
 
+  Timer? turnTimer;
+
   void _initializeGame(CheckersBoard checkersBoard) {
     checkersBoard.init();
     _setCheckersBoard(checkersBoard.board);
     _setCurrentPlayer(checkersBoard.player);
     _pawns.addAll(checkersBoard.pawns);
     _setGameStatus();
+
+    _startOrRestartTimer();
+  }
+
+  void _startOrRestartTimer() {
+    // Cancel the existing timer if it's not null
+    turnTimer?.cancel();
+
+    // Create a new timer that runs a function every 1 second
+    turnTimer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      int timerTime = timer.tick;
+
+      print('VM Timer tick: ${timerTime.toString()}');
+
+      _turnTimerText.value = (TURN_TIME_LIMIT - timerTime);
+
+      if (timerTime == TURN_TIME_LIMIT) {
+        print('VM Timer END');
+        turnTimer?.cancel();
+      }
+    });
   }
 
   void _setGameStatus() {
-    StatusGame summarizerPawns = pawnsOperation
-        .pawnsSummarize(_checkersBoard.board, _checkersBoard.player);
-
+    StatusGame summarizerPawns = pawnsOperation.pawnsSummarize(
+        _checkersBoard.board, _checkersBoard.player);
 
     print("VM _setGameStatus");
 
@@ -160,16 +188,8 @@ class GameViewModel extends ChangeNotifier {
       _currentPlayer = currentPlayer;
 
   void _nextTurn() {
-    // bool protectedColumnArea =
-    //     Evaluator().protectedColumnArea(_pathPawn.endCell.column);
+    _startOrRestartTimer();
 
-    // double value = Evaluator().evaluate(_checkersBoard.player == CellType.WHITE,
-    //     _checkersBoard.board, _checkersBoard, _checkersBoard.player);
-    // bool isProtected =
-    //     Evaluator().vulnerablePawns(_checkersBoard.player, );
-
-    // print("VM NEXT TURN isProtected: $isProtected");
-    // print("VM NEXT TURN value: $value");
     _clearDataNextTurnState();
     _checkersBoard.nextTurn();
     _setCurrentPlayer(_checkersBoard.player);

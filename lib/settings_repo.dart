@@ -1,11 +1,11 @@
 import 'package:untitled/enum/game_mode_types.dart';
 
 class SettingsRepository {
-  GameMode _gameMode = GameMode.OFFLINE_MODE;
+  GameMode _gameMode = GameMode.AI_MODE;
 
   GameMode get gameMode => _gameMode;
 
-  int _depthLevel = 3;
+  int _depthLevel = 9;
 
   int get depthLevel => _depthLevel;
 

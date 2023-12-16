@@ -18,7 +18,7 @@ class GameViewModel extends ChangeNotifier {
   final Set<String> _markedKings = {};
   PawnsOperation pawnsOperation = PawnsOperation();
 
-  static const int TURN_TIME_LIMIT = 6;
+  static const int TURN_TIME_LIMIT = 11;
 
   final ValueNotifier<int> _turnTimerText = ValueNotifier(TURN_TIME_LIMIT - 1);
 
@@ -80,7 +80,7 @@ class GameViewModel extends ChangeNotifier {
     turnTimer?.cancel();
 
     // Create a new timer that runs a function every 1 second
-    turnTimer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    turnTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       int timerTime = timer.tick;
 
       print('VM Timer tick: ${timerTime.toString()}');

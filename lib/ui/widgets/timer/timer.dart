@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/gradient_stroke_painter.dart';
+import 'package:untitled/ui/widgets/animation/scale_animation.dart';
 
 class TurnTimer extends StatelessWidget {
   const TurnTimer({super.key});
@@ -11,14 +12,17 @@ class TurnTimer extends StatelessWidget {
       _timer(gameViewModel: Provider.of<GameViewModel>(context, listen: false));
 
   Widget _timer({required GameViewModel gameViewModel}) {
-    return Column(
-      children: [
-        Stack(
+    const timerSize = 60.0;
+    const limitPulse = 5;
+    return ValueListenableBuilder<int>(
+      valueListenable: gameViewModel.turnTimerText,
+      builder: (ctx, time, _) {
+        Widget timer = Stack(
           alignment: Alignment.center,
           children: [
             SizedBox(
-              width: 60,
-              height: 60,
+              width: timerSize,
+              height: timerSize,
               child: CustomPaint(
                 painter: GradientStrokePainter(
                   strokeWidth: 3.5, // Adjust the stroke width as needed
@@ -33,61 +37,48 @@ class TurnTimer extends StatelessWidget {
                 ),
               ),
             ),
-            ValueListenableBuilder<int>(
-              valueListenable: gameViewModel.turnTimerText,
-              builder: (ctx, time, _) {
-                return Container(
-                  width: 53,
-                  height: 53,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      color: Colors.grey.shade300.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(13),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: const Offset(0.5, 1),
-                          blurRadius: 5,
-                          color: Colors.black.withOpacity(0.6),
-                        )
-                      ]),
-                  child: Text(
-                    time.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                    ),
-                  ),
-                );
-              },
+            Container(
+              width: timerSize - 7,
+              height: timerSize - 7,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade300.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(0.5, 1),
+                      blurRadius: 5,
+                      color: Colors.black.withOpacity(0.6),
+                    )
+                  ]),
+              child: Text(
+                time.toString(),
+                style: TextStyle(
+                  color: time <= limitPulse ? Colors.redAccent : Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+          ],
+        );
+
+        return Column(
+          children: [
+            time <= limitPulse ? ScaleAnimation(child: timer) : timer,
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: Text(
+                "Time Left",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20),
+              ),
             )
           ],
-        ),
-        const Padding(
-          padding: EdgeInsets.only(top: 8.0),
-          child: Text(
-            "Time Left",
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20),
-          ),
-        )
-      ],
+        );
+      },
     );
-  }
-
-  List<Color> interpolateColors(Color startColor, Color endColor, int steps) {
-    final double stepR = (endColor.red - startColor.red) / (steps - 1);
-    final double stepG = (endColor.green - startColor.green) / (steps - 1);
-    final double stepB = (endColor.blue - startColor.blue) / (steps - 1);
-
-    List<Color> colors = [];
-    for (int i = 0; i < steps; i++) {
-      int r = (startColor.red + stepR * i).round();
-      int g = (startColor.green + stepG * i).round();
-      int b = (startColor.blue + stepB * i).round();
-      colors.add(Color.fromARGB(255, r, g, b));
-    }
-
-    return colors;
   }
 }

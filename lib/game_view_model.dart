@@ -207,7 +207,8 @@ class GameViewModel extends ChangeNotifier {
     //
     // PathPawn? path = ComputerPlayerPro(SettingsRepository().depthLevel)
     //     .getBestMoveForAI(_checkersBoard);
-    PathPawn? path = Computer().alphaBetaSearch(_checkersBoard);
+    PathPawn? path = Computer()
+        .alphaBetaSearch(_checkersBoard, SettingsRepository().depthLevel);
     return path;
   }
 

@@ -21,7 +21,7 @@ class Computer {
 
   Computer();
 
-  PathPawn? alphaBetaSearch(CheckersBoard checkersBoard) {
+  PathPawn? alphaBetaSearch(CheckersBoard checkersBoard, int depthLevel) {
     DateTime date = DateTime.now();
     // startTime = date.millisecondsSinceEpoch;
     getBoardStatus(checkersBoard);
@@ -39,7 +39,7 @@ class Computer {
       return legalMovesList[0];
     }
 
-    for (maxDepth = 0; maxDepth < 5 /*&& !outOfTime*/; maxDepth++) {
+    for (maxDepth = 0; maxDepth < depthLevel /*&& !outOfTime*/; maxDepth++) {
       listBestMovesCurrentDepth = [];
       double bestVal = double.negativeInfinity;
       for (PathPawn pathPawn in legalMovesList) {

@@ -13,7 +13,6 @@ import 'package:untitled/game/checkers_board_features.dart';
 import 'package:untitled/game/checkers_creator.dart';
 import 'package:untitled/game/pawns_operation.dart';
 
-
 //TODO force capture
 //TODO Check the GameOver function, after copying the board if the board remains unchanged
 class CheckersBoard {
@@ -422,6 +421,13 @@ class CheckersBoard {
 
   void _updatePawns(PathPawn pathPawn, bool isKing) {
     _updatePawn(isKing, pathPawn);
+    _updatePawnData(pathPawn);
+  }
+
+  void _updatePawnData(PathPawn pathPawn) {
+    if (pathPawn.capturePawn != null) {
+      pathPawn.pawnStartPath.setPawnDataNotifier(hasCapture: true);
+    }
 
     pathPawn.capturePawn?.setPawnDataNotifier(isKilled: true);
 
@@ -430,8 +436,7 @@ class CheckersBoard {
             element.cellTypePlayer == pathPawn.capturePawn?.cellTypePlayer)
         .where((element) => element.pawnDataNotifier.value.isKilled)
         .length;
-    print(
-        "killedLength: $killedLength, pathPawn.capturePawn?.cellTypePlayer: ${pathPawn.capturePawn?.cellTypePlayer}");
+
     pathPawn.capturePawn?.setPawnDataNotifier(indexKilled: killedLength - 1);
   }
 

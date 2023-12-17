@@ -5,9 +5,7 @@ import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawns_layer.dart';
 
 class CenterLayer extends StatelessWidget {
-  final AnimationController pawnMoveController;
-
-  const CenterLayer(this.pawnMoveController, {super.key});
+  const CenterLayer({super.key});
 
   @override
   Widget build(BuildContext context) => _centerLayer();
@@ -41,6 +39,6 @@ class CenterLayer extends StatelessWidget {
         width: BoardElementsSize.innerBoardSize,
         height: BoardElementsSize.innerBoardSize +
             BoardElementsSize.discardPileArea,
-        child: PawnsLayer(pawnMoveController),
+        child: const PawnsLayer(),
       );
 }

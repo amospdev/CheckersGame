@@ -19,7 +19,7 @@ class GameViewModel extends ChangeNotifier {
   final Set<String> _markedKings = {};
   PawnsOperation pawnsOperation = PawnsOperation();
 
-  static const int TURN_TIME_LIMIT = 11;
+  static const int TURN_TIME_LIMIT = 31;
 
   final ValueNotifier<int> _turnTimerText = ValueNotifier(TURN_TIME_LIMIT - 1);
 

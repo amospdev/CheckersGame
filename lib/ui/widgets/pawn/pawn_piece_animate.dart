@@ -42,8 +42,8 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
   void _initRadiusFactorAnimation() {
     _radiusFactorAnimation = TweenSequence<double>(
       [
-        _getTweenSequenceItem(1.0, 1.3, 50),
-        _getTweenSequenceItem(1.3, 1.0, 50),
+        _getTweenSequenceItem(1.0, 1.4, 50),
+        _getTweenSequenceItem(1.4, 1.0, 50),
       ],
     ).animate(widget.pawnMoveController);
   }

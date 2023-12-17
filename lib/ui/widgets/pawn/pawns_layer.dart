@@ -1,19 +1,62 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/board_elements_size.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 
-class PawnsLayer extends StatelessWidget {
+class PawnsLayer extends StatefulWidget {
+  const PawnsLayer({super.key});
+
+  @override
+  PawnsLayerState createState() => PawnsLayerState();
+}
+
+class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
   static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
   static const double pawnAliveScale = 0.75;
-  final AnimationController pawnMoveController;
 
-  const PawnsLayer(this.pawnMoveController, {super.key});
+  static const int _pawnMoveDuration = 350;
+
+  late final AnimationController _pawnMoveController;
+  late final GameViewModel gameViewModel;
+  StreamSubscription<PawnMoveState>? _streamPawnMove;
+
+  @override
+  void initState() {
+    super.initState();
+    gameViewModel = Provider.of<GameViewModel>(context, listen: false);
+    _initPawnMoveController();
+    _startPawnMoveAsync();
+  }
+
+  void _startPawnMoveAsync() => _streamPawnMove = gameViewModel.isStartPawnMove
+      .where((pawnMoveState) => pawnMoveState == PawnMoveState.START)
+      .listen((isStartPawnMove) => _startPawnMoveAnimation());
+
+  void _initPawnMoveController() => _pawnMoveController = AnimationController(
+        duration: const Duration(milliseconds: 3000),
+        vsync: this,
+      )..addStatusListener((status) {
+          if (_pawnMoveController.isCompleted) {
+            gameViewModel.onPawnMoveAnimationFinish();
+          }
+        });
+
+  void _startPawnMoveAnimation() {
+    _pawnMoveController.duration = Duration(
+        milliseconds: (gameViewModel.pathSize > 2
+            ? (_pawnMoveDuration * 1.6).toInt()
+            : _pawnMoveDuration));
+
+    _pawnMoveController.forward(from: 0.0);
+  }
 
   @override
   Widget build(BuildContext context) => _getPawns(
@@ -31,7 +74,6 @@ class PawnsLayer extends StatelessWidget {
       double innerBoardSize,
       double borderWidthGameBoard,
       GameViewModel gameViewModel) {
-    // logDebug("MAIN WIDGET _getPawns");
     List<Widget> pawns = gameViewModel.pawns
         .map((pawn) => ValueListenableBuilder<PawnData>(
               valueListenable: pawn.pawnDataNotifier,
@@ -76,28 +118,12 @@ class PawnsLayer extends StatelessWidget {
                       : Curves.easeInOut,
                   duration: pawnData.isKilled
                       ? Duration(milliseconds: (distancePoints * 5).toInt())
-                      : pawnMoveController.duration ??
+                      : _pawnMoveController.duration ??
                           const Duration(milliseconds: 200),
                   left: left,
                   top: top,
                   child: pawnData.isKilled
-                      ? Animate(
-                          effects: [
-                            ScaleEffect(
-                                curve: Curves.fastEaseInToSlowEaseOut,
-                                end: pawnKilledScaleOffset,
-                                duration: Duration(
-                                    milliseconds:
-                                        (distancePoints * 5).toInt())),
-                          ],
-                          child: PawnPiece(
-                            isShadow: false,
-                            size: cellSize,
-                            pawnId: pawn.id,
-                            isKing: pawn.isKing,
-                            pawnColor: pawn.color,
-                          ),
-                        )
+                      ? _pawnKilledAnimation(distancePoints, cellSize, pawn)
                       : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
                 );
               },
@@ -109,10 +135,28 @@ class PawnsLayer extends StatelessWidget {
     );
   }
 
+  Widget _pawnKilledAnimation(
+          double distancePoints, double cellSize, Pawn pawn) =>
+      Animate(
+        effects: [
+          ScaleEffect(
+              curve: Curves.fastEaseInToSlowEaseOut,
+              end: pawnKilledScaleOffset,
+              duration: Duration(milliseconds: (distancePoints * 5).toInt())),
+        ],
+        child: PawnPiece(
+          isShadow: false,
+          size: cellSize,
+          pawnId: pawn.id,
+          isKing: pawn.isKing,
+          pawnColor: pawn.color,
+        ),
+      );
+
   Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
       PawnPieceAnimate(
           isAnimatingPawn: isAnimatingPawn,
-          pawnMoveController: pawnMoveController,
+          pawnMoveController: _pawnMoveController,
           size: cellSize,
           pawnColor: pawn.color,
           isKing: pawn.isKing,
@@ -120,4 +164,12 @@ class PawnsLayer extends StatelessWidget {
           row: pawn.row,
           column: pawn.column,
           key: ValueKey('pawn_${pawn.id}PawnPiece'));
+
+  @override
+  void dispose() {
+    _pawnMoveController.dispose();
+    _streamPawnMove?.cancel();
+
+    super.dispose();
+  }
 }

@@ -26,11 +26,7 @@ class Pawn {
       required this.column,
       required this.color,
       required this.isKing}) {
-    _pawnDataValueNotifier.value = PawnData(
-        offset: Offset(column.toDouble(), row.toDouble()),
-        isKilled: false,
-        isAnimating: false,
-        indexKilled: -1);
+    _initPawnData();
   }
 
   Pawn copy({Pawn? pawn}) {
@@ -57,8 +53,13 @@ class Pawn {
   ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
 
   void setPawnDataNotifier(
-      {bool? isKilled, Offset? offset, bool? isAnimating, int? indexKilled}) {
+      {bool? isKilled,
+      Offset? offset,
+      bool? isAnimating,
+      int? indexKilled,
+      bool? hasCapture}) {
     _pawnDataValueNotifier.value = PawnData(
+        hasCapture: hasCapture ?? _pawnDataValueNotifier.value.hasCapture,
         isAnimating: isAnimating ?? _pawnDataValueNotifier.value.isAnimating,
         offset: offset ?? Offset(column.toDouble(), row.toDouble()),
         isKilled: isKilled ?? _pawnDataValueNotifier.value.isKilled,
@@ -121,6 +122,16 @@ class Pawn {
         .setPawnDataNotifier(
             isKilled: oldPawn.pawnDataNotifier.value.isKilled,
             offset: oldPawn.pawnDataNotifier.value.offset,
+            hasCapture: oldPawn.pawnDataNotifier.value.hasCapture,
             isAnimating: oldPawn.pawnDataNotifier.value.isAnimating);
+  }
+
+  void _initPawnData() {
+    _pawnDataValueNotifier.value = PawnData(
+        offset: Offset(column.toDouble(), row.toDouble()),
+        isKilled: false,
+        isAnimating: false,
+        hasCapture: false,
+        indexKilled: -1);
   }
 }

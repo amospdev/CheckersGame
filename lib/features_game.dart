@@ -20,7 +20,7 @@ class Features extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: [
             _button(Icons.menu, () {}),
-            Spacer(),
+            const Spacer(),
             _button(Icons.chat, () {}),
             _button(
                 Icons.undo, isUndoEnable ? () => gameViewModel.undo() : null),

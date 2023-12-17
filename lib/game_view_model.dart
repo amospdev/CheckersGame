@@ -34,6 +34,10 @@ class GameViewModel extends ChangeNotifier {
 
   ValueNotifier<PawnStatus> get whitePawnStatus => _whitePawnStatus;
 
+  final StreamController<bool> _isStartPawnMove = StreamController<bool>();
+
+  Stream<bool> get isStartPawnMove => _isStartPawnMove.stream;
+
   final StreamController<bool> _isAITurnController = StreamController<bool>();
 
   Stream<bool> get isAITurnStream => _isAITurnController.stream;
@@ -74,6 +78,10 @@ class GameViewModel extends ChangeNotifier {
 
     _startOrRestartTimer();
   }
+
+  // void onTapEnd() {
+  //   _isStartPawnMove.add(true);
+  // }
 
   void _startOrRestartTimer() {
     // Cancel the existing timer if it's not null
@@ -162,6 +170,8 @@ class GameViewModel extends ChangeNotifier {
     _startProcess();
     _checkersBoard.setHistoryAvailability(false);
     _pathPawn = pathPawn;
+    _setNewLocationPawn();
+    _isStartPawnMove.add(true);
     return TapOnBoard.END;
   }
 
@@ -171,6 +181,8 @@ class GameViewModel extends ChangeNotifier {
       ..performMove(_checkersBoard.board, _pawnPaths, _pathPawn, isAI: false);
     _setGameStatus();
     _endProcess();
+    _isStartPawnMove.add(false);
+
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
     _setGameStatus();
@@ -228,7 +240,7 @@ class GameViewModel extends ChangeNotifier {
 
   bool isAlreadyMarkedKing(String id) => _markedKings.contains(id);
 
-  void onPawnMoveAnimationStart() {
+  void _setNewLocationPawn() {
     _pathPawn.pawnStartPath.setPawnDataNotifier(
         offset: Offset(_pathPawn.endPosition.column.toDouble(),
             _pathPawn.endPosition.row.toDouble()),

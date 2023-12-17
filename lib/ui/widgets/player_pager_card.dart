@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:page_view_dot_indicator/page_view_dot_indicator.dart';
-import 'package:untitled/main.dart';
 
 class PlayerPagerCard extends StatefulWidget {
   final String avatarPath;
@@ -20,6 +19,8 @@ class PlayerPagerCard extends StatefulWidget {
 class _PlayerPagerCardState extends State<PlayerPagerCard> {
   late int selectedPage;
   late final PageController _pageController;
+  static const Color borderCircleAvatar = Colors.black26;
+  static const Color borderRoundedPlayerCard = Colors.blueGrey;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _PlayerPagerCardState extends State<PlayerPagerCard> {
         color: Colors.grey.shade700,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: GameBoardState.borderRoundedPlayerCard, // Green border
+          color: borderRoundedPlayerCard, // Green border
           width: 2,
         ),
       ),
@@ -122,7 +123,7 @@ class _PlayerPagerCardState extends State<PlayerPagerCard> {
       decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: GameBoardState.borderCircleAvatar,
+            color: borderCircleAvatar,
             // Set the color of the border
             width: 2, // Set the width of the border
           ),

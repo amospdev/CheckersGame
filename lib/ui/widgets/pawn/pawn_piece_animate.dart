@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/game_view_model.dart';
-import 'package:untitled/main.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 
 class PawnPieceAnimate extends StatefulWidget {
@@ -31,6 +30,7 @@ class PawnPieceAnimate extends StatefulWidget {
 
 class PawnPieceAnimateState extends State<PawnPieceAnimate>
     with SingleTickerProviderStateMixin {
+  static const double pawnAliveScale = 0.75;
   late Animation<double> _radiusFactorAnimation;
 
   @override
@@ -42,8 +42,8 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
   void _initRadiusFactorAnimation() {
     _radiusFactorAnimation = TweenSequence<double>(
       [
-        _getTweenSequenceItem(1.0, 1.25, 50),
-        _getTweenSequenceItem(1.25, 1.0, 50),
+        _getTweenSequenceItem(1.0, 1.3, 50),
+        _getTweenSequenceItem(1.3, 1.0, 50),
       ],
     ).animate(widget.pawnMoveController);
   }
@@ -85,7 +85,7 @@ class PawnPieceAnimateState extends State<PawnPieceAnimate>
               size: size,
               pawnId: pawnId,
               isKing: isKing,
-              factorRadius: GameBoardState.pawnAliveScale,
+              factorRadius: pawnAliveScale,
               pawnColor: pawnColor,
             ),
           );

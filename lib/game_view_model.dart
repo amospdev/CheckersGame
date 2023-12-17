@@ -8,6 +8,7 @@ import 'package:untitled/data/path_pawn.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/position/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
+import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game/pawns_operation.dart';
@@ -34,13 +35,10 @@ class GameViewModel extends ChangeNotifier {
 
   ValueNotifier<PawnStatus> get whitePawnStatus => _whitePawnStatus;
 
-  final StreamController<bool> _isStartPawnMove = StreamController<bool>();
+  final StreamController<PawnMoveState> _isStartPawnMove =
+      StreamController<PawnMoveState>();
 
-  Stream<bool> get isStartPawnMove => _isStartPawnMove.stream;
-
-  final StreamController<bool> _isAITurnController = StreamController<bool>();
-
-  Stream<bool> get isAITurnStream => _isAITurnController.stream;
+  Stream<PawnMoveState> get isStartPawnMove => _isStartPawnMove.stream;
 
   ValueNotifier<bool> get isUndoEnable => _checkersBoard.isHistoryEnable;
 
@@ -91,12 +89,9 @@ class GameViewModel extends ChangeNotifier {
     turnTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       int timerTime = timer.tick;
 
-      print('VM Timer tick: ${timerTime.toString()}');
-
       _turnTimerText.value = (TURN_TIME_LIMIT - timerTime);
 
       if (timerTime == TURN_TIME_LIMIT) {
-        print('VM Timer END');
         turnTimer?.cancel();
       }
     });
@@ -105,8 +100,6 @@ class GameViewModel extends ChangeNotifier {
   void _setGameStatus() {
     StatusGame summarizerPawns = pawnsOperation.pawnsSummarize(
         _checkersBoard.board, _checkersBoard.player);
-
-    print("VM _setGameStatus");
 
     _blackPawnStatus.value = summarizerPawns.blackPawnStatus;
     _whitePawnStatus.value = summarizerPawns.whitePawnStatus;
@@ -171,9 +164,13 @@ class GameViewModel extends ChangeNotifier {
     _checkersBoard.setHistoryAvailability(false);
     _pathPawn = pathPawn;
     _setNewLocationPawn();
-    _isStartPawnMove.add(true);
+    _notifyStartPawnMove();
     return TapOnBoard.END;
   }
+
+  void _notifyStartPawnMove() => _isStartPawnMove.add(PawnMoveState.START);
+
+  void _notifyFinishPawnMove() => _isStartPawnMove.add(PawnMoveState.FINISH);
 
   Future<void> onPawnMoveAnimationFinish() async {
     _checkersBoard
@@ -181,7 +178,7 @@ class GameViewModel extends ChangeNotifier {
       ..performMove(_checkersBoard.board, _pawnPaths, _pathPawn, isAI: false);
     _setGameStatus();
     _endProcess();
-    _isStartPawnMove.add(false);
+    _notifyFinishPawnMove();
 
     _continueNextIterationOrTurn(
         _pathPawn.endPosition.row, _pathPawn.endPosition.column);
@@ -207,8 +204,33 @@ class GameViewModel extends ChangeNotifier {
     _setCurrentPlayer(_checkersBoard.player);
     bool isGameOver = _checkersBoard.isGameOver(false);
     print("VM NEXT TURN isGameOver: $isGameOver");
-    _isAITurnController.add(_isAITurn());
+
+    if (_isAITurn()) {
+      _aiTurn();
+    }
+
     _checkersBoard.setHistoryAvailability(true);
+  }
+
+  Future _delayedBeforeClick(int duration) =>
+      Future.delayed(Duration(milliseconds: duration));
+
+  Future<void> _aiTurn() async {
+
+    PathPawn? pathPawn = aIMove();
+    if (pathPawn == null) return;
+    onTapBoardGame(pathPawn.startPosition.row, pathPawn.startPosition.column);
+
+    await _delayedBeforeClick(300);
+
+    TapOnBoard tapOnBoardEnd =
+        onTapBoardGame(pathPawn.endPosition.row, pathPawn.endPosition.column);
+
+    await _delayedBeforeClick(100);
+
+    if (tapOnBoardEnd == TapOnBoard.END) {
+      _notifyStartPawnMove();
+    }
   }
 
   bool _isAITurn() => currentPlayer == aiType && SettingsRepository().isAIMode;
@@ -266,7 +288,7 @@ class GameViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _isAITurnController.close();
+    // _isAITurnController.close();
     super.dispose();
   }
 }

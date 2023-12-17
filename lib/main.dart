@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/board_elements_size.dart';
-import 'package:untitled/data/path_pawn.dart';
-import 'package:untitled/enum/tap_on_board.dart';
-import 'package:untitled/extensions/cg_log.dart';
+import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/game_view_model.dart';
 import 'package:untitled/ui/widgets/background_game.dart';
 import 'package:untitled/ui/widgets/bottom_layer.dart';
@@ -33,7 +31,6 @@ class CheckersGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    logDebug("REBUILD MyApp");
     return MaterialApp(
       title: 'Checkers Game',
       theme: ThemeData(primarySwatch: Colors.blue),
@@ -57,7 +54,7 @@ class CheckersGameState extends State<CheckersGame>
 
   late final GameViewModel gameViewModel;
   StreamSubscription<bool>? _streamAiTurn;
-  StreamSubscription<bool>? _streamPawnMove;
+  StreamSubscription<PawnMoveState>? _streamPawnMove;
 
   @override
   void initState() {
@@ -72,11 +69,8 @@ class CheckersGameState extends State<CheckersGame>
         }
       });
 
-    _streamAiTurn =
-        gameViewModel.isAITurnStream.where((isAI) => isAI).listen(_aiTurn);
-
     _streamPawnMove = gameViewModel.isStartPawnMove
-        .where((isStartPawnMove) => isStartPawnMove)
+        .where((pawnMoveState) => pawnMoveState == PawnMoveState.START)
         .listen((isStartPawnMove) => _startPawnMoveAnimation());
   }
 
@@ -89,30 +83,6 @@ class CheckersGameState extends State<CheckersGame>
         mediaQueryData: MediaQuery.of(context));
   }
 
-  Future _delayedBeforeClick(int duration) =>
-      Future.delayed(Duration(milliseconds: duration));
-
-  Future<void> _aiTurn(bool isAI) async {
-    await _delayedBeforeClick(300);
-
-    logDebug("MAIN WIDGET _aiTurn: $isAI");
-    PathPawn? pathPawn = gameViewModel.aIMove();
-    if (pathPawn == null) return;
-    gameViewModel.onTapBoardGame(
-        pathPawn.startPosition.row, pathPawn.startPosition.column);
-
-    await _delayedBeforeClick(300);
-
-    TapOnBoard tapOnBoardEnd = gameViewModel.onTapBoardGame(
-        pathPawn.endPosition.row, pathPawn.endPosition.column);
-
-    await _delayedBeforeClick(100);
-
-    if (tapOnBoardEnd == TapOnBoard.END) {
-      _startPawnMoveAnimation();
-    }
-  }
-
   void _startPawnMoveAnimation() {
     _pawnMoveController.duration = Duration(
         milliseconds: (gameViewModel.pathSize > 2
@@ -123,16 +93,14 @@ class CheckersGameState extends State<CheckersGame>
   }
 
   @override
-  Widget build(BuildContext context) => _mainBoard(context);
+  Widget build(BuildContext context) => _main(context);
 
-  Widget _mainBoard(BuildContext context) {
-    return Scaffold(
-      body: WillPopScope(
-        onWillPop: () async => false,
-        child: _checkersGame(),
-      ),
-    );
-  }
+  Widget _main(BuildContext context) => Scaffold(
+        body: WillPopScope(
+          onWillPop: () async => false,
+          child: _checkersGame(),
+        ),
+      );
 
   Widget _checkersGame() => SizedBox(
         height: MediaQuery.of(context).size.height,

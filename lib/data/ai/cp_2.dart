@@ -70,13 +70,11 @@ class ComputerPlayerPro {
               newLegalMoveState.checkersBoard.board,
               newLegalMoveState.checkersBoard,
               newLegalMoveState.checkersBoard.player);
-          print("22 minimax maxPlayer: $maxPlayer Evaluator: $evaluation}");
 
           if (evaluation < minEvaluation) {
             minEvaluation = evaluation;
             bestState = state;
           }
-          print("222 minimax maxPlayer: $maxPlayer minEvaluation: $minEvaluation}");
 
           beta = min(beta, evaluation);
           if (beta <= alpha) {

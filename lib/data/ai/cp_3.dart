@@ -35,7 +35,7 @@ class Computer {
         checkersBoard.getLegalMoves(aiType, checkersBoard.board, true);
 
     if (legalMovesList.length == 1) {
-      print("Searched to depth 0 in 0 seconds.");
+      // print("Searched to depth 0 in 0 seconds.");
       return legalMovesList[0];
     }
 

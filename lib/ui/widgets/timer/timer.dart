@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/game_view_model.dart';
-import 'package:untitled/ui/gradient_stroke_painter.dart';
-import 'package:untitled/ui/widgets/animation/scale_animation.dart';
+import 'package:untitled/ui/painter/gradient_stroke_painter.dart';
+import 'package:untitled/ui/widgets/animation/pulse_animation.dart';
 
 class TurnTimer extends StatelessWidget {
   const TurnTimer({super.key});
@@ -65,7 +65,7 @@ class TurnTimer extends StatelessWidget {
 
         return Column(
           children: [
-            time <= limitPulse ? ScaleAnimation(child: timer) : timer,
+            time <= limitPulse ? PulseAnimation(child: timer) : timer,
             const Padding(
               padding: EdgeInsets.only(top: 8.0),
               child: Text(

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -15,7 +14,7 @@ import 'package:untitled/extensions/screen_ratio.dart';
 import 'package:untitled/features_game.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game_view_model.dart';
-import 'package:untitled/ui/background_game.dart';
+import 'package:untitled/ui/widgets/background_game.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
@@ -197,9 +196,7 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
     );
   }
 
-
   Widget _getCells(double cellSize, double widthBoardByOrientation) {
-    // logDebug("MAIN WIDGET _getCells");
     List<Widget> cells = gameViewModel.boardCells.map((cell) {
       double leftPos = (cell.offset.dx) * cellSize;
       double topPos = (cell.offset.dy) * cellSize;
@@ -217,25 +214,23 @@ class GameBoardState extends State<GameBoard> with TickerProviderStateMixin {
           child: ValueListenableBuilder<CellDetailsData>(
             valueListenable: cell.cellDetailsData,
             builder: (ctx, cellDetailsData, _) {
-
               return RepaintBoundary(
-                  child: Transform.rotate(
-                angle: cell.isUnValid ? pi / 2 : 0,
-                // Specify the rotation angle in radians
-                child: Image.asset('assets/wood.png',
-                    color: cell.isUnValid
-                        ? Colors.white
-                        : cell.tmpColor == cell.color
-                            ? Colors.black
-                            : cell.tmpColor,
-                    colorBlendMode: cell.isUnValid
-                        ? BlendMode.modulate
-                        : cell.tmpColor == cell.color
-                            ? BlendMode.overlay
-                            : BlendMode.color,
-                    width: cellSize,
-                    height: cellSize),
-              ));
+                  child: Image.asset(
+                      cell.isUnValid
+                          ? 'assets/wood_horizontal.png'
+                          : 'assets/wood.png',
+                      color: cell.isUnValid
+                          ? Colors.white
+                          : cell.tmpColor == cell.color
+                              ? Colors.black
+                              : cell.tmpColor,
+                      colorBlendMode: cell.isUnValid
+                          ? BlendMode.modulate
+                          : cell.tmpColor == cell.color
+                              ? BlendMode.overlay
+                              : BlendMode.color,
+                      width: cellSize,
+                      height: cellSize));
             },
           ),
         ),

@@ -66,6 +66,7 @@ flutter:
   assets:
     - assets/crown.svg
     - assets/wood.png
+    - assets/wood_horizontal.png
     - assets/bot_1.png
     - assets/bot_2.png
     - assets/avatar_player.png

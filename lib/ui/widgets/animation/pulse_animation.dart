@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class ScaleAnimation extends StatefulWidget {
+class PulseAnimation extends StatefulWidget {
   final Widget child;
 
-  const ScaleAnimation({super.key, required this.child});
+  const PulseAnimation({super.key, required this.child});
 
   @override
-  ScaleAnimationState createState() => ScaleAnimationState();
+  PulseAnimationState createState() => PulseAnimationState();
 }
 
-class ScaleAnimationState extends State<ScaleAnimation>
+class PulseAnimationState extends State<PulseAnimation>
     with SingleTickerProviderStateMixin {
   late Animation<double> _heartAnimation;
   late AnimationController _controller;

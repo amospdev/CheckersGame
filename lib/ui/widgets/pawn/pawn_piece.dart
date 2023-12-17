@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:untitled/ui/widgets/pawn/pawn_painter.dart';
+import 'package:untitled/ui/widgets/pawn/painter/pawn_painter.dart';
 import 'package:untitled/ui/widgets/crown_animation.dart';
 
 class PawnPiece extends StatelessWidget {

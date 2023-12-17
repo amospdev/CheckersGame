@@ -283,7 +283,9 @@ class CheckersBoard {
   void clearColorsCells() {
     for (var elementList in _board) {
       for (var element in elementList) {
-        element.clearColor();
+        if(element.tmpColor != element.color){
+          element.clearColor();
+        }
       }
     }
   }

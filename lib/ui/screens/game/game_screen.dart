@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/board_elements_size.dart';
+import 'package:untitled/data/board_elements_details.dart';
 import 'package:untitled/ui/widgets/background_game.dart';
 import 'package:untitled/ui/widgets/bottom_layer.dart';
 import 'package:untitled/ui/widgets/center_layer.dart';
@@ -30,7 +30,7 @@ class CheckersGameState extends State<CheckersGame> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    BoardElementsSize.measurementElementsBoardSize(
+    BoardElementsDetails.measurementElementsBoardSize(
         mediaQueryData: MediaQuery.of(context));
   }
 

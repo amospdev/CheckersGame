@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled/data/board_elements_size.dart';
+import 'package:untitled/data/board_elements_details.dart';
 import 'package:untitled/data/pawn/pawn_details.dart';
 import 'package:untitled/data/pawn/pawn_details_data.dart';
+import 'package:untitled/data/pawn/pawn_position_data.dart';
 import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/ui/screens/game/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
@@ -19,9 +20,6 @@ class PawnsLayer extends StatefulWidget {
 }
 
 class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
-  static const Offset pawnKilledScaleOffset = Offset(0.6, 0.6);
-  static const double pawnAliveScale = 0.75;
-
   static const int _pawnMoveDuration = 350;
 
   late final AnimationController _pawnMoveController;
@@ -59,71 +57,31 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) => _getPawns(
-      BoardElementsSize.cellSize,
-      (BoardElementsSize.discardPileArea / 2),
-      BoardElementsSize.discardPileArea,
-      BoardElementsSize.innerBoardSize,
-      BoardElementsSize.borderWidthGameBoard,
+  Widget build(BuildContext context) => _getPawns(BoardElementsDetails.cellSize,
       Provider.of<GameViewModel>(context, listen: false));
 
-  Widget _getPawns(
-      double cellSize,
-      double heightOffset,
-      double discardPileArea,
-      double innerBoardSize,
-      double borderWidthGameBoard,
-      GameViewModel gameViewModel) {
+  Widget _getPawns(double cellSize, GameViewModel gameViewModel) {
     List<Widget> pawns = gameViewModel.pawns
         .map((pawn) => ValueListenableBuilder<PawnDetailsData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
-                double topNotKilled =
-                    (pawnData.offset.dy * cellSize) + heightOffset;
-
-                double topKilledWhite = innerBoardSize +
-                    (discardPileArea / 2) +
-                    borderWidthGameBoard;
-                double topKilledBlack = 0;
-
-                double top = pawnData.isKilled
-                    ? pawn.isSomeWhite
-                        ? topKilledWhite
-                        : topKilledBlack
-                    : topNotKilled;
-
-                double leftNotKilled = (pawnData.offset.dx * cellSize);
-
-                double cellSizeKilledWithFactor =
-                    cellSize * pawnKilledScaleOffset.dx;
-
-                double padding =
-                    -(cellSizeKilledWithFactor * (1 - pawnAliveScale));
-                double margin = 3;
-
-                double leftKilled = padding +
-                    (pawnData.indexKilled *
-                        (cellSizeKilledWithFactor + margin));
-
-                double left = pawnData.isKilled ? leftKilled : leftNotKilled;
-
-                double distancePoints = (Offset(leftNotKilled, topNotKilled) -
-                        Offset(leftKilled,
-                            pawn.isSomeWhite ? topKilledWhite : topKilledBlack))
-                    .distance;
+                PawnPosition pawnPosition = BoardElementsDetails.pawnPosition(
+                    pawnData, pawn.isSomeWhite);
 
                 return AnimatedPositioned(
                   curve: pawnData.isKilled
                       ? Curves.easeOutQuint
                       : Curves.easeInOut,
                   duration: pawnData.isKilled
-                      ? Duration(milliseconds: (distancePoints * 5).toInt())
+                      ? Duration(
+                          milliseconds: pawnPosition.durationMove.toInt())
                       : _pawnMoveController.duration ??
                           const Duration(milliseconds: 200),
-                  left: left,
-                  top: top,
+                  left: pawnPosition.left,
+                  top: pawnPosition.top,
                   child: pawnData.isKilled
-                      ? _pawnKilledAnimation(distancePoints, cellSize, pawn)
+                      ? _pawnKilledAnimation(
+                          pawnPosition.durationMove.toInt(), cellSize, pawn)
                       : _buildPawnWidget(pawn, cellSize, pawnData.isAnimating),
                 );
               },
@@ -136,13 +94,13 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
   }
 
   Widget _pawnKilledAnimation(
-          double distancePoints, double cellSize, PawnDetails pawn) =>
+          int durationMove, double cellSize, PawnDetails pawn) =>
       Animate(
         effects: [
           ScaleEffect(
               curve: Curves.fastEaseInToSlowEaseOut,
-              end: pawnKilledScaleOffset,
-              duration: Duration(milliseconds: (distancePoints * 5).toInt())),
+              end: BoardElementsDetails.pawnKilledScaleOffset,
+              duration: Duration(milliseconds: durationMove)),
         ],
         child: PawnPiece(
           isShadow: false,
@@ -153,7 +111,8 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
         ),
       );
 
-  Widget _buildPawnWidget(PawnDetails pawn, double cellSize, bool isAnimatingPawn) =>
+  Widget _buildPawnWidget(
+          PawnDetails pawn, double cellSize, bool isAnimatingPawn) =>
       PawnPieceAnimate(
           isAnimatingPawn: isAnimatingPawn,
           pawnMoveController: _pawnMoveController,

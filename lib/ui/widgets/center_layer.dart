@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:untitled/data/board_elements_size.dart';
+import 'package:untitled/data/board_elements_details.dart';
 import 'package:untitled/ui/widgets/cell/cells_layer.dart';
 import 'package:untitled/ui/widgets/main_game_border.dart';
 import 'package:untitled/ui/widgets/pawn/pawns_layer.dart';
@@ -12,7 +12,7 @@ class CenterLayer extends StatelessWidget {
 
   Widget _centerLayer() => Expanded(
           child: Container(
-        padding: const EdgeInsets.all(BoardElementsSize.paddingGameBoard),
+        padding: const EdgeInsets.all(BoardElementsDetails.paddingGameBoard),
         alignment: Alignment.center,
         child: Stack(
           alignment: Alignment.center,
@@ -27,8 +27,8 @@ class CenterLayer extends StatelessWidget {
   Widget _boardLayer() => const MainGameBorder();
 
   Widget _cellsLayer() => SizedBox(
-        width: BoardElementsSize.innerBoardSize,
-        height: BoardElementsSize.innerBoardSize,
+        width: BoardElementsDetails.innerBoardSize,
+        height: BoardElementsDetails.innerBoardSize,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: const CellsLayer(),
@@ -36,9 +36,9 @@ class CenterLayer extends StatelessWidget {
       );
 
   Widget _pawnsLayer() => SizedBox(
-        width: BoardElementsSize.innerBoardSize,
-        height: BoardElementsSize.innerBoardSize +
-            BoardElementsSize.discardPileArea,
+        width: BoardElementsDetails.innerBoardSize,
+        height: BoardElementsDetails.innerBoardSize +
+            BoardElementsDetails.discardPileArea,
         child: const PawnsLayer(),
       );
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/board_elements_size.dart';
+import 'package:untitled/data/board_elements_details.dart';
 
 class MainGameBorder extends StatelessWidget {
   static const double innerBorderWidthGameBoard = 2;
@@ -8,8 +8,8 @@ class MainGameBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _bordersGameBoard(
-      BoardElementsSize.borderWidthGameBoard,
-      BoardElementsSize.innerBoardSize,
+      BoardElementsDetails.borderWidthGameBoard,
+      BoardElementsDetails.innerBoardSize,
       innerBorderWidthGameBoard);
 
   Widget _bordersGameBoard(double borderWidthGameBoard, double innerBoardSize,

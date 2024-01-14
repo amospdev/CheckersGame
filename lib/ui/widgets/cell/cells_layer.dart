@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled/data/board_elements_size.dart';
+import 'package:untitled/data/board_elements_details.dart';
 import 'package:untitled/data/cell/cell_details_data.dart';
 import 'package:untitled/ui/screens/game/game_view_model.dart';
 
@@ -10,7 +10,7 @@ class CellsLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _getCells(
       Provider.of<GameViewModel>(context, listen: false),
-      BoardElementsSize.cellSize);
+      BoardElementsDetails.cellSize);
 
   Widget _getCells(GameViewModel gameViewModel, double cellSize) {
     List<Widget> cells = gameViewModel.boardCells.map((cell) {

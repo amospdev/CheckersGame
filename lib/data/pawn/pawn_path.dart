@@ -1,21 +1,21 @@
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/position/details/position_details.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
+import 'package:untitled/data/cell/position_details.dart';
+import 'package:untitled/data/cell/position_data.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 
-class PathPawn {
+class PawnPath {
   final List<PositionDetails> positionDetailsList;
 
   bool isContinuePath = false;
-  final Pawn pawnStartPath;
+  final PawnDetails pawnStartPath;
 
-  PathPawn(this.positionDetailsList, this.pawnStartPath);
+  PawnPath(this.positionDetailsList, this.pawnStartPath);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PathPawn &&
+      other is PawnPath &&
           runtimeType == other.runtimeType &&
           positionDetailsList == other.positionDetailsList;
 
@@ -27,7 +27,7 @@ class PathPawn {
     return 'Path{positionDetails: $positionDetailsList}';
   }
 
-  static PathPawn createEmpty() => PathPawn([], Pawn.createEmpty());
+  static PawnPath createEmpty() => PawnPath([], PawnDetails.createEmpty());
 
   bool get isValidPath => positionDetailsList.isNotEmpty;
 
@@ -43,13 +43,13 @@ class PathPawn {
       .firstWhereOrNull((element) => element.isCapture)
       ?.cellDetails;
 
-  Pawn? get capturePawn => positionDetailsList
+  PawnDetails? get capturePawn => positionDetailsList
       .whereType<PositionDetailsCapture>()
       .firstOrNull
       ?.pawnCapture;
 
-  PathPawn copy() {
-    return PathPawn(List.from(positionDetailsList.map((e) => e.copy())),
+  PawnPath copy() {
+    return PawnPath(List.from(positionDetailsList.map((e) => e.copy())),
         pawnStartPath.copy())
       ..isContinuePath = isContinuePath;
   }

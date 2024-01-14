@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/pawn_data.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/pawn/pawn_details_data.dart';
+import 'package:untitled/data/cell/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 
-class Pawn {
+class PawnDetails {
   Color color;
 
   String id;
@@ -13,12 +13,12 @@ class Pawn {
   final CellType cellTypePlayer;
   int indexPawnKilled = -1;
 
-  final ValueNotifier<PawnData> _pawnDataValueNotifier =
-      ValueNotifier<PawnData>(PawnData.createEmpty());
+  final ValueNotifier<PawnDetailsData> _pawnDataValueNotifier =
+      ValueNotifier<PawnDetailsData>(PawnDetailsData.createEmpty());
 
   bool isKing;
 
-  Pawn(
+  PawnDetails(
       {required this.id,
       required this.index,
       required this.cellTypePlayer,
@@ -29,8 +29,8 @@ class Pawn {
     _initPawnData();
   }
 
-  Pawn copy({Pawn? pawn}) {
-    return Pawn(
+  PawnDetails copy({PawnDetails? pawn}) {
+    return PawnDetails(
       id: pawn?.id ?? id,
       index: pawn?.index ?? index,
       row: pawn?.row ?? row,
@@ -41,7 +41,7 @@ class Pawn {
     );
   }
 
-  static Pawn createEmpty() => Pawn(
+  static PawnDetails createEmpty() => PawnDetails(
       id: "",
       index: -1,
       cellTypePlayer: CellType.UNDEFINED,
@@ -50,7 +50,7 @@ class Pawn {
       color: Colors.tealAccent,
       isKing: false);
 
-  ValueNotifier<PawnData> get pawnDataNotifier => _pawnDataValueNotifier;
+  ValueNotifier<PawnDetailsData> get pawnDataNotifier => _pawnDataValueNotifier;
 
   void setPawnDataNotifier(
       {bool? isKilled,
@@ -58,7 +58,7 @@ class Pawn {
       bool? isAnimating,
       int? indexKilled,
       bool? hasCapture}) {
-    _pawnDataValueNotifier.value = PawnData(
+    _pawnDataValueNotifier.value = PawnDetailsData(
         hasCapture: hasCapture ?? _pawnDataValueNotifier.value.hasCapture,
         isAnimating: isAnimating ?? _pawnDataValueNotifier.value.isAnimating,
         offset: offset ?? Offset(column.toDouble(), row.toDouble()),
@@ -66,7 +66,7 @@ class Pawn {
         indexKilled: indexKilled ?? _pawnDataValueNotifier.value.indexKilled);
   }
 
-  Pawn setPosition(int row, int column) {
+  PawnDetails setPosition(int row, int column) {
     this.row = row;
     this.column = column;
 
@@ -87,7 +87,7 @@ class Pawn {
 
   Position get position => Position(row, column);
 
-  Pawn setIsKing(bool isKing) {
+  PawnDetails setIsKing(bool isKing) {
     this.isKing = isKing;
     return this;
   }
@@ -100,7 +100,7 @@ class Pawn {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Pawn &&
+      other is PawnDetails &&
           runtimeType == other.runtimeType &&
           color == other.color &&
           id == other.id &&
@@ -116,7 +116,7 @@ class Pawn {
       column.hashCode ^
       isKing.hashCode;
 
-  void setValues(Pawn oldPawn) {
+  void setValues(PawnDetails oldPawn) {
     setPosition(oldPawn.row, oldPawn.column)
         .setIsKing(oldPawn.isKing)
         .setPawnDataNotifier(
@@ -127,7 +127,7 @@ class Pawn {
   }
 
   void _initPawnData() {
-    _pawnDataValueNotifier.value = PawnData(
+    _pawnDataValueNotifier.value = PawnDetailsData(
         offset: Offset(column.toDouble(), row.toDouble()),
         isKilled: false,
         isAnimating: false,

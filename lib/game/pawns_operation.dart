@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/pawn.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 class PawnsOperation {
@@ -23,12 +23,12 @@ class PawnsOperation {
       // PLAYER_ONE_DARK[Random().nextInt(PLAYER_ONE_DARK.length)];
       PLAYER_TWO_LIGHT.first;
 
-  List<Pawn> create(List<List<CellDetails>> board) {
-    List<Pawn> pawns = [];
+  List<PawnDetails> create(List<List<CellDetails>> board) {
+    List<PawnDetails> pawns = [];
     for (var (row, rowList) in board.indexed) {
       for (var (column, cellDeatils) in rowList.indexed) {
         if (cellDeatils.isSomePawn) {
-          pawns.add(Pawn(
+          pawns.add(PawnDetails(
               id: '$prefixPawnId${pawns.length}',
               row: row,
               cellTypePlayer: cellDeatils.cellTypePlayer,

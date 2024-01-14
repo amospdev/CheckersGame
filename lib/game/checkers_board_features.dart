@@ -1,27 +1,27 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/path_pawn.dart';
-import 'package:untitled/data/pawn.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
 
 class CheckersBoardFeatures {
-  final Queue<PathPawn> _historyPathPawn = Queue<PathPawn>();
+  final Queue<PawnPath> _historyPathPawn = Queue<PawnPath>();
 
   final ValueNotifier<bool> _isHistoryEnable = ValueNotifier<bool>(false);
 
   ValueNotifier<bool> get isHistoryEnable => _isHistoryEnable;
 
-  void resetBoard(List<Pawn> pawns, List<List<CellDetails>> board) {
+  void resetBoard(List<PawnDetails> pawns, List<List<CellDetails>> board) {
     while (_historyPathPawn.isNotEmpty) {
       popLastStep(pawns, board);
     }
   }
 
-  bool popLastStep(List<Pawn> pawns, List<List<CellDetails>> board) {
+  bool popLastStep(List<PawnDetails> pawns, List<List<CellDetails>> board) {
     if (_historyPathPawn.isEmpty) return false;
 
-    PathPawn oldPathPawn = _historyPathPawn.removeLast();
+    PawnPath oldPathPawn = _historyPathPawn.removeLast();
     notifyHistoryPathPawn();
     //Board
     board[oldPathPawn.startCell.row][oldPathPawn.startCell.column]
@@ -37,10 +37,10 @@ class CheckersBoardFeatures {
     }
 
     //Pawn
-    Pawn oldPawn = oldPathPawn.pawnStartPath;
+    PawnDetails oldPawn = oldPathPawn.pawnStartPath;
     pawns[oldPawn.index].setValues(oldPawn);
 
-    Pawn? oldCapturePawn = oldPathPawn.capturePawn;
+    PawnDetails? oldCapturePawn = oldPathPawn.capturePawn;
     if (oldCapturePawn != null) {
       pawns[oldCapturePawn.index].setValues(oldCapturePawn);
     }
@@ -54,7 +54,7 @@ class CheckersBoardFeatures {
   void setHistoryAvailability(bool isAvailability) =>
       _isHistoryEnable.value = isAvailability;
 
-  void updateHistory(PathPawn pathPawn) {
+  void updateHistory(PawnPath pathPawn) {
     _historyPathPawn.add(pathPawn.copy());
     notifyHistoryPathPawn();
   }

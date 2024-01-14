@@ -1,4 +1,4 @@
-import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/cell/cell_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/extensions/cg_log.dart';
 

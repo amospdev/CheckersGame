@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:untitled/data/ai/evaluator.dart';
-import 'package:untitled/data/path_pawn.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 // Required for using the `max` and `min` functions.
@@ -67,9 +67,9 @@ class ComputerPlayer {
     if (isMaximizing) {
       double maxEval = double.negativeInfinity;
 
-      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, aiType);
+      List<PawnPath> allPaths = _getAllValidMoves(checkersBoard, aiType);
 
-      for (PathPawn path in allPaths) {
+      for (PawnPath path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
         _performMove(newBoard, path);
         _nextTurn(newBoard);
@@ -87,9 +87,9 @@ class ComputerPlayer {
     } else {
       double minEval = double.infinity;
 
-      List<PathPawn> allPaths = _getAllValidMoves(checkersBoard, humanType);
+      List<PawnPath> allPaths = _getAllValidMoves(checkersBoard, humanType);
 
-      for (PathPawn path in allPaths) {
+      for (PawnPath path in allPaths) {
         CheckersBoard newBoard = checkersBoard.copy();
         _performMove(newBoard, path);
         _nextTurn(newBoard);
@@ -118,21 +118,21 @@ class ComputerPlayer {
     // depthSet.add(value);
   }
 
-  PathPawn? getBestMoveForAI(CheckersBoard checkersBoard) {
+  PawnPath? getBestMoveForAI(CheckersBoard checkersBoard) {
     TranspositionTable transpositionTable = TranspositionTable();
     return getMove(checkersBoard, transpositionTable);
   }
 
-  PathPawn? getMove(
+  PawnPath? getMove(
       CheckersBoard checkersBoard, TranspositionTable transpositionTable) {
     double bestValue = double.negativeInfinity;
-    PathPawn? bestMove;
+    PawnPath? bestMove;
 
     // Get all possible moves for AI
-    List<PathPawn> allPossibleMoves = _getAllValidMoves(checkersBoard,
+    List<PawnPath> allPossibleMoves = _getAllValidMoves(checkersBoard,
         aiType); // Fill this up with actual possible moves for AI
 
-    for (PathPawn pathPawn in allPossibleMoves) {
+    for (PawnPath pathPawn in allPossibleMoves) {
       CheckersBoard tempCheckersBoard = checkersBoard.copy();
       _performMove(tempCheckersBoard, pathPawn);
       _nextTurn(tempCheckersBoard);
@@ -156,11 +156,11 @@ class ComputerPlayer {
     return bestMove;
   }
 
-  List<PathPawn> _getAllValidMoves(
+  List<PawnPath> _getAllValidMoves(
           CheckersBoard checkersBoard, CellType cellTypePlayer) =>
       checkersBoard.getLegalMoves(cellTypePlayer, checkersBoard.board, true);
 
-  CheckersBoard _performMove(CheckersBoard tempBoard, PathPawn pathPawn) =>
+  CheckersBoard _performMove(CheckersBoard tempBoard, PawnPath pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 
   void _nextTurn(CheckersBoard checkersBoard) => checkersBoard.nextTurn();

@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:untitled/data/ai/computer_player.dart';
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/path_pawn.dart';
-import 'package:untitled/data/position/details/position_details.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
+import 'package:untitled/data/cell/position_details.dart';
+import 'package:untitled/data/cell/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/extensions/cg_collections.dart';
 import 'package:untitled/game/checkers_board.dart';
@@ -21,7 +21,7 @@ class Computer {
 
   Computer();
 
-  PathPawn? alphaBetaSearch(CheckersBoard checkersBoard, int depthLevel) {
+  PawnPath? alphaBetaSearch(CheckersBoard checkersBoard, int depthLevel) {
     DateTime date = DateTime.now();
     // startTime = date.millisecondsSinceEpoch;
     getBoardStatus(checkersBoard);
@@ -29,9 +29,9 @@ class Computer {
     Random random = Random();
     double bestMoveVal = 0;
     int depthReached = 0;
-    PathPawn? bestMove;
-    List<PathPawn> listBestMovesCurrentDepth;
-    List<PathPawn> legalMovesList =
+    PawnPath? bestMove;
+    List<PawnPath> listBestMovesCurrentDepth;
+    List<PawnPath> legalMovesList =
         checkersBoard.getLegalMoves(aiType, checkersBoard.board, true);
 
     if (legalMovesList.length == 1) {
@@ -42,7 +42,7 @@ class Computer {
     for (maxDepth = 0; maxDepth < depthLevel /*&& !outOfTime*/; maxDepth++) {
       listBestMovesCurrentDepth = [];
       double bestVal = double.negativeInfinity;
-      for (PathPawn pathPawn in legalMovesList) {
+      for (PawnPath pathPawn in legalMovesList) {
         // Game copy = Game.clone(game);
         // copy.applyMove(move, copy.board);
         CheckersBoard checkersBoardCopy = checkersBoard.copy();
@@ -157,9 +157,9 @@ class Computer {
         1200 * cntVulnerableKings;
 
     if (numOppPieces + numOppKings < 6 || numAllyPieces + numAllyKings < 6) {
-      List<PathPawn> player1Moves =
+      List<PawnPath> player1Moves =
           checkersBoard.getLegalMoves(humanType, checkersBoard.board, true);
-      List<PathPawn> player2Moves =
+      List<PawnPath> player2Moves =
           checkersBoard.getLegalMoves(aiType, checkersBoard.board, true);
 
       if (player1Moves.isEmpty) {
@@ -198,9 +198,9 @@ class Computer {
     return vulnerablePawns;
   }
 
-  List<PathPawn> fetchKills(
+  List<PawnPath> fetchKills(
       CheckersBoard checkersBoard, CellDetails currCellDetailsAttack) {
-    List<PathPawn> paths = [];
+    List<PawnPath> paths = [];
     if (currCellDetailsAttack.isKing) {
       checkersBoard.fetchAllCapturePathsKingSimulate(
           paths,
@@ -226,10 +226,10 @@ class Computer {
   List<CellDetails> _getVulnerablePawns(CheckersBoard checkersBoard,
       CellDetails currCellDetailsAttack, List<List<CellDetails>> board) {
     //Find the vulnerable pawns
-    List<PathPawn> newPathsPawn =
+    List<PawnPath> newPathsPawn =
         fetchKills(checkersBoard, currCellDetailsAttack);
     List<CellDetails> capturedList = [];
-    for (PathPawn pathPawn in newPathsPawn) {
+    for (PawnPath pathPawn in newPathsPawn) {
       for (PositionDetails positionDetails in pathPawn.positionDetailsList) {
         if (positionDetails.isCapture) {
           CellDetails cellDetailsCaptured = board[positionDetails.position.row]
@@ -254,13 +254,13 @@ class Computer {
     //   outOfTime = true;
     //   return 0;
     // }
-    List<PathPawn> listLegalMoves = checkersBoard.getLegalMoves(
+    List<PawnPath> listLegalMoves = checkersBoard.getLegalMoves(
         cellTypeCurrPlayer, checkersBoard.board, true);
     if (cutoffTest(listLegalMoves.length, depth)) {
       return evalFcn(checkersBoard);
     }
     double v = double.negativeInfinity;
-    for (PathPawn pathPawn in listLegalMoves) {
+    for (PawnPath pathPawn in listLegalMoves) {
       // Game copyGame = Game.clone(game);
       // copyGame.applyMove(move, copyGame.board);
       CheckersBoard checkersBoardCopy = checkersBoard.copy();
@@ -283,13 +283,13 @@ class Computer {
     //   outOfTime = true;
     //   return 0;
     // }
-    List<PathPawn> listLegalMoves =
+    List<PawnPath> listLegalMoves =
         checkersBoard.getLegalMoves(humanType, checkersBoard.board, true);
     if (cutoffTest(listLegalMoves.length, depth)) {
       return evalFcn(checkersBoard);
     }
     double v = double.infinity;
-    for (PathPawn pathPawn in listLegalMoves) {
+    for (PawnPath pathPawn in listLegalMoves) {
       CheckersBoard checkersBoardCopy = checkersBoard.copy();
       checkersBoardCopy.performMove(
           checkersBoardCopy.board, [pathPawn], pathPawn,

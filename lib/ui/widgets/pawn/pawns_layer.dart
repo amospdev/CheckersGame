@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/board_elements_size.dart';
-import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/pawn_data.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
+import 'package:untitled/data/pawn/pawn_details_data.dart';
 import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/ui/screens/game/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
@@ -75,7 +75,7 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
       double borderWidthGameBoard,
       GameViewModel gameViewModel) {
     List<Widget> pawns = gameViewModel.pawns
-        .map((pawn) => ValueListenableBuilder<PawnData>(
+        .map((pawn) => ValueListenableBuilder<PawnDetailsData>(
               valueListenable: pawn.pawnDataNotifier,
               builder: (ctx, pawnData, _) {
                 double topNotKilled =
@@ -136,7 +136,7 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
   }
 
   Widget _pawnKilledAnimation(
-          double distancePoints, double cellSize, Pawn pawn) =>
+          double distancePoints, double cellSize, PawnDetails pawn) =>
       Animate(
         effects: [
           ScaleEffect(
@@ -153,7 +153,7 @@ class PawnsLayerState extends State<PawnsLayer> with TickerProviderStateMixin {
         ),
       );
 
-  Widget _buildPawnWidget(Pawn pawn, double cellSize, bool isAnimatingPawn) =>
+  Widget _buildPawnWidget(PawnDetails pawn, double cellSize, bool isAnimatingPawn) =>
       PawnPieceAnimate(
           isAnimatingPawn: isAnimatingPawn,
           pawnMoveController: _pawnMoveController,

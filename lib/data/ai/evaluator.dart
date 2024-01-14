@@ -1,9 +1,9 @@
 import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/ai/heuristic_data.dart';
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/path_pawn.dart';
-import 'package:untitled/data/position/details/position_details.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
+import 'package:untitled/data/cell/position_details.dart';
+import 'package:untitled/data/cell/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 
@@ -185,9 +185,9 @@ class Evaluator {
     });
   }
 
-  List<PathPawn> fetchKills(
+  List<PawnPath> fetchKills(
       CheckersBoard checkersBoard, CellDetails currCellDetailsAttack) {
-    List<PathPawn> paths = [];
+    List<PawnPath> paths = [];
     if (currCellDetailsAttack.isKing) {
       checkersBoard.fetchAllCapturePathsKingSimulate(
           paths,
@@ -213,10 +213,10 @@ class Evaluator {
   List<CellDetails> _getVulnerablePawns(CheckersBoard checkersBoard,
       CellDetails currCellDetailsAttack, List<List<CellDetails>> board) {
     //Find the vulnerable pawns
-    List<PathPawn> newPathsPawn =
+    List<PawnPath> newPathsPawn =
         fetchKills(checkersBoard, currCellDetailsAttack);
     List<CellDetails> capturedList = [];
-    for (PathPawn pathPawn in newPathsPawn) {
+    for (PawnPath pathPawn in newPathsPawn) {
       for (PositionDetails positionDetails in pathPawn.positionDetailsList) {
         if (positionDetails.isCapture) {
           CellDetails cellDetailsCaptured = board[positionDetails.position.row]

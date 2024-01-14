@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/data/cell_details.dart';
+import 'package:untitled/data/cell/cell_details.dart';
 import 'package:untitled/enum/cell_type.dart';
 
 const String ROW = "|";

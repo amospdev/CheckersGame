@@ -1,6 +1,6 @@
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
+import 'package:untitled/data/cell/position_data.dart';
 
 abstract class PositionDetails {
   final bool isCapture;
@@ -29,7 +29,7 @@ abstract class PositionDetails {
 }
 
 class PositionDetailsCapture extends PositionDetails {
-  final Pawn pawnCapture;
+  final PawnDetails pawnCapture;
 
   PositionDetailsCapture(
       {required CellDetails cellDetails, required this.pawnCapture})

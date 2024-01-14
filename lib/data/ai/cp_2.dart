@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/ai/evaluator.dart';
-import 'package:untitled/data/path_pawn.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/game/checkers_board.dart';
 
@@ -11,7 +11,7 @@ class ComputerPlayerPro {
 
   ComputerPlayerPro(this.depth);
 
-  PathPawn? getBestMoveForAI(CheckersBoard board) {
+  PawnPath? getBestMoveForAI(CheckersBoard board) {
     LegalMoveState? resultMove = minimax(LegalMoveState(board, null), depth,
         double.negativeInfinity, double.infinity, true);
     return resultMove?.pathPawn;
@@ -89,7 +89,7 @@ class ComputerPlayerPro {
   List<LegalMoveState> getLegalMoveStates(
       CheckersBoard checkersBoard, CellType cellTypePlayer) {
     List<LegalMoveState> legalMoveStates = [];
-    for (PathPawn pathPawn
+    for (PawnPath pathPawn
         in _getAllValidMoves(checkersBoard, cellTypePlayer)) {
       CheckersBoard tempBoard = checkersBoard.copy();
       CheckersBoard newBoard = _performMove(tempBoard, pathPawn);
@@ -100,18 +100,18 @@ class ComputerPlayerPro {
     return legalMoveStates;
   }
 
-  List<PathPawn> _getAllValidMoves(
+  List<PawnPath> _getAllValidMoves(
           CheckersBoard checkersBoard, CellType cellTypePlayer) =>
       checkersBoard.getLegalMoves(cellTypePlayer, checkersBoard.board, true);
 
-  CheckersBoard _performMove(CheckersBoard tempBoard, PathPawn pathPawn) =>
+  CheckersBoard _performMove(CheckersBoard tempBoard, PawnPath pathPawn) =>
       tempBoard..performMove(tempBoard.board, [pathPawn], pathPawn, isAI: true);
 }
 
 // It holds the state of the checkersboard and the selected move.
 class LegalMoveState {
   CheckersBoard checkersBoard;
-  PathPawn? pathPawn;
+  PawnPath? pathPawn;
 
   LegalMoveState(this.checkersBoard, this.pathPawn);
 

@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:untitled/data/ai/computer_player.dart';
 import 'package:untitled/data/ai/cp_3.dart';
-import 'package:untitled/data/cell_details.dart';
-import 'package:untitled/data/path_pawn.dart';
-import 'package:untitled/data/pawn.dart';
-import 'package:untitled/data/position/position_data.dart';
+import 'package:untitled/data/cell/cell_details.dart';
+import 'package:untitled/data/pawn/pawn_path.dart';
+import 'package:untitled/data/pawn/pawn_details.dart';
+import 'package:untitled/data/cell/position_data.dart';
 import 'package:untitled/enum/cell_type.dart';
 import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/enum/tap_on_board.dart';
@@ -44,18 +44,18 @@ class GameViewModel extends ChangeNotifier {
 
   int get pathSize => _pathPawn.positionDetailsList.length;
 
-  PathPawn _pathPawn = PathPawn.createEmpty();
+  PawnPath _pathPawn = PawnPath.createEmpty();
 
-  List<PathPawn> _pawnPaths = [];
+  List<PawnPath> _pawnPaths = [];
   bool _isInProcess = false;
 
   final List<CellDetails> _boardCells = [];
 
   List<CellDetails> get boardCells => _boardCells;
 
-  final List<Pawn> _pawns = [];
+  final List<PawnDetails> _pawns = [];
 
-  List<Pawn> get pawns => _pawns;
+  List<PawnDetails> get pawns => _pawns;
 
   CellType get currentPlayer => _currentPlayer;
 
@@ -134,7 +134,7 @@ class GameViewModel extends ChangeNotifier {
     if (!_isValidTap(row, column)) {
       return TapOnBoard.UNVALID;
     }
-    List<PathPawn> pawnPaths = _checkersBoard
+    List<PawnPath> pawnPaths = _checkersBoard
         .getLegalMoves(_checkersBoard.player, _checkersBoard.board, false)
         .where((element) => element.startPosition == Position(row, column))
         .toList();
@@ -142,7 +142,7 @@ class GameViewModel extends ChangeNotifier {
       return _handleStartCellTap(row, column, pawnPaths);
     }
 
-    PathPawn pathPawn =
+    PawnPath pathPawn =
         _checkersBoard.getPathByEndCellSelected(row, column, _pawnPaths);
     if (pathPawn.isValidPath) {
       return _handleDestinationCellTap(row, column, pathPawn);
@@ -152,14 +152,14 @@ class GameViewModel extends ChangeNotifier {
   }
 
   TapOnBoard _handleStartCellTap(
-      int row, int column, Iterable<PathPawn> pawnPaths) {
+      int row, int column, Iterable<PawnPath> pawnPaths) {
     _pawnPaths = pawnPaths.toList();
     _checkersBoard.paintColorsCells(_pawnPaths);
     return TapOnBoard.START;
   }
 
   TapOnBoard _handleDestinationCellTap(
-      int destinationRow, int destinationCol, PathPawn pathPawn) {
+      int destinationRow, int destinationCol, PawnPath pathPawn) {
     _startProcess();
     _checkersBoard.setHistoryAvailability(false);
     _pathPawn = pathPawn;
@@ -217,7 +217,7 @@ class GameViewModel extends ChangeNotifier {
 
   Future<void> _aiTurn() async {
 
-    PathPawn? pathPawn = aIMove();
+    PawnPath? pathPawn = aIMove();
     if (pathPawn == null) return;
     onTapBoardGame(pathPawn.startPosition.row, pathPawn.startPosition.column);
 
@@ -235,13 +235,13 @@ class GameViewModel extends ChangeNotifier {
 
   bool _isAITurn() => currentPlayer == aiType && SettingsRepository().isAIMode;
 
-  PathPawn? aIMove() {
+  PawnPath? aIMove() {
     // PathPawn? path = ComputerPlayer(SettingsRepository().depthLevel)
     //     .getBestMoveForAI(_checkersBoard);
     //
     // PathPawn? path = ComputerPlayerPro(SettingsRepository().depthLevel)
     //     .getBestMoveForAI(_checkersBoard);
-    PathPawn? path = Computer()
+    PawnPath? path = Computer()
         .alphaBetaSearch(_checkersBoard, SettingsRepository().depthLevel);
     return path;
   }
@@ -252,7 +252,7 @@ class GameViewModel extends ChangeNotifier {
 
   void _clearDataNextTurnState() {
     _pawnPaths.clear();
-    _pathPawn = PathPawn.createEmpty();
+    _pathPawn = PawnPath.createEmpty();
   }
 
   void onFinishAnimateCrown(String pawnId, bool isKingPawn) {

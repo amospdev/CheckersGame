@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/data/board_elements_size.dart';
 import 'package:untitled/data/cell_details_data.dart';
-import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/screens/game/game_view_model.dart';
 
 class CellsLayer extends StatelessWidget {
   const CellsLayer({super.key});

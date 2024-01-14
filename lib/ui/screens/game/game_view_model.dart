@@ -12,7 +12,7 @@ import 'package:untitled/enum/pawn_move_state.dart';
 import 'package:untitled/enum/tap_on_board.dart';
 import 'package:untitled/game/checkers_board.dart';
 import 'package:untitled/game/pawns_operation.dart';
-import 'package:untitled/settings_repo.dart';
+import 'package:untitled/repositories/settings_repo.dart';
 
 class GameViewModel extends ChangeNotifier {
   final CheckersBoard _checkersBoard = CheckersBoard();

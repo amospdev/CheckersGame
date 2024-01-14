@@ -7,7 +7,7 @@ import 'package:untitled/data/board_elements_size.dart';
 import 'package:untitled/data/pawn.dart';
 import 'package:untitled/data/pawn_data.dart';
 import 'package:untitled/enum/pawn_move_state.dart';
-import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/screens/game/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece.dart';
 import 'package:untitled/ui/widgets/pawn/pawn_piece_animate.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:untitled/features_game.dart';
+import 'package:untitled/ui/widgets/features_game.dart';
 
 class TopLayer extends StatelessWidget {
 

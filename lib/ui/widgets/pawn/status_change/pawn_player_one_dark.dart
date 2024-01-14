@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/game/pawns_operation.dart';
-import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/screens/game/game_view_model.dart';
 import 'package:untitled/ui/widgets/pawn/status_change/pawn_status_change.dart';
 
 class PawnPlayerOneDark extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled/game_view_model.dart';
+import 'package:untitled/ui/screens/game/game_view_model.dart';
 
 class CrownAnimation extends StatefulWidget {
   final String pawnId;
